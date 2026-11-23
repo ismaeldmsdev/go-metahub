@@ -297,10 +297,13 @@ test.describe('diseño adaptable', () => {
         await expect(page.getByRole('heading', { level: 1 })).toHaveText(tab);
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
         expect(overflow).toBeLessThanOrEqual(0);
-        const small = await page.locator('nav a, button:not(.text-button), input, select').evaluateAll(
-          (els) => els.filter((e) => e.getBoundingClientRect().height < 44).length,
+        // Solo lo que se ve: un botón dentro de un desplegable cerrado no se puede pulsar.
+        const small = await page.locator('nav a, button:not(.text-button), input, select').evaluateAll((els) =>
+          els
+            .filter((e) => e.checkVisibility() && e.getBoundingClientRect().height < 44)
+            .map((e) => `${e.textContent} (${e.getBoundingClientRect().height} px)`),
         );
-        expect(small).toBe(0);
+        expect(small).toEqual([]);
       }
     });
   }
