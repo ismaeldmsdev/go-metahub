@@ -1,0 +1,34 @@
+# Dependencias y compilación
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Pruebas y cachés
+test-results/
+playwright-report/
+coverage/
+.cache/
+.vite/
+
+# Temporales
+.tmp/
+*.tmp.*
+*.bak
+*.log
+
+# Entorno, credenciales y configuración local
+.env
+.env.*
+*.local
+*.pem
+*.key
+.npmrc
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Investigación y maquetas, solo en local
+docs/

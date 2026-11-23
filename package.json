@@ -1,0 +1,33 @@
+{
+  "name": "go-metahub",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run tests/unit",
+    "test:e2e": "playwright test",
+    "test:live": "vitest run tests/live"
+  },
+  "dependencies": {
+    "@tanstack/preact-query": "5.107.1",
+    "idb": "8.0.4",
+    "luxon": "3.7.2",
+    "preact": "10.29.8",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@types/luxon": "3.7.6",
+    "@types/node": "24.19.2",
+    "fake-indexeddb": "6.2.8",
+    "typescript": "7.0.2",
+    "vite": "8.3.8",
+    "vite-plugin-pwa": "2.0.0",
+    "vitest": "5.1.0",
+    "workbox-window": "7.4.1"
+  }
+}
