@@ -5,7 +5,8 @@ export default defineConfig({
   testDir: 'tests/e2e',
   fullyParallel: true,
   workers: 1,
-  reporter: 'list',
+  // En GitHub Actions, cada fallo aparece como anotación.
+  reporter: process.env.CI ? [['list'], ['github']] : 'list',
   use: {
     baseURL: 'http://localhost:4183',
     channel: 'msedge',
