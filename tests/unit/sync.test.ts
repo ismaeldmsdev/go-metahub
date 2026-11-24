@@ -3,9 +3,9 @@ import { IDBFactory } from 'fake-indexeddb';
 import { openDB } from 'idb';
 import { QueryObserver, type QueryClient } from '@tanstack/preact-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DAY, HOUR, MINUTE, RETRY_AFTER_ERROR } from '../../src/data/config';
+import { DAY, HOUR, MINUTE, RETRY_AFTER_ERROR, type CountersTarget } from '../../src/data/config';
 import type { Snapshot } from '../../src/data/models';
-import { createClient, isDue, lifetime, recentlyFailed, sourceQuery } from '../../src/data/queries';
+import { countersKey, countersQuery, createClient, isDue, lifetime, recentlyFailed, sourceQuery } from '../../src/data/queries';
 import { SOURCES } from '../../src/data/sources';
 import { closeStorage, persistUpdates, restoreSources, saveSource } from '../../src/data/storage';
 import { toEvents } from '../../src/data/transform';
@@ -78,7 +78,7 @@ describe('descarga', () => {
     expect((await load('raids')).data).toHaveLength(18);
     expect((await load('events')).data).toHaveLength(39);
     expect(Object.keys((await load('translations')).data.moves).length).toBeGreaterThan(300);
-    expect((await load('pokebattler')).data).toContain('DARKRAI');
+    expect((await load('pokebattler')).data).toHaveProperty('DARKRAI', 'RAID_LEVEL_5');
     expect((await load('sprites')).data['809']![0]).toEqual({ id: 809, name: 'melmetal' });
   });
 
@@ -258,6 +258,77 @@ describe('apertura de la aplicación', () => {
     await saveSource('raids', older, NOW - HOUR);
     await restoreSources(client);
     expect(client.getQueryData(['raids'])).toEqual(newer);
+  });
+});
+
+describe('counters por jefe', () => {
+  const cresselia = { id: 'CRESSELIA', tier: 'RAID_LEVEL_5', weather: 'NO_WEATHER' } as const;
+  const fetchCounters = (target: CountersTarget = cresselia) =>
+    client.fetchQuery({ ...countersQuery(client, target), retry: false });
+
+  it('guarda cada jefe y clima, y los recupera sin red', async () => {
+    await fetchCounters();
+    await fetchCounters({ ...cresselia, weather: 'FOG' });
+    table = {};
+    await reopen();
+    expect(client.getQueryData<Snapshot<any>>(countersKey(cresselia))!.data.list).toHaveLength(30);
+    expect(client.getQueryState(countersKey({ ...cresselia, weather: 'FOG' }))!.dataUpdatedAt).toBe(NOW);
+    expect(storageErrors).toEqual([]);
+  });
+
+  it('no repite la petición durante 24 horas', async () => {
+    await fetchCounters();
+    await reopen();
+    calls = [];
+    vi.setSystemTime(NOW + DAY - MINUTE);
+    await fetchCounters();
+    expect(calls).toEqual([]);
+    vi.setSystemTime(NOW + DAY + MINUTE);
+    await fetchCounters();
+    expect(calls).toHaveLength(1);
+  });
+
+  it.each([
+    ['sin red', offline],
+    ['límite de peticiones', () => new Response('', { status: 429 })],
+    ['HTML', () => new Response('<html>')],
+    ['vacía', () => new Response('{}')],
+  ] as [string, Reply][])('si falla (%s) conserva los últimos válidos', async (_, reply) => {
+    await fetchCounters();
+    vi.setSystemTime(NOW + 2 * DAY);
+    table['raids/defenders/CRESSELIA/'] = reply;
+    await expect(fetchCounters()).rejects.toThrow();
+    await reopen();
+    expect(client.getQueryState<Snapshot<any>>(countersKey(cresselia))).toMatchObject({
+      dataUpdatedAt: NOW,
+      data: { data: { list: { length: 30 } } },
+    });
+  });
+
+  it('si Pokébattler limita las consultas, espera lo que pide antes de preguntar por otro jefe o clima', async () => {
+    // Otra fecha: la pausa dura lo que la aplicación y no debe alcanzar a las demás pruebas.
+    const start = NOW + 100 * DAY;
+    vi.setSystemTime(start);
+    const limited = () => new Response('', { status: 429, headers: { 'Retry-After': '120' } });
+    table['raids/defenders/CRESSELIA/'] = limited;
+    await expect(fetchCounters()).rejects.toThrow(/error 429/);
+    table = routes();
+    calls = [];
+    vi.setSystemTime(start + MINUTE);
+    await expect(fetchCounters({ ...cresselia, weather: 'FOG' })).rejects.toThrow(/pedido esperar/);
+    expect(calls).toEqual([]);
+    vi.setSystemTime(start + 2 * MINUTE + 1);
+    await fetchCounters();
+    expect(calls).toHaveLength(1);
+  });
+
+  it('borra los que no se actualizan desde hace un mes, y solo esos', async () => {
+    await fetchCounters();
+    await load('raids');
+    vi.setSystemTime(NOW + 31 * DAY);
+    await reopen();
+    expect(client.getQueryData(countersKey(cresselia))).toBeUndefined();
+    expect(client.getQueryData(['raids'])).toBeDefined();
   });
 });
 

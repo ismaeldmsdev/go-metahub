@@ -5,7 +5,7 @@ import { moveName, pvpLabel } from '../domain/names';
 import { spriteId, type SpriteIndex } from '../domain/sprites';
 import { countTiers, filterPvp, type PvpFilters, type TierGroup } from '../domain/pvp';
 import { tierOf, TIER_MIN, TIERS, VARIANTS, type Tier, type Variant } from '../domain/tiers';
-import { External, PokemonName, Placeholder, SourceStatus, TypeTag } from './common';
+import { External, Move, MoveLegend, PokemonName, Placeholder, Rank, SourceStatus, TypeTag } from './common';
 import type { Sources } from './hooks';
 import { PokemonImage } from './PokemonImage';
 
@@ -50,14 +50,17 @@ function Card({ entry, data, tr, sprites, imagesPending }: ListProps & { entry: 
   const tier = tierOf(entry.score);
   const label = pvpLabel(entry, tr);
   return (
-    <li class="card rank-card">
-      <PokemonImage
-        id={spriteId(entry, sprites)}
-        dex={entry.dex}
-        type={entry.types[0]}
-        shadow={label.shadow}
-        pending={imagesPending}
-      />
+    <li class={`card rank-card t-${entry.types[0] ?? ''}`}>
+      <div class="rank-figure">
+        <PokemonImage
+          id={spriteId(entry, sprites)}
+          dex={entry.dex}
+          type={entry.types[0]}
+          shadow={label.shadow}
+          pending={imagesPending}
+        />
+        <Rank value={entry.rank} />
+      </div>
       <div class="rank-body">
         <div class="rank-head">
           <PokemonName label={label} />
@@ -71,7 +74,6 @@ function Card({ entry, data, tr, sprites, imagesPending }: ListProps & { entry: 
             <span class="sr-only">Tier </span>
             {tier ?? '–'}
           </span>
-          <span class="rank">Puesto {entry.rank}</span>
           {entry.types.map((type) => (
             <TypeTag key={type} type={type} />
           ))}
@@ -80,15 +82,7 @@ function Card({ entry, data, tr, sprites, imagesPending }: ListProps & { entry: 
           {entry.moves.map((id) => {
             const move = data.moves[id];
             if (!move) return null;
-            return (
-              <li key={id} class={move.fast ? 'move move-fast' : 'move'}>
-                <span class="sr-only">{move.fast ? 'Ataque rápido: ' : 'Ataque cargado: '}</span>
-                {moveName(move, tr)}
-                {entry.elite.includes(id) && (
-                  <abbr title="Movimiento especial: puede requerir una MT élite o un evento">★</abbr>
-                )}
-              </li>
-            );
+            return <Move key={id} name={moveName(move, tr)} fast={move.fast} elite={entry.elite.includes(id)} />;
           })}
         </ul>
       </div>
@@ -242,10 +236,9 @@ export function PvpView({ sources }: { sources: Sources }) {
               />
             ))
           )}
-          <p class="legend">
-            El movimiento con fondo es el rápido. ★ indica un movimiento que PvPoke marca como especial, no siempre
-            disponible.
-          </p>
+          <MoveLegend>
+            <span>★ Movimiento que PvPoke marca como especial, no siempre disponible</span>
+          </MoveLegend>
         </>
       )}
     </>

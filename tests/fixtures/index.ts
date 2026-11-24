@@ -1,4 +1,7 @@
-/** Copias reales de las fuentes tomadas el 23 de noviembre de 2026 (recortadas donde se indica). */
+/**
+ * Copias reales de las fuentes tomadas el 23 de noviembre de 2026 (recortadas donde se indica).
+ * Las de Pokébattler son sintéticas: sus datos reales no deben subirse al repositorio sin su permiso.
+ */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -19,6 +22,7 @@ export const fixtures = {
   en: () => load('en'),
   es: () => load('es'),
   pokebattler: () => load('pokebattler'),
+  counters: () => load('counters'),
   sprites: () => readFileSync(resolve('tests/fixtures/pokemon.csv'), 'utf8'),
   commit: (date: string) => [{ commit: { committer: { date } } }],
 };
@@ -34,6 +38,7 @@ export const routes = (): Record<string, unknown> => ({
   'locales/en.json': fixtures.en(),
   'locales/es.json': fixtures.es(),
   'csv/pokemon.csv': fixtures.sprites(),
+  'raids/defenders/CRESSELIA/': fixtures.counters(),
   'fight.pokebattler.com/raids': fixtures.pokebattler(),
   'repos/pvpoke/pvpoke/commits': fixtures.commit('2026-11-20T16:56:34Z'),
   'repos/bigfoott/ScrapedDuck/commits': fixtures.commit('2026-11-23T03:13:23Z'),

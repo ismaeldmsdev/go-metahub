@@ -28,7 +28,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: false,
-      includeAssets: ['icon.svg', 'apple-touch-icon.png'],
+      // Los iconos de instalación los pide el sistema al instalar: no ocupan la caché de la aplicación.
+      includeManifestIcons: false,
       manifest: {
         name: 'GO MetaHub',
         short_name: 'GO MetaHub',
@@ -39,8 +40,8 @@ export default defineConfig({
         start_url: './',
         scope: './',
         display: 'standalone',
-        background_color: '#0f1420',
-        theme_color: '#0f1420',
+        background_color: '#05062a',
+        theme_color: '#05062a',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
@@ -48,7 +49,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png}'],
+        globPatterns: ['**/*.{js,css,html}', 'favicon-*.png', '*.webp'],
         cleanupOutdatedCaches: true,
         // Workbox guarda la aplicación y las imágenes. Los datos viven solo en IndexedDB:
         // dos cachés de datos podrían mostrar información antigua.

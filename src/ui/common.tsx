@@ -4,7 +4,55 @@ import { formatAge, formatDate, hasKnownCheck } from '../domain/freshness';
 import { typeName, type PokemonLabel } from '../domain/names';
 import { useNow, type Source } from './hooks';
 
-export const TypeTag = ({ type }: { type: string }) => <span class={`type type-${type}`}>{typeName(type)}</span>;
+export const TypeTag = ({ type }: { type: string }) => <span class={`type t-${type}`}>{typeName(type)}</span>;
+
+/** Rayo para el ataque rápido y diana para el cargado, iguales en toda la aplicación. */
+export function MoveIcon({ fast }: { fast: boolean }) {
+  return (
+    <svg class={fast ? 'move-icon move-icon-fast' : 'move-icon'} viewBox="0 0 24 24" aria-hidden="true">
+      {fast ? (
+        <path fill="currentColor" d="M13.500 1.500 4 14h6.500L9 22.500 20 9.500h-7z" />
+      ) : (
+        <>
+          <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="3" />
+          <circle cx="12" cy="12" r="3.600" fill="currentColor" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+export function Move({ name, fast, elite = false }: { name: string; fast: boolean; elite?: boolean }) {
+  return (
+    <li class={fast ? 'move move-fast' : 'move'}>
+      <MoveIcon fast={fast} />
+      <span class="sr-only">{fast ? 'Ataque rápido: ' : 'Ataque cargado: '}</span>
+      {name}
+      {elite && <abbr title="Movimiento especial: puede requerir una MT élite o un evento">★</abbr>}
+    </li>
+  );
+}
+
+export function Rank({ value }: { value: number }) {
+  return (
+    <span class={`rank rank-${value}`}>
+      <span class="sr-only">Puesto </span>
+      {value}
+    </span>
+  );
+}
+
+export const MoveLegend = ({ children }: { children?: ComponentChildren }) => (
+  <p class="legend">
+    <span>
+      <MoveIcon fast /> Ataque rápido
+    </span>
+    <span>
+      <MoveIcon fast={false} /> Ataque cargado
+    </span>
+    {children}
+  </p>
+);
 
 export function PokemonName({ label }: { label: PokemonLabel }) {
   return (
@@ -109,8 +157,19 @@ export function SourceStatus({ source }: { source: Source<unknown> }) {
   );
 }
 
+export function Loading() {
+  return (
+    <div class="skeletons" role="status">
+      <span class="sr-only">Cargando datos…</span>
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} class="skeleton" aria-hidden="true" />
+      ))}
+    </div>
+  );
+}
+
 export function Placeholder({ source }: { source: Source<unknown> }) {
-  if (source.health.level === 'loading') return <p class="empty">Cargando datos…</p>;
+  if (source.health.level === 'loading') return <Loading />;
   return (
     <div class="empty">
       <p>Aún no hay datos guardados en este dispositivo.</p>

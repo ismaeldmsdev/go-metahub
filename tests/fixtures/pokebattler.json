@@ -1,1 +1,129 @@
-{"tiers":[{"tier":"RAID_LEVEL_1","raids":[{"pokemon":"MEOWTH_ALOLA_FORM"},{"pokemon":"MISDREAVUS"},{"pokemon":"PIKACHU"},{"pokemon":"SANDYGAST"},{"pokemon":"YAMASK_GALARIAN_FORM"}]},{"tier":"RAID_LEVEL_3","raids":[{"pokemon":"ESPEON_GOFEST_2024_SSCARF_FORM"},{"pokemon":"GOLURK"},{"pokemon":"LIEPARD"},{"pokemon":"MAROWAK_ALOLA_FORM"},{"pokemon":"UMBREON_GOFEST_2024_MSCARF_FORM"}]},{"tier":"RAID_LEVEL_5","raids":[{"pokemon":"CRESSELIA"},{"pokemon":"DARKRAI"},{"pokemon":"DEOXYS_ATTACK_FORM"},{"pokemon":"DEOXYS_DEFENSE_FORM"},{"pokemon":"DEOXYS_NORMAL_FORM"},{"pokemon":"DEOXYS_SPEED_FORM"},{"pokemon":"KYUREM_BLACK_FORM"},{"pokemon":"KYUREM_WHITE_FORM"}]},{"tier":"RAID_LEVEL_5_FUTURE","raids":[{"pokemon":"ARCEUS"},{"pokemon":"ARCEUS_BUG_FORM"},{"pokemon":"ARCEUS_DARK_FORM"},{"pokemon":"ARCEUS_DRAGON_FORM"},{"pokemon":"ARCEUS_ELECTRIC_FORM"},{"pokemon":"ARCEUS_FAIRY_FORM"}]},{"tier":"RAID_LEVEL_5_LEGACY","raids":[{"pokemon":"ARTICUNO"},{"pokemon":"AZELF"},{"pokemon":"COBALION"},{"pokemon":"DEOXYS"},{"pokemon":"DEOXYS_ATTACK_FORM"},{"pokemon":"DEOXYS_DEFENSE_FORM"}]},{"tier":"RAID_LEVEL_1_LEGACY","raids":[{"pokemon":"ABRA"},{"pokemon":"AIPOM"},{"pokemon":"AMAURA"},{"pokemon":"ANORITH"},{"pokemon":"ARCHEN"},{"pokemon":"ARON"}]},{"tier":"RAID_LEVEL_2_LEGACY","raids":[{"pokemon":"CARBINK"}]},{"tier":"RAID_LEVEL_3_LEGACY","raids":[{"pokemon":"ABSOL"},{"pokemon":"AERODACTYL"},{"pokemon":"AGGRON"},{"pokemon":"ALAKAZAM"},{"pokemon":"ALOMOMOLA"},{"pokemon":"AMOONGUSS"}]},{"tier":"RAID_LEVEL_4_LEGACY","raids":[{"pokemon":"BOLDORE"},{"pokemon":"BRAIXEN"},{"pokemon":"BRIONNE"},{"pokemon":"CHANSEY"},{"pokemon":"CHARJABUG"},{"pokemon":"DARTRIX"}]},{"tier":"RAID_LEVEL_UNSET","raids":[{"pokemon":"ABOMASNOW"},{"pokemon":"ABOMASNOW_MEGA"},{"pokemon":"ABOMASNOW_SHADOW_FORM"},{"pokemon":"ABRA"},{"pokemon":"ABRA_SHADOW_FORM"},{"pokemon":"ABSOL"}]},{"tier":"RAID_LEVEL_MEGA","raids":[{"pokemon":"BANETTE_MEGA"},{"pokemon":"BEEDRILL_MEGA"},{"pokemon":"HOUNDOOM_MEGA"},{"pokemon":"MANECTRIC_MEGA"},{"pokemon":"METAGROSS_MEGA"},{"pokemon":"SABLEYE_MEGA"}]},{"tier":"RAID_LEVEL_MEGA_LEGACY","raids":[{"pokemon":"ABOMASNOW_MEGA"},{"pokemon":"ABSOL_MEGA"},{"pokemon":"AERODACTYL_MEGA"},{"pokemon":"AGGRON_MEGA"},{"pokemon":"ALAKAZAM_MEGA"},{"pokemon":"ALTARIA_MEGA"}]},{"tier":"RAID_LEVEL_MEGA_FUTURE","raids":[{"pokemon":"BARBARACLE_MEGA"},{"pokemon":"BAXCALIBUR_MEGA"},{"pokemon":"BEEDRILL_MEGA"},{"pokemon":"CHESNAUGHT_MEGA"},{"pokemon":"CHIMECHO_MEGA"},{"pokemon":"CLEFABLE_MEGA"}]},{"tier":"RAID_LEVEL_MEGA_5_FUTURE","raids":[{"pokemon":"DARKRAI_MEGA"},{"pokemon":"DIANCIE_MEGA"},{"pokemon":"HEATRAN_MEGA"},{"pokemon":"ZERAORA_MEGA"},{"pokemon":"ZYGARDE_MEGA_COMPLETE"}]},{"tier":"RAID_LEVEL_MEGA_5_LEGACY","raids":[{"pokemon":"GROUDON_PRIMAL"},{"pokemon":"KYOGRE_PRIMAL"},{"pokemon":"LATIAS_MEGA"},{"pokemon":"LATIOS_MEGA"},{"pokemon":"MEWTWO_MEGA_X"},{"pokemon":"MEWTWO_MEGA_Y"}]},{"tier":"RAID_LEVEL_ULTRA_BEAST_LEGACY","raids":[{"pokemon":"BLACEPHALON"},{"pokemon":"BUZZWOLE"},{"pokemon":"CELESTEELA"},{"pokemon":"GUZZLORD"},{"pokemon":"KARTANA"},{"pokemon":"NIHILEGO"}]},{"tier":"RAID_LEVEL_ULTRA_BEAST_FUTURE","raids":[{"pokemon":"NAGANADEL"},{"pokemon":"POIPOLE"}]},{"tier":"RAID_LEVEL_ELITE_LEGACY","raids":[{"pokemon":"ENAMORUS"},{"pokemon":"RAYQUAZA_MEGA"},{"pokemon":"REGIDRAGO"},{"pokemon":"REGIELEKI"}]},{"tier":"RAID_LEVEL_1_SHADOW","raids":[{"pokemon":"CRANIDOS_SHADOW_FORM"},{"pokemon":"LARVITAR_SHADOW_FORM"},{"pokemon":"MAKUHITA_SHADOW_FORM"},{"pokemon":"MUDKIP_SHADOW_FORM"}]},{"tier":"RAID_LEVEL_1_SHADOW_LEGACY","raids":[{"pokemon":"ABRA_SHADOW_FORM"},{"pokemon":"AIPOM_SHADOW_FORM"},{"pokemon":"BAGON_SHADOW_FORM"},{"pokemon":"BARBOACH_SHADOW_FORM"},{"pokemon":"BELDUM_SHADOW_FORM"},{"pokemon":"BELLSPROUT_SHADOW_FORM"}]},{"tier":"RAID_LEVEL_3_SHADOW","raids":[{"pokemon":"PILOSWINE_SHADOW_FORM"},{"pokemon":"POLIWHIRL_SHADOW_FORM"},{"pokemon":"PRINPLUP_SHADOW_FORM"}]},{"tier":"RAID_LEVEL_3_SHADOW_LEGACY","raids":[{"pokemon":"AERODACTYL_SHADOW_FORM"},{"pokemon":"BAYLEEF_SHADOW_FORM"},{"pokemon":"CROCONAW_SHADOW_FORM"},{"pokemon":"ELECTABUZZ_SHADOW_FORM"},{"pokemon":"GLIGAR_SHADOW_FORM"},{"pokemon":"GOLBAT_SHADOW_FORM"}]},{"tier":"RAID_LEVEL_5_SHADOW","raids":[{"pokemon":"TORNADUS_SHADOW_FORM"}]},{"tier":"RAID_LEVEL_5_SHADOW_LEGACY","raids":[{"pokemon":"ARTICUNO_SHADOW_FORM"},{"pokemon":"CRESSELIA_SHADOW_FORM"},{"pokemon":"ENTEI_SHADOW_FORM"},{"pokemon":"HO_OH_SHADOW_FORM"},{"pokemon":"LATIOS_SHADOW_FORM"},{"pokemon":"LUGIA_SHADOW_FORM"}]},{"tier":"RAID_LEVEL_5_SHADOW_FUTURE","raids":[{"pokemon":"ARTICUNO_SHADOW_FORM"},{"pokemon":"ENTEI_SHADOW_FORM"},{"pokemon":"GROUDON_SHADOW_FORM"},{"pokemon":"HEATRAN_SHADOW_FORM"},{"pokemon":"KYOGRE_SHADOW_FORM"},{"pokemon":"LATIAS_SHADOW_FORM"}]},{"tier":"RAID_LEVEL_5_MAX_LEGACY","raids":[{"pokemon":"ARTICUNO"},{"pokemon":"ENTEI"},{"pokemon":"HO_OH"},{"pokemon":"LATIAS"},{"pokemon":"LATIOS"},{"pokemon":"LUGIA"}]},{"tier":"RAID_LEVEL_3_MAX","raids":[{"pokemon":"BELDUM"},{"pokemon":"CHANSEY"},{"pokemon":"CRYOGONAL"},{"pokemon":"DEINO"},{"pokemon":"DRAMPA"},{"pokemon":"ELECTABUZZ"}]},{"tier":"RAID_LEVEL_3_MAX_LEGACY","raids":[{"pokemon":"BELDUM"},{"pokemon":"CHANSEY"},{"pokemon":"CRYOGONAL"},{"pokemon":"FALINKS"},{"pokemon":"PASSIMIAN"},{"pokemon":"SHUCKLE"}]},{"tier":"RAID_LEVEL_1_MAX","raids":[{"pokemon":"ABRA"},{"pokemon":"BOUNSWEET"},{"pokemon":"BULBASAUR"},{"pokemon":"CATERPIE"},{"pokemon":"CHARMANDER"},{"pokemon":"COMBEE"}]},{"tier":"RAID_LEVEL_1_MAX_LEGACY","raids":[{"pokemon":"BULBASAUR"},{"pokemon":"CATERPIE"},{"pokemon":"CHARMANDER"},{"pokemon":"DARUMAKA"},{"pokemon":"DRILBUR"},{"pokemon":"GASTLY"}]},{"tier":"RAID_LEVEL_6_MAX_LEGACY","raids":[{"pokemon":"BLASTOISE_GIGANTAMAX"},{"pokemon":"CHARIZARD_GIGANTAMAX"},{"pokemon":"CINDERACE_GIGANTAMAX"},{"pokemon":"DURALUDON_GIGANTAMAX"},{"pokemon":"ETERNATUS"},{"pokemon":"GENGAR_GIGANTAMAX"}]},{"tier":"RAID_LEVEL_6_MAX","raids":[{"pokemon":"ETERNATUS_ETERNAMAX_FORM"}]},{"tier":"RAID_LEVEL_6_MAX_FUTURE","raids":[{"pokemon":"ALCREMIE_GIGANTAMAX"},{"pokemon":"APPLETUN_GIGANTAMAX"},{"pokemon":"BUTTERFREE_GIGANTAMAX"},{"pokemon":"CENTISKORCH_GIGANTAMAX"},{"pokemon":"COALOSSAL_GIGANTAMAX"},{"pokemon":"COPPERAJAH_GIGANTAMAX"}]},{"tier":"RAID_LEVEL_4_MAX","raids":[{"pokemon":"TOXTRICITY"}]},{"tier":"RAID_LEVEL_4_MAX_LEGACY","raids":[{"pokemon":"TOXTRICITY"},{"pokemon":"TOXTRICITY_AMPED_FORM"},{"pokemon":"TOXTRICITY_LOW_KEY_FORM"}]},{"tier":"RAID_LEVEL_2_MAX","raids":[{"pokemon":"DARUMAKA"},{"pokemon":"EEVEE"},{"pokemon":"FEEBAS"},{"pokemon":"MACHOP"},{"pokemon":"SHUCKLE"},{"pokemon":"WAILMER"}]},{"tier":"RAID_LEVEL_2_MAX_LEGACY","raids":[{"pokemon":"MACHOP"}]},{"tier":"RAID_LEVEL_5_MEGA_ENHANCED_FUTURE","raids":[{"pokemon":"ZYGARDE_MEGA_C"}]},{"tier":"RAID_LEVEL_4_MEGA_ENHANCED","raids":[{"pokemon":"CLEFABLE_MEGA"}]},{"tier":"RAID_LEVEL_4_MEGA_ENHANCED_FUTURE","raids":[{"pokemon":"ABSOL_MEGA_Z"},{"pokemon":"CLEFABLE_MEGA"},{"pokemon":"GARCHOMP_MEGA_Z"},{"pokemon":"LUCARIO_MEGA_Z"},{"pokemon":"SCRAFTY_MEGA"}]},{"tier":"RAID_LEVEL_4_MEGA_ENHANCED_LEGACY","raids":[{"pokemon":"CHANDELURE_MEGA"},{"pokemon":"STARAPTOR_MEGA"}]}]}
+{
+ "nota": "Datos sintéticos: ni las cifras ni el orden proceden de Pokébattler. Solo imitan la forma de sus respuestas.",
+ "tiers": [
+  {
+   "tier": "RAID_LEVEL_1",
+   "raids": [
+    {
+     "pokemon": "MEOWTH_ALOLA_FORM"
+    },
+    {
+     "pokemon": "MISDREAVUS"
+    },
+    {
+     "pokemon": "YAMASK_GALARIAN_FORM"
+    },
+    {
+     "pokemon": "SANDYGAST"
+    }
+   ]
+  },
+  {
+   "tier": "RAID_LEVEL_3",
+   "raids": [
+    {
+     "pokemon": "MAROWAK_ALOLA_FORM"
+    },
+    {
+     "pokemon": "LIEPARD"
+    },
+    {
+     "pokemon": "GOLURK"
+    }
+   ]
+  },
+  {
+   "tier": "RAID_LEVEL_5",
+   "raids": [
+    {
+     "pokemon": "CRESSELIA"
+    },
+    {
+     "pokemon": "DARKRAI"
+    },
+    {
+     "pokemon": "DEOXYS_ATTACK_FORM"
+    }
+   ]
+  },
+  {
+   "tier": "RAID_LEVEL_MEGA",
+   "raids": [
+    {
+     "pokemon": "BANETTE_MEGA"
+    }
+   ]
+  },
+  {
+   "tier": "RAID_LEVEL_1_SHADOW",
+   "raids": [
+    {
+     "pokemon": "LARVITAR_SHADOW_FORM"
+    },
+    {
+     "pokemon": "MUDKIP_SHADOW_FORM"
+    },
+    {
+     "pokemon": "MAKUHITA_SHADOW_FORM"
+    },
+    {
+     "pokemon": "CRANIDOS_SHADOW_FORM"
+    }
+   ]
+  },
+  {
+   "tier": "RAID_LEVEL_3_SHADOW",
+   "raids": [
+    {
+     "pokemon": "POLIWHIRL_SHADOW_FORM"
+    },
+    {
+     "pokemon": "PILOSWINE_SHADOW_FORM"
+    },
+    {
+     "pokemon": "PRINPLUP_SHADOW_FORM"
+    }
+   ]
+  },
+  {
+   "tier": "RAID_LEVEL_5_SHADOW",
+   "raids": [
+    {
+     "pokemon": "TORNADUS_SHADOW_FORM"
+    }
+   ]
+  },
+  {
+   "tier": "RAID_LEVEL_MEGA_LEGACY",
+   "raids": [
+    {
+     "pokemon": "ABOMASNOW_MEGA"
+    }
+   ]
+  },
+  {
+   "tier": "RAID_LEVEL_5_FUTURE",
+   "raids": [
+    {
+     "pokemon": "MEWTWO"
+    }
+   ]
+  },
+  {
+   "tier": "RAID_LEVEL_1_MAX",
+   "raids": [
+    {
+     "pokemon": "SQUIRTLE"
+    }
+   ]
+  },
+  {
+   "tier": "RAID_LEVEL_UNSET",
+   "raids": [
+    {
+     "pokemon": "ABOMASNOW"
+    }
+   ]
+  }
+ ]
+}

@@ -28,7 +28,9 @@ export async function fetchText(url: string, signal?: AbortSignal): Promise<stri
     throw new SourceError('network', 'No se ha podido conectar con la fuente');
   }
   if (!response.ok) {
-    throw new SourceError('http', `La fuente ha respondido con el error ${response.status}`, response.status);
+    const wait = Number(response.headers.get('Retry-After'));
+    const message = `La fuente ha respondido con el error ${response.status}`;
+    throw new SourceError('http', message, response.status, wait > 0 ? wait * 1000 : undefined);
   }
   return text;
 }

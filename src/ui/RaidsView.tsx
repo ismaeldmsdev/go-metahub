@@ -1,61 +1,38 @@
-import type { RaidBoss } from '../data/models';
-import { formatDate } from '../domain/freshness';
-import { bossLabel, weatherName } from '../domain/names';
-import { countersLink, groupRaids, raidValidity, type Validity } from '../domain/raids';
-import { External, Picture, Placeholder, PokemonName, SourceStatus, TypeTag } from './common';
+import { useLayoutEffect } from 'preact/hooks';
+import { TYPES } from '../domain/names';
+import { bossSlug, groupRaids, typeRankingUrl } from '../domain/raids';
+import { BossSummary } from './BossSummary';
+import { BossView } from './BossView';
+import { Placeholder, SourceStatus } from './common';
 import { useNow, type Sources } from './hooks';
 
-function ValidityNote({ validity }: { validity: Validity }) {
-  switch (validity.kind) {
-    case 'announced':
-      return <p class="validity ok">Rotación anunciada hasta el {formatDate(validity.end)}</p>;
-    case 'upcoming':
-      return <p class="validity warn">Anunciado a partir del {formatDate(validity.start)}. Puede no estar activo.</p>;
-    case 'expired':
-      return <p class="validity warn">Su rotación terminó el {formatDate(validity.end)}. Probablemente ya no esté.</p>;
-    case 'unknown':
-      return <p class="validity">Vigencia sin confirmar</p>;
-  }
-}
-
-function BossCard({ boss, sources, now }: { boss: RaidBoss; sources: Sources; now: number }) {
-  const label = bossLabel(boss, sources.translations.data);
-  const link = countersLink(boss, sources.pokebattler.data);
+function TypeRankings() {
   return (
-    <li class="card boss">
-      <Picture src={boss.image} className="boss-image" />
-      <div class="boss-body">
-        <PokemonName label={label} />
-        <div class="types">
-          {boss.types.map((type) => (
-            <TypeTag key={type} type={type} />
-          ))}
-          {boss.shiny && <span class="chip chip-shiny">✦ Variocolor posible</span>}
-        </div>
-        <dl class="cp">
-          <div>
-            <dt>PC</dt>
-            <dd>{boss.cp ? `${boss.cp.min}–${boss.cp.max}` : 'no indicado'}</dd>
-          </div>
-          {boss.boostedCp && (
-            <div>
-              <dt>Con {boss.weather.length > 0 ? boss.weather.map(weatherName).join(' o ') : 'clima favorable'}</dt>
-              <dd>{`${boss.boostedCp.min}–${boss.boostedCp.max}`}</dd>
-            </div>
-          )}
-        </dl>
-        <ValidityNote validity={raidValidity(boss, sources.events.data, now)} />
-        <External href={link.url}>
-          {link.exact ? 'Mejores counters en Pokebattler' : 'Buscar en Pokebattler (sin página exacta confirmada)'}
-        </External>
-      </div>
-    </li>
+    <section class="group">
+      <h2>Mejores atacantes por tipo</h2>
+      <p class="note">Se abren en la web de Pokébattler, en inglés.</p>
+      <ul class="type-links">
+        {Object.keys(TYPES).map((type) => (
+          <li key={type}>
+            <a class={`type t-${type}`} href={typeRankingUrl(type)} target="_blank" rel="noopener noreferrer">
+              {TYPES[type]}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
-export function RaidsView({ sources }: { sources: Sources }) {
-  const now = useNow(30_000);
+/** Último jefe abierto, para volver al mismo punto de la lista. */
+let opened: string | null = null;
+
+function BossList({ sources, now }: { sources: Sources; now: number }) {
   const { raids } = sources;
+  useLayoutEffect(() => {
+    if (opened) document.getElementById(`jefe-${opened}`)?.scrollIntoView({ block: 'center' });
+    opened = null;
+  }, []);
   return (
     <>
       <SourceStatus source={raids} />
@@ -71,12 +48,33 @@ export function RaidsView({ sources }: { sources: Sources }) {
             <h2>{group.title}</h2>
             <ul class="grid">
               {group.bosses.map((boss) => (
-                <BossCard key={boss.name} boss={boss} sources={sources} now={now} />
+                <li key={boss.name} id={`jefe-${bossSlug(boss)}`} class={`card boss t-${boss.types[0] ?? ''}`}>
+                  <BossSummary boss={boss} sources={sources} now={now} />
+                </li>
               ))}
             </ul>
           </section>
         ))
       )}
+      <TypeRankings />
     </>
+  );
+}
+
+export function RaidsView({ sources, slug }: { sources: Sources; slug: string | null }) {
+  const now = useNow(30_000);
+  const { raids } = sources;
+  if (slug === null) return <BossList sources={sources} now={now} />;
+  opened = slug;
+  const boss = raids.data?.find((candidate) => bossSlug(candidate) === slug);
+  if (boss) return <BossView key={slug} boss={boss} sources={sources} now={now} />;
+  if (!raids.data) return <Placeholder source={raids} />;
+  return (
+    <div class="empty">
+      <p>Este jefe ya no figura en las incursiones actuales.</p>
+      <a class="link" href="#incursiones">
+        Ver los jefes actuales
+      </a>
+    </div>
   );
 }

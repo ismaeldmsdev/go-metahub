@@ -93,7 +93,7 @@ function EventCard({ event, kind }: { event: GameEvent; kind: 'active' | 'upcomi
 function Section({ title, events, kind }: { title: string; events: GameEvent[]; kind: 'active' | 'upcoming' | 'unconfirmed' }) {
   if (events.length === 0) return null;
   return (
-    <section class="group">
+    <section class={kind === 'active' ? 'group group-live' : 'group'}>
       <h2>
         {title} <span class="count">{events.length}</span>
       </h2>

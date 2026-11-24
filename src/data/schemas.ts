@@ -17,6 +17,7 @@ export const gamemaster = z.object({
   pokemon: z.array(
     z.object({
       speciesId: z.string(),
+      speciesName: z.string(),
       dex: z.number().int().positive(),
       types: z.array(z.string()),
       eliteMoves: z.array(z.string()).optional(),
@@ -99,6 +100,41 @@ export const pokebattler = z.object({
       }),
     )
     .min(1),
+});
+
+const metric = z.number().positive().nullable().catch(null);
+
+/** En la respuesta, «attackers» es el jefe y «defenders» son nuestros Pokémon. */
+export const counters = z.object({
+  sortType: z.literal('ESTIMATOR'),
+  filterValue: z.string(),
+  megaLevel: z.number().nullable().catch(null),
+  attackers: z
+    .array(
+      z.object({
+        pokemonId: z.string(),
+        boss: z.string(),
+        // Media frente a los distintos ataques del jefe.
+        randomMove: z.object({
+          defenders: z.array(
+            z.object({
+              pokemonId: z.string().min(1),
+              stats: z.object({ level: z.union([z.string(), z.number()]) }),
+              byMove: z
+                .array(
+                  z.object({
+                    move1: z.string().min(1),
+                    move2: z.string().min(1),
+                    result: z.object({ estimator: z.number().positive(), edps: metric, tdi: metric }),
+                  }),
+                )
+                .min(1),
+            }),
+          ),
+        }),
+      }),
+    )
+    .length(1),
 });
 
 export const commits = z

@@ -1,4 +1,4 @@
-import type { GameEvent, RaidBoss } from '../data/models';
+import type { GameEvent, PokebattlerBosses, RaidBoss } from '../data/models';
 import { eventStatus, isRaidRotation, schedule } from './events';
 import { parseBossName } from './names';
 import { normalize } from './text';
@@ -74,7 +74,7 @@ export function raidValidity(boss: RaidBoss, events: GameEvent[] | undefined, no
 
 const POKEBATTLER = 'https://www.pokebattler.com/raids';
 const REGION_IDS: Record<string, string> = { Alolan: 'ALOLA', Galarian: 'GALARIAN', Hisuian: 'HISUIAN', Paldean: 'PALDEA' };
-/** Pokebattler omite a veces estas formas porque son las habituales de su especie. */
+/** Pokébattler omite a veces estas formas porque son las habituales de su especie. */
 const DEFAULT_FORMS = new Set(['Incarnate', 'Altered', 'Ordinary', 'Normal', 'Land']);
 
 const toId = (text: string): string =>
@@ -102,15 +102,25 @@ function candidateIds(boss: RaidBoss): string[] {
 
 export interface CountersLink {
   url: string;
-  /** El jefe exacto figura en la rotación actual de Pokebattler. */
+  /** El jefe exacto figura en la rotación actual de Pokébattler. */
   exact: boolean;
+  /** Lo necesario para pedir sus counters, si figura con un único nivel. */
+  target: { id: string; tier: string } | null;
 }
 
 /**
- * Pokebattler responde bien incluso a jefes inventados, así que solo se enlaza a una página
+ * Pokébattler responde bien incluso a jefes inventados, así que solo se enlaza a una página
  * concreta si su identificador está en la lista que publica. Si no, a su índice de incursiones.
  */
-export function countersLink(boss: RaidBoss, ids: string[] | undefined): CountersLink {
-  const id = candidateIds(boss).find((candidate) => ids?.includes(candidate));
-  return id ? { url: `${POKEBATTLER}/${id}`, exact: true } : { url: POKEBATTLER, exact: false };
+export function countersLink(boss: RaidBoss, bosses: PokebattlerBosses | undefined): CountersLink {
+  const id = candidateIds(boss).find((candidate) => bosses && Object.hasOwn(bosses, candidate));
+  if (!id) return { url: POKEBATTLER, exact: false, target: null };
+  const tier = bosses![id];
+  return { url: `${POKEBATTLER}/${id}`, exact: true, target: tier ? { id, tier } : null };
 }
+
+/** Clasificación de Pokébattler de atacantes con algún movimiento de ese tipo. */
+export const typeRankingUrl = (type: string): string => `${POKEBATTLER}/attackers/type/${type}`;
+
+/** Identificador del jefe en las direcciones de la aplicación. */
+export const bossSlug = (boss: Pick<RaidBoss, 'name'>): string => normalize(boss.name);

@@ -4,12 +4,15 @@ export type SourceErrorKind = 'network' | 'timeout' | 'http' | 'format' | 'empty
 export class SourceError extends Error {
   readonly kind: SourceErrorKind;
   readonly status: number | undefined;
+  /** Espera que ha pedido la fuente (ms). */
+  readonly retryAfter: number | undefined;
 
-  constructor(kind: SourceErrorKind, message: string, status?: number) {
+  constructor(kind: SourceErrorKind, message: string, status?: number, retryAfter?: number) {
     super(message);
     this.name = 'SourceError';
     this.kind = kind;
     this.status = status;
+    this.retryAfter = retryAfter;
   }
 
   /** Solo tiene sentido reintentar en seguida los fallos pasajeros. */

@@ -68,7 +68,7 @@ function Image({ id, dex, type, shadow = false, small = false, pending = false }
   }, [id, small]);
 
   const missing = !pending && (id === null || (sprite === 'failed' && art !== 'ok'));
-  const classes = ['pk', type ? `pk-${type}` : '', shadow ? 'pk-shadow' : '', small ? 'pk-small' : '', missing ? 'pk-missing' : ''];
+  const classes = ['pk', type ? `t-${type}` : '', shadow ? 'pk-shadow' : '', small ? 'pk-small' : '', missing ? 'pk-missing' : ''];
   const common = { alt: '', decoding: 'async', crossOrigin: 'anonymous', referrerPolicy: 'no-referrer' } as const;
   return (
     <span ref={box} class={classes.filter(Boolean).join(' ')}>
@@ -93,7 +93,7 @@ function Image({ id, dex, type, shadow = false, small = false, pending = false }
       )}
       {missing && (
         <span class="pk-fallback" aria-hidden="true">
-          #{dex}
+          {dex > 0 ? `#${dex}` : '?'}
         </span>
       )}
     </span>

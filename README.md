@@ -8,13 +8,15 @@ el móvil, que se mantiene al día consultando fuentes de la comunidad.
 ## Qué incluye
 
 - **PvP:** clasificaciones completas de Liga Super, Ultra y Máster, con tiers, movimientos, buscador y filtros.
-- **Incursiones:** jefes listados actualmente, PC, tipos, vigencia conocida y enlaces a counters.
+- **Incursiones:** jefes listados actualmente, PC, tipos, vigencia conocida y debilidades. Al abrir un jefe, sus mejores
+  counters con movimientos, Estimator, eDPS y TDO. Enlaces a los mejores atacantes de cada tipo.
 - **Eventos:** activos, próximos y sin fecha confirmada, en hora peninsular y con cuenta atrás.
 - **Fuentes:** cuándo se consultó cada una, cuándo publicó y cuándo cambió de verdad.
 
 ## Cómo se mantiene al día
 
-- PvP, traducciones y lista de imágenes cada 24 horas. Incursiones, eventos y enlaces cada 6 horas.
+- PvP, traducciones y lista de imágenes cada 24 horas. Incursiones, eventos y lista de jefes de Pokébattler cada 6 horas.
+- Los counters se piden solo al abrir un jefe y se guardan 24 horas por jefe y clima.
 - Se comprueba al abrir, al volver a primer plano y cada minuto con la aplicación visible.
 - Toda descarga se valida. Si falla, se conservan los últimos datos válidos y se avisa.
 - Los datos se guardan en IndexedDB. El service worker guarda la aplicación y las imágenes ya vistas, con límite.
@@ -30,7 +32,7 @@ C desde 70. El puesto, la puntuación y los movimientos son los de PvPoke, sin r
 |---|---|---|
 | Clasificaciones PvP | [PvPoke](https://github.com/pvpoke/pvpoke) | MIT, © 2019 pvpoke |
 | Incursiones y eventos | [LeekDuck](https://leekduck.com), a través de [ScrapedDuck](https://github.com/bigfoott/ScrapedDuck) | Sin anuncios ni pago, con atribución |
-| Comprobación de enlaces a counters | [Pokebattler](https://www.pokebattler.com) | Con atribución |
+| Counters de incursiones | [Pokébattler](https://www.pokebattler.com/developers) | API pública: con atribución, caché y uso ocasional |
 | Nombres en español | [WatWowMap/pogo-translations](https://github.com/WatWowMap/pogo-translations) | Textos de sus titulares |
 | Lista de formas | [PokéAPI](https://github.com/PokeAPI/pokeapi) | BSD-3-Clause |
 | Ilustraciones y sprites | [PokeAPI/sprites](https://github.com/PokeAPI/sprites) | Imágenes © The Pokémon Company |
@@ -38,7 +40,7 @@ C desde 70. El puesto, la puntuación y los movimientos son los de PvPoke, sin r
 Las imágenes no se incluyen en este repositorio: se cargan desde su origen al verlas.
 
 Las copias de datos de `tests/fixtures` proceden de esas mismas fuentes, se tomaron el 23 de noviembre de 2026 y solo
-se usan en las pruebas.
+se usan en las pruebas. Las de Pokébattler son sintéticas.
 
 Proyecto personal sin ánimo de lucro, no afiliado a Niantic, Scopely, Nintendo ni The Pokémon Company. Pokémon y sus
 nombres e imágenes pertenecen a sus titulares.

@@ -55,5 +55,14 @@ test.describe('en una subcarpeta, como en GitHub Pages', () => {
     await page.goto(`${BASE}#eventos`);
     await page.reload();
     await expect(page.locator('.event').first()).toBeVisible();
+    // El logo pequeño se guarda con la aplicación; los originales del logo, no.
+    const brand = page.locator('.brand');
+    expect(await brand.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth)).toBe(128);
+    const cached = await page.evaluate(async () => {
+      const urls: string[] = [];
+      for (const name of await caches.keys()) for (const r of await (await caches.open(name)).keys()) urls.push(r.url);
+      return urls;
+    });
+    expect(cached.filter((url) => /logo-meta|icon-(192|512|maskable)/.test(url))).toEqual([]);
   });
 });

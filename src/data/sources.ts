@@ -1,17 +1,29 @@
 import { replaceEqualDeep } from '@tanstack/preact-query';
-import { ENDPOINTS, type Endpoint } from './config';
+import { ENDPOINTS, HOUR, RETRY_AFTER_ERROR, type CountersTarget, type Endpoint } from './config';
+import { SourceError } from './errors';
 import { fetchEndpoint, fetchJson } from './http';
 import type { SpriteIndex } from '../domain/sprites';
-import type { GameEvent, PokebattlerIds, PvpData, RaidBoss, Snapshot, Translations } from './models';
+import type { CountersData, GameEvent, PokebattlerBosses, PvpData, RaidBoss, Snapshot, Translations } from './models';
 import { commits, parseWith } from './schemas';
-import { parseGamemaster, toEvents, toPokebattlerIds, toRaids, toRanking, toSprites, toTranslations, usedMoves } from './transform';
+import {
+  parseGamemaster,
+  toCounters,
+  toEvents,
+  toPokebattlerBosses,
+  toRaids,
+  toRanking,
+  toSpecies,
+  toSprites,
+  toTranslations,
+  usedMoves,
+} from './transform';
 
 export interface SourceData {
   pvp: PvpData;
   raids: RaidBoss[];
   events: GameEvent[];
   translations: Translations;
-  pokebattler: PokebattlerIds;
+  pokebattler: PokebattlerBosses;
   sprites: SpriteIndex;
 }
 
@@ -73,6 +85,7 @@ export const SOURCES: { [K in keyof SourceData]: Loader<SourceData[K]> } = {
       data: {
         leagues: { 1500: a.entries, 2500: b.entries, 10000: c.entries },
         moves: usedMoves([a.entries, b.entries, c.entries], game),
+        species: toSpecies(game),
       },
       discarded: a.discarded + b.discarded + c.discarded,
       viaFallback: [great, ultra, master, gm].some((r) => r.viaFallback),
@@ -107,7 +120,7 @@ export const SOURCES: { [K in keyof SourceData]: Loader<SourceData[K]> } = {
 
   async pokebattler(ctx) {
     const { json } = await loaderFor(ctx)(ENDPOINTS.pokebattler);
-    return snapshot(ctx.previous, { data: toPokebattlerIds(json) });
+    return snapshot(ctx.previous, { data: toPokebattlerBosses(json) });
   },
 
   async sprites(ctx) {
@@ -115,3 +128,28 @@ export const SOURCES: { [K in keyof SourceData]: Loader<SourceData[K]> } = {
     return snapshot(ctx.previous, { data: toSprites(json), viaFallback });
   },
 };
+
+/** Si Pokébattler limita las consultas, se respeta su espera en todos los jefes y climas. */
+const MAX_PAUSE = HOUR;
+let pausedUntil = 0;
+
+/** Solo a petición de quien abre un jefe: nunca se recorren todos. */
+export async function loadCounters(
+  target: CountersTarget,
+  ctx: FetchContext<CountersData>,
+): Promise<Snapshot<CountersData>> {
+  const pause = pausedUntil - Date.now();
+  // Una pausa mayor que la máxima indica que ha cambiado el reloj.
+  if (pause > 0 && pause <= MAX_PAUSE) {
+    throw new SourceError('http', 'Pokébattler ha pedido esperar antes de hacer más consultas', 429);
+  }
+  try {
+    const { json } = await loaderFor(ctx)(ENDPOINTS.counters(target));
+    return snapshot(ctx.previous, { data: toCounters(json, target) });
+  } catch (error) {
+    if (error instanceof SourceError && error.status === 429) {
+      pausedUntil = Date.now() + Math.min(error.retryAfter ?? RETRY_AFTER_ERROR, MAX_PAUSE);
+    }
+    throw error;
+  }
+}

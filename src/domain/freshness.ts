@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { HOUR, MINUTE, SOURCE_STALE_AFTER, ZONE, type SourceId } from '../data/config';
+import { HOUR, MINUTE, SOURCE_STALE_AFTER, ZONE, type QueryId } from '../data/config';
 import type { Snapshot } from '../data/models';
 
 export interface SourceState {
@@ -38,7 +38,7 @@ export const formatDate = (ms: number): string =>
 /** checkedAt = 1 significa que la fecha guardada no era creíble. */
 export const hasKnownCheck = (checkedAt: number): boolean => checkedAt > HOUR;
 
-export function assess(id: SourceId, state: SourceState, now: number): Health {
+export function assess(id: QueryId, state: SourceState, now: number): Health {
   const { snapshot, checkedAt, error, failedAt } = state;
   if (!snapshot) {
     return error && !state.fetching

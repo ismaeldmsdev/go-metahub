@@ -32,3 +32,6 @@ desktop.ini
 
 # Investigación y maquetas, solo en local
 docs/
+
+# Originales del logo, solo en local: la aplicación usa las versiones optimizadas de public/
+design/

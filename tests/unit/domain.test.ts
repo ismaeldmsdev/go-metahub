@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GameEvent, RaidBoss } from '../../src/data/models';
-import { parseGamemaster, toEvents, toPokebattlerIds, toRaids, toRanking, toTranslations, usedMoves } from '../../src/data/transform';
+import { parseGamemaster, toEvents, toPokebattlerBosses, toRaids, toRanking, toTranslations, usedMoves } from '../../src/data/transform';
 import { bossLabel, moveName, pvpLabel } from '../../src/domain/names';
 import { countersLink, groupRaids, raidValidity } from '../../src/domain/raids';
 import { fixtures, NOW } from '../fixtures';
@@ -8,7 +8,7 @@ import { fixtures, NOW } from '../fixtures';
 const tr = toTranslations(fixtures.en(), fixtures.es());
 const raids = toRaids(fixtures.raids()).data;
 const events = toEvents(fixtures.events()).data;
-const ids = toPokebattlerIds(fixtures.pokebattler());
+const ids = toPokebattlerBosses(fixtures.pokebattler());
 const gm = parseGamemaster(fixtures.gamemaster());
 const boss = (name: string): RaidBoss => raids.find((b) => b.name === name)!;
 const fake = (name: string, change: Partial<RaidBoss> = {}): RaidBoss => ({ ...raids[0]!, name, shadow: /^Shadow/.test(name), ...change });
@@ -103,7 +103,7 @@ describe('vigencia de las rotaciones', () => {
   });
 });
 
-describe('enlaces a Pokebattler', () => {
+describe('enlaces a Pokébattler', () => {
   const id = (name: string) => countersLink(fake(name), ids).url.split('/raids')[1];
 
   it('los 18 jefes reales llevan a su página exacta', () => {
@@ -116,9 +116,20 @@ describe('enlaces a Pokebattler', () => {
 
   it('ante la duda enlaza al índice, nunca a otra forma', () => {
     expect(id('Inventado')).toBe('');
-    expect(countersLink(fake('Deoxys (Rara)'), [...ids, 'DEOXYS']).exact).toBe(false);
+    expect(countersLink(fake('Deoxys (Rara)'), { ...ids, DEOXYS: 'RAID_LEVEL_5' }).exact).toBe(false);
     expect(countersLink(fake('Shadow Tornadus (Therian)'), ids).exact).toBe(false);
     expect(countersLink(fake('Alolan Darkrai'), ids).exact).toBe(false);
-    expect(countersLink(boss('Cresselia'), undefined)).toEqual({ url: 'https://www.pokebattler.com/raids', exact: false });
+    expect(countersLink(boss('Cresselia'), undefined)).toEqual({
+      url: 'https://www.pokebattler.com/raids',
+      exact: false,
+      target: null,
+    });
+  });
+
+  it('da el nivel que publica Pokébattler, y ninguno si es ambiguo', () => {
+    expect(countersLink(boss('Cresselia'), ids).target).toEqual({ id: 'CRESSELIA', tier: 'RAID_LEVEL_5' });
+    expect(countersLink(boss('Shadow Tornadus (Incarnate)'), ids).target?.tier).toBe('RAID_LEVEL_5_SHADOW');
+    expect(raids.filter((b) => !countersLink(b, ids).target)).toEqual([]);
+    expect(countersLink(boss('Cresselia'), { CRESSELIA: null })).toMatchObject({ exact: true, target: null });
   });
 });

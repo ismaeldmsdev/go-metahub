@@ -2,7 +2,7 @@ import { EventsView } from './EventsView';
 import { PvpView } from './PvpView';
 import { RaidsView } from './RaidsView';
 import { SourcesView } from './SourcesView';
-import { TABS, useSources, useTab, type Source, type Sources, type Tab } from './hooks';
+import { TABS, useRoute, useSources, type Source, type Sources, type Tab } from './hooks';
 
 const LABELS: Record<Tab, string> = {
   pvp: 'PvP',
@@ -13,10 +13,12 @@ const LABELS: Record<Tab, string> = {
 
 /** Trazos simples de 24×24, dibujados para esta aplicación. */
 const ICONS: Record<Tab, string> = {
-  pvp: 'M4 20V10M12 20V4M20 20v-7',
-  incursiones: 'M12 3l8 5v8l-8 5-8-5V8zM12 8v5M12 16v.5',
-  eventos: 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',
-  fuentes: 'M4 12a8 8 0 0 1 14-5l2 2M20 5v4h-4M20 12a8 8 0 0 1-14 5l-2-2M4 19v-4h4',
+  pvp: 'M8 4h8v5a4 4 0 0 1-8 0zM8 5.500H5c0 3 1 4.500 3.300 4.500M16 5.500h3c0 3-1 4.500-3.300 4.500M12 13v4M8.500 20h7M10 17h4v3h-4z',
+  incursiones:
+    'M12.500 3c.5 3.500 5 5.500 5 10.500a5.500 5.500 0 0 1-11 0c0-2.300 1-3.800 2.200-5 .2 1.700.9 2.600 2 3C10.300 8.700 10.800 5.500 12.500 3z',
+  eventos: 'M6 5.500h12a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7.500a2 2 0 0 1 2-2zM4 10.500h16M8 3.500v4M16 3.500v4M9 15l2 2 4-4',
+  fuentes:
+    'M12 4c4.400 0 7 1.100 7 2.500S16.400 9 12 9 5 7.900 5 6.500 7.600 4 12 4zM5 6.500V12c0 1.400 2.600 2.500 7 2.500s7-1.100 7-2.500V6.500M5 12v5.500C5 18.900 7.600 20 12 20s7-1.100 7-2.500V12',
 };
 
 function hasIssue(tab: Tab, sources: Sources): boolean {
@@ -34,27 +36,43 @@ function hasIssue(tab: Tab, sources: Sources): boolean {
 }
 
 export function App({ storageOk }: { storageOk: boolean }) {
-  const tab = useTab();
+  const { tab, detail } = useRoute();
   const sources = useSources();
   return (
     <div class="app">
-      <header class="header">
-        <h1>{LABELS[tab]}</h1>
-      </header>
-      <nav class="nav" aria-label="Secciones">
-        {TABS.map((id) => (
-          <a key={id} href={`#${id}`} aria-current={tab === id ? 'page' : undefined}>
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d={ICONS[id]} />
-            </svg>
-            <span>{LABELS[id]}</span>
-            {hasIssue(id, sources) && <span class="nav-alert" role="img" aria-label="Hay avisos" />}
-          </a>
-        ))}
-      </nav>
-      <main class="main">
+      <div class="topbar">
+        <header class="header">
+          <img class="brand" src="./logo-small.webp" alt="" width="48" height="48" />
+          <div>
+            <p class="brand-name">GO MetaHub</p>
+            <h1>{LABELS[tab]}</h1>
+          </div>
+        </header>
+        <nav class="nav" aria-label="Secciones">
+          {TABS.map((id) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              aria-current={tab === id ? 'page' : undefined}
+              onClick={() => {
+                // Como en una aplicación nativa: pulsar la sección abierta vuelve arriba.
+                if (tab === id && !detail) window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
+              <span class="nav-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d={ICONS[id]} />
+                </svg>
+              </span>
+              <span>{LABELS[id]}</span>
+              {hasIssue(id, sources) && <span class="nav-alert" role="img" aria-label="Hay avisos" />}
+            </a>
+          ))}
+        </nav>
+      </div>
+      <main key={`${tab}/${detail}`} class="main">
         {tab === 'pvp' && <PvpView sources={sources} />}
-        {tab === 'incursiones' && <RaidsView sources={sources} />}
+        {tab === 'incursiones' && <RaidsView sources={sources} slug={detail} />}
         {tab === 'eventos' && <EventsView sources={sources} />}
         {tab === 'fuentes' && <SourcesView sources={sources} storageOk={storageOk} />}
       </main>

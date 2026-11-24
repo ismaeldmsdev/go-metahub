@@ -89,7 +89,7 @@ test.describe('secciones', () => {
     const cresselia = page.locator('.boss', { hasText: 'Cresselia' });
     await expect(cresselia).toContainText('1555–1633');
     await expect(cresselia).toContainText('Rotación anunciada hasta el 24 nov 2026, 22:00');
-    await expect(cresselia.getByRole('link')).toHaveAttribute('href', 'https://www.pokebattler.com/raids/CRESSELIA');
+    await expect(cresselia.getByRole('link')).toHaveAttribute('href', '#incursiones/cresselia');
     const liepard = page.locator('.boss', { hasText: 'Liepard' });
     await expect(liepard).toContainText('Vigencia sin confirmar');
   });

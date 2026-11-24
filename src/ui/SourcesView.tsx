@@ -35,10 +35,10 @@ const INFO: Record<SourceId, { title: string; credit: string; url: string; note:
     note: 'Lista de formas. Las imágenes se descargan solo al verlas. No informa de su fecha aquí.',
   },
   pokebattler: {
-    title: 'Enlaces de counters',
-    credit: 'Pokebattler',
+    title: 'Counters',
+    credit: 'Pokébattler',
     url: 'https://www.pokebattler.com',
-    note: 'Solo se usa para comprobar que cada enlace lleva a la forma correcta. No informa de su fecha.',
+    note: 'Lista de jefes. Los counters de cada uno se piden al abrirlo y se guardan 24 h. No informa de su fecha.',
   },
 };
 
@@ -64,7 +64,7 @@ export function SourcesView({ sources, storageOk }: { sources: Sources; storageO
               <p class="fine">
                 <External href={info.url}>{info.credit}</External> · cada {TTL[id] / HOUR} h
               </p>
-              {source.health.level === 'loading' && <p>Cargando…</p>}
+              {source.health.level === 'loading' && <p class="fine">Cargando…</p>}
               {source.health.level === 'ok' && <p class="validity ok">Consulta al día</p>}
               {source.health.messages.map((message) => (
                 <p key={message} class="validity warn">
@@ -82,12 +82,13 @@ export function SourcesView({ sources, storageOk }: { sources: Sources; storageO
         })}
       </ul>
       <section class="credits">
+        <img class="credits-logo" src="./logo.webp" alt="" width="448" height="448" loading="lazy" />
         <h2>Créditos</h2>
         <p>
           Eventos, incursiones e imágenes: <External href="https://leekduck.com">LeekDuck.com</External>, a través de{' '}
           <External href="https://github.com/bigfoott/ScrapedDuck">ScrapedDuck</External>. Clasificaciones:{' '}
           <External href="https://pvpoke.com">PvPoke</External>. Counters:{' '}
-          <External href="https://www.pokebattler.com">Pokebattler</External>. Nombres en español:{' '}
+          <External href="https://www.pokebattler.com">Pokébattler</External>. Nombres en español:{' '}
           <External href="https://github.com/WatWowMap/pogo-translations">WatWowMap</External>. Ilustraciones y sprites:{' '}
           <External href="https://github.com/PokeAPI/sprites">PokéAPI</External>, © The Pokémon Company.
         </p>

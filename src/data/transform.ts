@@ -2,9 +2,22 @@ import type { z } from 'zod';
 import type { SpriteIndex } from '../domain/sprites';
 import { leekDuckUrl, normalize, plainText } from '../domain/text';
 import { tierOf } from '../domain/tiers';
+import type { CountersTarget } from './config';
 import { SourceError } from './errors';
-import type { CpRange, Featured, GameEvent, PokebattlerIds, PvpEntry, PvpMove, RaidBoss, Translations } from './models';
-import { gamemaster, locale, parseList, parseWith, pokebattler, raidBoss, rankingEntry, rawEvent } from './schemas';
+import type {
+  Counter,
+  CountersData,
+  CpRange,
+  Featured,
+  GameEvent,
+  PokebattlerBosses,
+  PvpEntry,
+  PvpMove,
+  RaidBoss,
+  Species,
+  Translations,
+} from './models';
+import { counters, gamemaster, locale, parseList, parseWith, pokebattler, raidBoss, rankingEntry, rawEvent } from './schemas';
 
 type Gamemaster = z.infer<typeof gamemaster>;
 
@@ -69,6 +82,15 @@ export function usedMoves(lists: PvpEntry[][], gm: Gamemaster): Record<string, P
       .map((m): [string, PvpMove] => [m.moveId, { name: m.name, type: m.type, fast: m.energyGain > 0 }]),
   );
 }
+
+/** Nombre, número y tipos de cada forma, para identificar a los Pokémon de otras fuentes. */
+export const toSpecies = (gm: Gamemaster): Record<string, Species> =>
+  Object.fromEntries(
+    gm.pokemon.map((p): [string, Species] => [
+      p.speciesId,
+      { name: p.speciesName, dex: p.dex, types: p.types.filter((t) => t !== 'none') },
+    ]),
+  );
 
 const validRange = (range: CpRange): CpRange | null =>
   range.min > 0 && range.max >= range.min ? { min: range.min, max: range.max } : null;
@@ -161,11 +183,52 @@ export function toTranslations(rawEn: unknown, rawEs: unknown): Translations {
 
 const CURRENT_TIER = /^RAID_LEVEL_(?:[1-6]|MEGA|MEGA_5|ELITE|ULTRA_BEAST|[1-6]_SHADOW|[1-6]_MEGA_ENHANCED)$/;
 
-export function toPokebattlerIds(raw: unknown): PokebattlerIds {
-  const { tiers } = parseWith(pokebattler, raw, 'la lista de Pokebattler');
-  const ids = new Set(tiers.filter((t) => CURRENT_TIER.test(t.tier)).flatMap((t) => t.raids.map((r) => r.pokemon)));
-  if (ids.size === 0) throw new SourceError('empty', 'Pokebattler no lista ningún jefe actual');
-  return [...ids].sort();
+export function toPokebattlerBosses(raw: unknown): PokebattlerBosses {
+  const { tiers } = parseWith(pokebattler, raw, 'la lista de Pokébattler');
+  const bosses: PokebattlerBosses = {};
+  for (const { tier, raids } of tiers) {
+    if (!CURRENT_TIER.test(tier)) continue;
+    for (const { pokemon } of raids) bosses[pokemon] = pokemon in bosses && bosses[pokemon] !== tier ? null : tier;
+  }
+  if (Object.keys(bosses).length === 0) throw new SourceError('empty', 'Pokébattler no lista ningún jefe actual');
+  return bosses;
+}
+
+/** Un equipo de incursión son seis: con menos, la respuesta está incompleta. */
+const MIN_COUNTERS = 6;
+
+/**
+ * Resultados ya calculados por Pokébattler, sin recalcular. Cada Pokémon lleva su mejor moveset según
+ * el Estimator. Pokébattler responde también a jefes inexistentes: se exige que confirme el pedido.
+ */
+export function toCounters(raw: unknown, { id, tier }: Pick<CountersTarget, 'id' | 'tier'>): CountersData {
+  const what = 'los counters de Pokébattler';
+  const data = parseWith(counters, raw, what);
+  const boss = data.attackers[0]!;
+  if (boss.pokemonId !== id || data.filterValue !== id || boss.boss !== tier) {
+    throw new SourceError('format', 'Pokébattler ha respondido con otro jefe');
+  }
+  const { defenders } = boss.randomMove;
+  if (defenders.length === 0) throw new SourceError('empty', 'Pokébattler no tiene counters para este jefe');
+  if (defenders.length < MIN_COUNTERS || new Set(defenders.map((d) => d.pokemonId)).size !== defenders.length) {
+    throw new SourceError('format', `En ${what} faltan Pokémon o están repetidos`);
+  }
+  if (defenders.some((d) => Number(d.stats.level) !== 40)) {
+    throw new SourceError('format', `En ${what} ha cambiado el nivel de los atacantes`);
+  }
+  const list = defenders.map(({ pokemonId, byMove }): Counter => {
+    const best = byMove.reduce((a, b) => (b.result.estimator < a.result.estimator ? b : a));
+    return {
+      id: pokemonId,
+      fast: best.move1,
+      charged: best.move2,
+      estimator: best.result.estimator,
+      edps: best.result.edps,
+      // La respuesta habla desde el jefe: el daño que recibe («tdi») es el que hace nuestro Pokémon.
+      tdo: best.result.tdi,
+    };
+  });
+  return { list: list.sort((a, b) => a.estimator - b.estimator), megaLevel: data.megaLevel };
 }
 
 /** Lista de Pokémon de PokéAPI (CSV sin comillas): número de imagen, nombre y especie de cada forma. */

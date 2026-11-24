@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SourceError } from '../../src/data/errors';
-import { parseGamemaster, toEvents, toPokebattlerIds, toRaids, toRanking, toTranslations, usedMoves } from '../../src/data/transform';
+import { parseGamemaster, toEvents, toPokebattlerBosses, toRaids, toRanking, toTranslations, usedMoves } from '../../src/data/transform';
 import { normalize, plainText, leekDuckUrl } from '../../src/domain/text';
 import { fixtures } from '../fixtures';
 
@@ -160,12 +160,12 @@ describe('Traducciones reales', () => {
   });
 });
 
-describe('Pokebattler', () => {
+describe('Pokébattler', () => {
   it('lista solo jefes actuales', () => {
-    const ids = toPokebattlerIds(fixtures.pokebattler());
-    expect(ids).toContain('CRESSELIA');
-    expect(ids).toContain('TORNADUS_SHADOW_FORM');
-    expect(ids).not.toContain('ABOMASNOW_MEGA');
+    const bosses = toPokebattlerBosses(fixtures.pokebattler());
+    expect(bosses.CRESSELIA).toBe('RAID_LEVEL_5');
+    expect(bosses.TORNADUS_SHADOW_FORM).toBe('RAID_LEVEL_5_SHADOW');
+    expect(bosses).not.toHaveProperty('ABOMASNOW_MEGA');
   });
 });
 

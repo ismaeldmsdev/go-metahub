@@ -33,10 +33,18 @@ export interface PvpEntry {
   elite: string[];
 }
 
+export interface Species {
+  name: string;
+  dex: number;
+  types: string[];
+}
+
 export interface PvpData {
   /** Clasificaciones completas, en el orden de PvPoke. */
   leagues: Record<League, PvpEntry[]>;
   moves: Record<string, PvpMove>;
+  /** Todas las formas que conoce PvPoke, con megas y oscuros, por identificador. */
+  species: Record<string, Species>;
 }
 
 export interface CpRange {
@@ -86,5 +94,23 @@ export interface Translations {
   moves: Record<string, string>;
 }
 
-/** Identificadores de jefes que Pokebattler lista en su rotación actual. */
-export type PokebattlerIds = string[];
+/** Jefes que Pokébattler lista en su rotación actual y su nivel (null si figura en varios). */
+export type PokebattlerBosses = Record<string, string | null>;
+
+export interface Counter {
+  /** Identificador de Pokébattler. */
+  id: string;
+  fast: string;
+  charged: string;
+  /** Entrenadores necesarios, aproximadamente. Menos es mejor. */
+  estimator: number;
+  edps: number | null;
+  tdo: number | null;
+}
+
+export interface CountersData {
+  /** De mejor a peor. */
+  list: Counter[];
+  /** Nivel de megaevolución que ha supuesto Pokébattler. */
+  megaLevel: number | null;
+}
