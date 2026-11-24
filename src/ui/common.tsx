@@ -13,7 +13,7 @@ export function Weaknesses({ types }: { types: string[] }) {
   const list = weaknesses(types);
   if (list.length === 0) return null;
   return (
-    <section aria-label="Debilidades">
+    <section class="weaknesses" aria-label="Debilidades">
       <h3 class="weak-title">Débil a</h3>
       <ul class="types">
         {list.map((weakness) => (

@@ -243,6 +243,37 @@ test.describe('datos y fallos', () => {
 });
 
 test.describe('diseño adaptable', () => {
+  for (const width of [320, 375, 768, 1440]) {
+    test(`a ${width} px y con la letra ampliada, las métricas no se solapan`, async ({ page, context }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await network(context);
+      await page.goto('/#gimnasios');
+      for (const size of ['16px', '20px', '22px']) {
+        await page.evaluate((value) => (document.documentElement.style.fontSize = value), size);
+        const metrics = page.locator('.metrics');
+        await expect(metrics.first()).toBeVisible();
+        const overlaps = await metrics.evaluateAll((list) =>
+          list.slice(0, 30).flatMap((el) => {
+            const boxes = [...el.children].map((child) => {
+              const range = document.createRange();
+              range.selectNodeContents(child);
+              return range.getBoundingClientRect();
+            });
+            const card = el.closest('.card')!.getBoundingClientRect();
+            return boxes.flatMap((a, i) => [
+              ...(a.right > card.right ? ['fuera de la ficha'] : []),
+              ...boxes
+                .slice(i + 1)
+                .filter((b) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1)
+                .map(() => el.textContent),
+            ]);
+          }),
+        );
+        expect(overlaps).toEqual([]);
+      }
+    });
+  }
+
   for (const scheme of ['light', 'dark'] as const) {
     for (const [width, height] of [
       [320, 568],

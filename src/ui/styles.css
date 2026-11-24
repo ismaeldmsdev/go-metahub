@@ -1,7 +1,7 @@
 /* Colores tomados del logo: azul marino, violeta, oro, hielo y brasa. */
 :root {
   color-scheme: light dark;
-  --bg: #eef0fa;
+  --bg: #f1f2fa;
   --card: #ffffff;
   --raised: #f4f5fd;
   --line: #dcdff0;
@@ -12,14 +12,16 @@
   --on-accent: #ffffff;
   --score: #4a2be0;
   --rank: #14174f;
+  /* Letra y fondo de los tipos: mezcla de su color con la ficha. */
+  --type-ink: #000 18%;
+  --type-fill: 15%;
   --ok: #12724a;
   --warn: #8a5200;
   --warn-soft: #fff2d9;
   --error: #b3261e;
   --error-soft: #fde8e6;
   --shadow-tint: #6a2fb5;
-  --glow: rgb(98 66 240 / 10%);
-  --elevation: 0 1px 2px rgb(13 16 54 / 6%), 0 6px 18px -10px rgb(13 16 54 / 22%);
+  --elevation: 0 1px 3px rgb(13 16 54 / 7%);
 
   --gold: #ffc94a;
   --ember: #ff5a36;
@@ -33,8 +35,8 @@
   --r-m: 14px;
   --r-l: 18px;
   --gap: 12px;
-  --header-h: calc(60px + env(safe-area-inset-top));
-  --nav-h: 64px;
+  --header-h: calc(54px + env(safe-area-inset-top));
+  --nav-h: 60px;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -50,15 +52,16 @@
     --accent-soft: #251f5a;
     --on-accent: #0c0930;
     --score: #ffc94a;
-  --rank: #3d428f;
+    --rank: #3d428f;
+    --type-ink: #fff 68%;
+    --type-fill: 42%;
     --ok: #6fd6a2;
     --warn: #ffc46b;
     --warn-soft: #33270f;
     --error: #ff9c94;
     --error-soft: #3f1d22;
     --shadow-tint: #c9a5ff;
-    --glow: rgb(112 72 255 / 22%);
-    --elevation: 0 1px 0 rgb(255 255 255 / 4%) inset, 0 10px 24px -16px rgb(0 0 0 / 80%);
+    --elevation: none;
   }
 }
 
@@ -74,7 +77,7 @@ html {
 
 body {
   margin: 0;
-  background: radial-gradient(90% 420px at 50% 0, var(--glow), transparent), var(--bg);
+  background: var(--bg);
   color: var(--text);
   font: 16px/1.45 'Segoe UI Variable Text', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
@@ -101,11 +104,12 @@ h2,
 h3 {
   letter-spacing: -0.015em;
   line-height: 1.25;
+  font-weight: 650;
 }
 
 h2 {
-  font-size: 1.12rem;
-  font-weight: 800;
+  font-size: 1.08rem;
+  font-weight: 750;
 }
 
 h3 {
@@ -176,7 +180,7 @@ summary {
   padding: env(safe-area-inset-top) 16px 0;
   background: var(--bar);
   color: var(--bar-text);
-  box-shadow: 0 8px 24px -14px rgb(5 6 42 / 80%);
+  box-shadow: none;
 }
 
 /* Filo con los colores de las tres aves. */
@@ -190,32 +194,32 @@ summary {
 
 .brand {
   flex: none;
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   border-radius: 22%;
 }
 
 .brand-name {
   color: var(--bar-muted);
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.65rem;
+  font-weight: 600;
   letter-spacing: 0.09em;
   line-height: 1.2;
   text-transform: uppercase;
 }
 
 h1 {
-  font-size: 1.3rem;
-  font-weight: 800;
+  font-size: 1.22rem;
+  font-weight: 750;
 }
 
 .main {
   display: grid;
-  gap: 14px;
+  gap: 10px;
   grid-template-columns: minmax(0, 1fr);
   max-width: 1080px;
   margin: 0 auto;
-  padding: 16px 16px 0;
+  padding: 12px 16px 0;
   animation: enter 0.26s var(--ease);
 }
 
@@ -226,7 +230,7 @@ h1 {
   display: flex;
   padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   background: var(--bar);
-  box-shadow: 0 -8px 24px -14px rgb(5 6 42 / 80%);
+  box-shadow: 0 -1px 0 rgb(255 255 255 / 8%);
   user-select: none;
 }
 
@@ -256,7 +260,7 @@ h1 {
   display: grid;
   place-items: center;
   width: 56px;
-  height: 30px;
+  height: 28px;
   border-radius: 999px;
   transition:
     background 0.25s,
@@ -310,7 +314,6 @@ h1 {
     display: flex;
     justify-content: center;
     background: var(--bar);
-    box-shadow: 0 8px 24px -14px rgb(5 6 42 / 80%);
   }
   .topbar::after {
     content: '';
@@ -385,9 +388,9 @@ h1 {
 
 .group {
   display: grid;
-  gap: 10px;
+  gap: 9px;
   grid-template-columns: minmax(0, 1fr);
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 /* Título de sección con una barra inclinada. */
@@ -422,7 +425,7 @@ h1 {
   background: var(--accent-soft);
   color: var(--accent);
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -487,7 +490,7 @@ h1 {
   background: var(--accent);
   color: var(--on-accent);
   font: inherit;
-  font-weight: 700;
+  font-weight: 650;
   cursor: pointer;
   transition:
     transform 0.15s var(--ease),
@@ -519,25 +522,25 @@ h1 {
   animation: shimmer 1.4s linear infinite;
 }
 
-/* Estado de las fuentes */
+/* Estado de las fuentes: una línea si todo va bien; un recuadro si hay avisos. */
 .status {
-  border: 1px solid var(--line);
+  padding: 0 2px;
   border-radius: var(--r-m);
-  background: var(--card);
-  padding: 2px 14px;
 }
 
 .status.status-warning {
   background: var(--warn-soft);
-  border-color: var(--warn);
+  padding: 2px 14px;
+  border: 1px solid var(--warn);
 }
 
 .status.status-error {
   background: var(--error-soft);
-  border-color: var(--error);
+  padding: 2px 14px;
+  border: 1px solid var(--error);
 }
 
-p.status {
+p.status.status-error {
   padding: 12px 14px;
 }
 
@@ -583,7 +586,7 @@ details[open] > summary::after {
 
 .status summary {
   color: var(--muted);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
 }
 
 .status details[open] {
@@ -699,23 +702,28 @@ details[open] > summary::after {
 .types {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 }
 
 .type,
 .chip {
   display: inline-block;
-  padding: 2px 10px;
-  border-radius: 999px;
-  font-size: 0.74rem;
-  font-weight: 700;
+  padding: 1px 8px;
+  border-radius: 7px;
+  font-size: 0.76rem;
+  font-weight: 600;
   line-height: 1.5;
-  color: #fff;
-  background: var(--t, #5b6478);
+}
+
+/* Fondo suave y letra del mismo color. */
+.type {
+  color: color-mix(in srgb, var(--t), var(--type-ink));
+  background: color-mix(in srgb, var(--t) var(--type-fill), var(--card));
 }
 
 .chip-shadow {
   background: linear-gradient(100deg, #4c1f87, #7a3fc9);
+  color: #fff;
 }
 
 .chip-shiny {
@@ -729,19 +737,20 @@ details[open] > summary::after {
   align-items: center;
   gap: 2px 8px;
   min-width: 0;
-  font-size: 1.06rem;
-  font-weight: 800;
+  font-size: 1.1rem;
+  font-weight: 750;
   letter-spacing: -0.01em;
 }
 
 .pokemon-name small {
   color: var(--muted);
-  font-weight: 550;
+  font-weight: 500;
   font-size: 0.82rem;
   letter-spacing: 0;
 }
 
 /* Selectores y filtros */
+/* La sombra es una franja opaca a todo el ancho: al quedar fija, nada asoma por encima ni por los lados. */
 .segmented {
   position: sticky;
   z-index: 5;
@@ -751,9 +760,10 @@ details[open] > summary::after {
   gap: 4px;
   padding: 4px;
   border: 1px solid var(--line);
-  border-radius: var(--r-l);
+  border-radius: 13px;
   background: var(--card);
-  box-shadow: var(--elevation);
+  box-shadow: 0 0 0 100vmax var(--bg);
+  clip-path: inset(-12px -100vmax -8px);
 }
 
 .segmented-2 {
@@ -761,13 +771,13 @@ details[open] > summary::after {
 }
 
 .segmented button {
-  min-height: 50px;
+  min-height: 46px;
   border: 0;
-  border-radius: var(--r-m);
+  border-radius: 10px;
   background: transparent;
   color: var(--text);
   font: inherit;
-  font-weight: 700;
+  font-weight: 650;
   line-height: 1.2;
   cursor: pointer;
   transition:
@@ -779,6 +789,7 @@ details[open] > summary::after {
   display: block;
   color: var(--muted);
   font-weight: 500;
+  font-size: 0.74rem;
 }
 
 .segmented [aria-pressed='true'] {
@@ -792,7 +803,7 @@ details[open] > summary::after {
 
 .filters {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .tier-filter {
@@ -815,19 +826,19 @@ details[open] > summary::after {
 }
 
 .tier-filter button {
-  min-height: 58px;
+  min-height: 48px;
   padding: 4px 2px;
   display: grid;
   place-items: center;
   align-content: center;
   gap: 2px;
   border: 1px solid var(--line);
-  border-radius: var(--r-m);
+  border-radius: 11px;
   background: var(--card);
   color: var(--text);
   font: inherit;
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 0.87rem;
+  font-weight: 650;
   cursor: pointer;
   transition:
     background 0.2s,
@@ -836,7 +847,7 @@ details[open] > summary::after {
 }
 
 .variant-filter button {
-  min-height: 50px;
+  min-height: 46px;
 }
 
 .tier-filter button:active,
@@ -844,10 +855,19 @@ details[open] > summary::after {
   transform: scale(0.96);
 }
 
+.tier-filter .tier {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  font-size: 0.86rem;
+}
+
 .tier-filter small {
   color: var(--muted);
   font-weight: 550;
   font-variant-numeric: tabular-nums;
+  font-size: 0.74rem;
+  line-height: 1.2;
 }
 
 .tier-filter [aria-pressed='true'] {
@@ -880,7 +900,7 @@ details[open] > summary::after {
 .filter-row select,
 .counters-head select {
   width: 100%;
-  min-height: 48px;
+  min-height: 44px;
   padding: 0 14px;
   border: 1px solid var(--line);
   border-radius: var(--r-m);
@@ -921,9 +941,9 @@ details[open] > summary::after {
   flex-wrap: wrap;
   align-items: center;
   gap: 4px var(--gap);
-  min-height: 32px;
+  min-height: 28px;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.86rem;
 }
 
 .text-button {
@@ -944,12 +964,13 @@ details[open] > summary::after {
 }
 
 .filters + .method {
-  margin-top: -14px;
+  margin-top: -16px;
 }
 
 .method summary {
   color: var(--muted);
-  font-weight: 650;
+  font-weight: 600;
+  font-size: 0.88rem;
 }
 
 .method[open] {
@@ -970,7 +991,7 @@ details[open] > summary::after {
   height: 28px;
   border-radius: 9px;
   font-size: 0.95rem;
-  font-weight: 850;
+  font-weight: 800;
   color: #fff;
   background: #5b6090;
 }
@@ -996,8 +1017,8 @@ details[open] > summary::after {
 
 .tier-group h2 small {
   color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 550;
+  font-size: 0.8rem;
+  font-weight: 450;
   letter-spacing: 0;
 }
 
@@ -1007,51 +1028,51 @@ details[open] > summary::after {
 
 .tie {
   display: grid;
-  gap: 10px;
+  gap: 9px;
   grid-template-columns: minmax(0, 1fr);
-  padding-left: 10px;
-  border-left: 3px solid var(--line);
 }
 
 .tie h3 {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
 }
 
 .tie h3 small {
   display: block;
   color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 550;
+  font-size: 0.8rem;
+  font-weight: 450;
   letter-spacing: 0;
 }
 
 .tied {
   display: block;
   color: var(--muted);
-  font-size: 0.71rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.25;
 }
 
 .explain {
-  padding: 12px 14px;
-  border-left: 4px solid var(--gold);
-  font-size: 0.92rem;
+  padding: 9px 13px;
+  border-left: 3px solid var(--gold);
+  font-size: 0.88rem;
+  line-height: 1.42;
 }
 
 /* Fichas de clasificación */
 .ranking {
   display: grid;
-  gap: 10px;
+  gap: 9px;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
 }
 
 .rank-card {
   display: flex;
-  gap: var(--gap);
+  gap: 14px;
   padding: 12px;
-  background: linear-gradient(105deg, color-mix(in srgb, var(--t, var(--muted)) 13%, var(--card)), var(--card) 46%);
+  background: linear-gradient(100deg, color-mix(in srgb, var(--t, var(--muted)) 6%, var(--card)), var(--card) 34%);
   content-visibility: auto;
-  contain-intrinsic-size: auto 150px;
+  contain-intrinsic-size: auto 130px;
 }
 
 .rank-figure {
@@ -1066,14 +1087,14 @@ details[open] > summary::after {
   left: -5px;
   display: grid;
   place-items: center;
-  min-width: 27px;
-  height: 25px;
+  min-width: 25px;
+  height: 23px;
   padding: 0 7px;
   border-radius: 9px;
   background: var(--rank);
   color: #fff;
-  font-size: 0.82rem;
-  font-weight: 800;
+  font-size: 0.79rem;
+  font-weight: 750;
   font-variant-numeric: tabular-nums;
   box-shadow: 0 0 0 2px var(--card);
 }
@@ -1097,7 +1118,7 @@ details[open] > summary::after {
   flex: 1;
   min-width: 0;
   display: grid;
-  gap: 8px;
+  gap: 6px;
   align-content: start;
 }
 
@@ -1110,8 +1131,8 @@ details[open] > summary::after {
 .score {
   flex: none;
   color: var(--score);
-  font-size: 1.2rem;
-  font-weight: 850;
+  font-size: 1.14rem;
+  font-weight: 750;
   line-height: 1.2;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
@@ -1125,32 +1146,25 @@ details[open] > summary::after {
 }
 
 .rank-meta .tier {
-  width: 26px;
-  height: 26px;
+  width: 23px;
+  height: 23px;
+  border-radius: 7px;
+  font-size: 0.82rem;
 }
 
 .moves {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px 14px;
 }
 
 .move {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 11px 4px 8px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--card);
-  font-size: 0.85rem;
-  font-weight: 550;
+  font-size: 0.9rem;
+  font-weight: 500;
   line-height: 1.35;
-}
-
-.move-fast {
-  background: var(--accent-soft);
-  border-color: transparent;
 }
 
 .move-icon {
@@ -1170,37 +1184,36 @@ details[open] > summary::after {
 }
 
 .metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-radius: var(--r-s);
-  background: var(--raised);
+  /* Tres columnas iguales; con letras anchas, la que no cabe baja de línea en vez de solaparse. */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  padding-top: 7px;
+  border-top: 1px solid var(--line);
 }
 
 .metrics div {
-  padding: 6px 4px;
-  text-align: center;
-}
-
-.metrics div + div {
-  border-left: 1px solid var(--line);
+  flex: 1 1 28%;
+  white-space: nowrap;
+  min-width: min-content;
 }
 
 .metrics dt {
   color: var(--muted);
-  font-size: 0.71rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 500;
 }
 
 .metrics dd {
-  font-weight: 750;
+  font-weight: 650;
   line-height: 1.25;
   font-variant-numeric: tabular-nums;
+  font-size: 1rem;
 }
 
 .metrics div:first-child dd {
   color: var(--score);
-  font-size: 1.12rem;
-  font-weight: 850;
+  font-weight: 750;
 }
 
 /* Imagen de Pokémon */
@@ -1209,15 +1222,15 @@ details[open] > summary::after {
   flex: none;
   display: grid;
   place-items: center;
-  width: 84px;
-  height: 84px;
+  width: 92px;
+  height: 92px;
   overflow: hidden;
   border-radius: var(--r-m);
   background: var(--line);
   background: radial-gradient(
     circle at 50% 40%,
-    color-mix(in srgb, var(--t, var(--muted)) 14%, var(--card)),
-    color-mix(in srgb, var(--t, var(--muted)) 36%, var(--card))
+    color-mix(in srgb, var(--t, var(--muted)) 12%, var(--card)),
+    color-mix(in srgb, var(--t, var(--muted)) 26%, var(--card))
   );
 }
 
@@ -1235,7 +1248,7 @@ details[open] > summary::after {
 }
 
 .pk-art {
-  padding: 4px;
+  padding: 3px;
   opacity: 0;
   transition: opacity 0.25s;
 }
@@ -1246,7 +1259,7 @@ details[open] > summary::after {
 
 .pk-shadow {
   background: radial-gradient(circle at 50% 60%, #7b3fc4, #3b1a66 75%);
-  box-shadow: inset 0 0 0 2px #8f5bd6;
+  box-shadow: inset 0 0 0 1px rgb(190 150 255 / 35%);
 }
 
 .pk-missing:not(.pk-shadow) {
@@ -1268,8 +1281,12 @@ details[open] > summary::after {
     font-size: 0.8rem;
   }
   .pk:not(.pk-small) {
-    width: 64px;
-    height: 64px;
+    width: 70px;
+    height: 70px;
+  }
+  /* En pantallas muy estrechas, las métricas aprovechan también el espacio bajo la imagen. */
+  .rank-card .metrics {
+    margin-left: -84px;
   }
 }
 
@@ -1278,7 +1295,7 @@ details[open] > summary::after {
   position: relative;
   display: flex;
   gap: 14px;
-  background: linear-gradient(105deg, color-mix(in srgb, var(--t, var(--muted)) 13%, var(--card)), var(--card) 50%);
+  background: linear-gradient(100deg, color-mix(in srgb, var(--t, var(--muted)) 6%, var(--card)), var(--card) 38%);
   transition:
     border-color 0.2s,
     transform 0.18s var(--ease);
@@ -1289,7 +1306,6 @@ details[open] > summary::after {
   width: 76px;
   height: 76px;
   object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgb(5 6 42 / 30%));
 }
 
 .boss-body {
@@ -1368,25 +1384,32 @@ details[open] > summary::after {
   background: var(--accent-soft);
 }
 
+/* El título y las debilidades, en la misma línea. */
+.weaknesses {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
 .weak-title {
-  margin-bottom: 4px;
+  flex: none;
   color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 500;
   letter-spacing: 0;
 }
 
 .weakness {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.83rem;
-  font-weight: 700;
+  gap: 3px;
+  font-size: 0.78rem;
+  font-weight: 550;
   font-variant-numeric: tabular-nums;
 }
 
-.weakness:not(:last-child) {
-  margin-right: 4px;
+.weakness .type {
+  padding: 1px 7px;
 }
 
 .counters-head {
@@ -1421,6 +1444,8 @@ details[open] > summary::after {
   transition:
     transform 0.15s var(--ease),
     filter 0.2s;
+  color: #fff;
+  background: var(--t);
 }
 
 .type-links a:hover {
