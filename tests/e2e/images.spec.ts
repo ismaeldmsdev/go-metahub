@@ -38,7 +38,11 @@ test.describe('imágenes de Pokémon', () => {
     release();
     await expect(figure.locator('.pk-ready')).toHaveCSS('opacity', '1');
     await expect(page.locator('.pk-sprite')).toHaveCount(0);
-    expect(await figure.boundingBox()).toEqual(before);
+    const after = await figure.boundingBox();
+    expect([after!.width, after!.height]).toEqual([before!.width, before!.height]);
+    // El navegador puede redondear la posición en centésimas de píxel.
+    expect(Math.abs(after!.x - before!.x)).toBeLessThan(1);
+    expect(Math.abs(after!.y - before!.y)).toBeLessThan(1);
   });
 
   test('si falla la ilustración, usa el sprite de la misma forma', async ({ page, context }) => {
