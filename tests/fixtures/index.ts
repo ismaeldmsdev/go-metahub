@@ -1,5 +1,6 @@
 /**
  * Copias reales de las fuentes tomadas el 23 de noviembre de 2026 (recortadas donde se indica).
+ * Las de gimnasios son de doctorpokegogo.com (CC BY 4.0), recortadas, del 22 de noviembre de 2026.
  * Las de Pokébattler son sintéticas: sus datos reales no deben subirse al repositorio sin su permiso.
  */
 import { readFileSync } from 'node:fs';
@@ -24,6 +25,9 @@ export const fixtures = {
   pokebattler: () => load('pokebattler'),
   counters: () => load('counters'),
   sprites: () => readFileSync(resolve('tests/fixtures/pokemon.csv'), 'utf8'),
+  gyms: () => load('gimnasios'),
+  /** Unas pocas fichas originales, con lo que PvPoke sabe de ellas. */
+  gymsRaw: () => load('gyms-raw'),
   commit: (date: string) => [{ commit: { committer: { date } } }],
 };
 
@@ -38,6 +42,7 @@ export const routes = (): Record<string, unknown> => ({
   'locales/en.json': fixtures.en(),
   'locales/es.json': fixtures.es(),
   'csv/pokemon.csv': fixtures.sprites(),
+  'data/gimnasios.json': fixtures.gyms(),
   'raids/defenders/CRESSELIA/': fixtures.counters(),
   'fight.pokebattler.com/raids': fixtures.pokebattler(),
   'repos/pvpoke/pvpoke/commits': fixtures.commit('2026-11-20T16:56:34Z'),

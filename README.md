@@ -10,6 +10,8 @@ el móvil, que se mantiene al día consultando fuentes de la comunidad.
 - **PvP:** clasificaciones completas de Liga Super, Ultra y Máster, con tiers, movimientos, buscador y filtros.
 - **Incursiones:** jefes listados actualmente, PC, tipos, vigencia conocida y debilidades. Al abrir un jefe, sus mejores
   counters con movimientos, Estimator, eDPS y TDO. Enlaces a los mejores atacantes de cada tipo.
+- **Gimnasios:** atacantes con el tier, el percentil y los movimientos que publica doctorpokegogo, con filtros; y
+  defensores ordenados por resistencia teórica, con sus debilidades.
 - **Eventos:** activos, próximos y sin fecha confirmada, en hora peninsular y con cuenta atrás.
 - **Fuentes:** cuándo se consultó cada una, cuándo publicó y cuándo cambió de verdad.
 
@@ -26,6 +28,21 @@ el móvil, que se mantiene al día consultando fuentes de la comunidad.
 Son categorías propias sobre la puntuación original de PvPoke, **no oficiales**: S desde 90, A desde 85, B desde 80 y
 C desde 70. El puesto, la puntuación y los movimientos son los de PvPoke, sin recalcular.
 
+## Gimnasios
+
+- **Atacantes:** datos originales de doctorpokegogo, sin recalcular y sin orden global: su puntuación depende del defensor
+  de referencia de cada tipo. Los empates de percentil van por orden alfabético. Hay un solo conjunto de movimientos por Pokémon.
+- **Defensores:** resistencia = defensa base × aguante base. No es una simulación: no cuenta movimientos, motivación ni
+  enfrentamientos. Los oscuros pueden defender, pero no llevan ficha propia: la fuente no distingue su resistencia. Las
+  exclusiones y su origen están en [`scripts/gyms.ts`](scripts/gyms.ts) y en la propia aplicación.
+- `npm run gimnasios` descarga el dataset (7,6 MB), lo valida y genera
+  [`public/data/gimnasios.json`](public/data/gimnasios.json), el único que descarga el móvil (unos 45 KB comprimido). Solo
+  se aceptan las fichas cuyo número, forma, tipos y estadísticas coinciden con los de PvPoke. Si algo no cuadra, el
+  archivo no cambia. Con `-- --comprobar` no escribe nada.
+- [`gimnasios.yml`](.github/workflows/gimnasios.yml) lo hace cada día. Solo publica si la variable del repositorio
+  `GIMNASIOS_AUTOMATICO` vale `si` (Settings › Secrets and variables › Actions › Variables); borrarla lo detiene. Si
+  GitHub pausa la tarea por inactividad, se reactiva en Actions › Datos de gimnasios › Enable workflow.
+
 ## Fuentes y créditos
 
 | Contenido | Fuente | Condiciones |
@@ -33,6 +50,7 @@ C desde 70. El puesto, la puntuación y los movimientos son los de PvPoke, sin r
 | Clasificaciones PvP | [PvPoke](https://github.com/pvpoke/pvpoke) | MIT, © 2019 pvpoke |
 | Incursiones y eventos | [LeekDuck](https://leekduck.com), a través de [ScrapedDuck](https://github.com/bigfoott/ScrapedDuck) | Sin anuncios ni pago, con atribución |
 | Counters de incursiones | [Pokébattler](https://www.pokebattler.com/developers) | API pública: con atribución, caché y uso ocasional |
+| Gimnasios | [doctorpokegogo.com](https://doctorpokegogo.com/) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); datos transformados y resumidos por GO MetaHub |
 | Nombres en español | [WatWowMap/pogo-translations](https://github.com/WatWowMap/pogo-translations) | Textos de sus titulares |
 | Lista de formas | [PokéAPI](https://github.com/PokeAPI/pokeapi) | BSD-3-Clause |
 | Ilustraciones y sprites | [PokeAPI/sprites](https://github.com/PokeAPI/sprites) | Imágenes © The Pokémon Company |
@@ -40,7 +58,7 @@ C desde 70. El puesto, la puntuación y los movimientos son los de PvPoke, sin r
 Las imágenes no se incluyen en este repositorio: se cargan desde su origen al verlas.
 
 Las copias de datos de `tests/fixtures` proceden de esas mismas fuentes, se tomaron el 23 de noviembre de 2026 y solo
-se usan en las pruebas. Las de Pokébattler son sintéticas.
+se usan en las pruebas. Las de gimnasios son del 22 de noviembre y están recortadas. Las de Pokébattler son sintéticas.
 
 Proyecto personal sin ánimo de lucro, no afiliado a Niantic, Scopely, Nintendo ni The Pokémon Company. Pokémon y sus
 nombres e imágenes pertenecen a sus titulares.
@@ -68,4 +86,5 @@ Cada cambio en `main` se prueba, se compila y se publica en GitHub Pages mediant
 | `src/data` | Direcciones, descarga, validación, guardado y sincronización |
 | `src/domain` | Reglas sin interfaz: fechas, vigencia, tiers, nombres, imágenes y enlaces |
 | `src/ui` | Pantallas |
+| `scripts` | Generación y validación de los datos de gimnasios |
 | `tests` | Pruebas |

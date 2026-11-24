@@ -3,12 +3,13 @@ import { ENDPOINTS, HOUR, RETRY_AFTER_ERROR, type CountersTarget, type Endpoint 
 import { SourceError } from './errors';
 import { fetchEndpoint, fetchJson } from './http';
 import type { SpriteIndex } from '../domain/sprites';
-import type { CountersData, GameEvent, PokebattlerBosses, PvpData, RaidBoss, Snapshot, Translations } from './models';
+import type { CountersData, GameEvent, GymData, PokebattlerBosses, PvpData, RaidBoss, Snapshot, Translations } from './models';
 import { commits, parseWith } from './schemas';
 import {
   parseGamemaster,
   toCounters,
   toEvents,
+  toGyms,
   toPokebattlerBosses,
   toRaids,
   toRanking,
@@ -25,6 +26,7 @@ export interface SourceData {
   translations: Translations;
   pokebattler: PokebattlerBosses;
   sprites: SpriteIndex;
+  gyms: GymData;
 }
 
 export interface FetchContext<T> {
@@ -126,6 +128,12 @@ export const SOURCES: { [K in keyof SourceData]: Loader<SourceData[K]> } = {
   async sprites(ctx) {
     const { json, viaFallback } = await loaderFor(ctx)(ENDPOINTS.sprites, 'text');
     return snapshot(ctx.previous, { data: toSprites(json), viaFallback });
+  },
+
+  async gyms(ctx) {
+    const { json } = await loaderFor(ctx)(ENDPOINTS.gyms);
+    const data = toGyms(json);
+    return snapshot(ctx.previous, { data, sourceUpdatedAt: Date.parse(data.source.generatedAt) });
   },
 };
 

@@ -2,9 +2,29 @@ import type { ComponentChildren } from 'preact';
 import { useState } from 'preact/hooks';
 import { formatAge, formatDate, hasKnownCheck } from '../domain/freshness';
 import { typeName, type PokemonLabel } from '../domain/names';
+import { weaknesses } from '../domain/types';
 import { useNow, type Source } from './hooks';
 
 export const TypeTag = ({ type }: { type: string }) => <span class={`type t-${type}`}>{typeName(type)}</span>;
+
+const multiplier = (value: number): string => `×${value.toLocaleString('es', { maximumFractionDigits: 2 })}`;
+
+export function Weaknesses({ types }: { types: string[] }) {
+  const list = weaknesses(types);
+  if (list.length === 0) return null;
+  return (
+    <section aria-label="Debilidades">
+      <h3 class="weak-title">Débil a</h3>
+      <ul class="types">
+        {list.map((weakness) => (
+          <li key={weakness.type} class="weakness">
+            <TypeTag type={weakness.type} /> {multiplier(weakness.multiplier)}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
 
 /** Rayo para el ataque rápido y diana para el cargado, iguales en toda la aplicación. */
 export function MoveIcon({ fast }: { fast: boolean }) {

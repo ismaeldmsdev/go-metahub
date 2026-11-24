@@ -97,6 +97,45 @@ export interface Translations {
 /** Jefes que Pokébattler lista en su rotación actual y su nivel (null si figura en varios). */
 export type PokebattlerBosses = Record<string, string | null>;
 
+export interface GymAttack {
+  /** Tier, percentil y puntuación originales de doctorpokegogo. */
+  tier: 'S+' | 'S' | 'A' | 'B' | 'C' | 'D';
+  percentile: number;
+  score: number;
+  fast: string;
+  fastType: string;
+  charged: string;
+  chargedType: string;
+}
+
+export interface GymPokemon {
+  /** Nombre inglés al estilo de PvPoke: «Tauros (Aqua)». */
+  name: string;
+  dex: number;
+  types: string[];
+  /** «legendary» incluye singulares y ultraentes. */
+  groups: ('mega' | 'shadow' | 'legendary')[];
+  attack: GymAttack | null;
+  /** Defensa base × aguante base. Null si no puede defender y en los oscuros, que sí pueden pero no tienen dato propio. */
+  bulk: number | null;
+}
+
+/** Contenido de public/data/gimnasios.json. */
+export interface GymData {
+  source: {
+    name: string;
+    url: string;
+    license: string;
+    licenseUrl: string;
+    methodologyUrl: string;
+    version: string;
+    generatedAt: string;
+  };
+  /** Qué se ha transformado respecto al original. */
+  changes: string;
+  pokemon: GymPokemon[];
+}
+
 export interface Counter {
   /** Identificador de Pokébattler. */
   id: string;

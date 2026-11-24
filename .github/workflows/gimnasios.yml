@@ -1,0 +1,74 @@
+name: Datos de gimnasios
+
+# Cada día comprueba si hay datos nuevos, los valida y guarda el resultado como artefacto.
+# Solo publica si la variable del repositorio GIMNASIOS_AUTOMATICO vale «si». Mientras no exista, no cambia nada.
+# Si GitHub pausa la tarea por inactividad: Actions › Datos de gimnasios › Enable workflow.
+on:
+  schedule:
+    - cron: '20 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gimnasios
+  cancel-in-progress: false
+
+jobs:
+  comprobar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      changed: ${{ steps.datos.outputs.changed }}
+      version: ${{ steps.datos.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      # Si los datos no cuadran, falla aquí y lo publicado se queda como está.
+      - id: datos
+        run: npm run gimnasios
+      - if: steps.datos.outputs.changed == 'true'
+        run: npm test
+      - if: steps.datos.outputs.changed == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: gimnasios
+          path: public/data/gimnasios.json
+          retention-days: 14
+
+  publicar:
+    needs: comprobar
+    # Solo hay commit cuando los datos han cambiado de verdad.
+    if: needs.comprobar.outputs.changed == 'true' && vars.GIMNASIOS_AUTOMATICO == 'si'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: actions/download-artifact@v8
+        with:
+          name: gimnasios
+          path: public/data
+      - name: Guardar los datos y lanzar la publicación
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.comprobar.outputs.version }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/data/gimnasios.json
+          git commit -m "Actualizar los datos de gimnasios ($VERSION)"
+          git push origin HEAD:main
+          gh workflow run pages.yml --ref main

@@ -137,6 +137,42 @@ export const counters = z.object({
     .length(1),
 });
 
+const httpsUrl = z.string().regex(/^https:\/\//);
+
+export const gyms = z.object({
+  format: z.literal(1),
+  source: z.object({
+    name: z.string().min(1),
+    url: httpsUrl,
+    license: z.string().min(1),
+    licenseUrl: httpsUrl,
+    methodologyUrl: httpsUrl,
+    version: z.string().min(1),
+    generatedAt: z.iso.datetime(),
+  }),
+  changes: z.string().min(1),
+  pokemon: z.array(
+    z.object({
+      name: z.string().min(1),
+      dex: z.number().int().positive(),
+      types: z.array(z.string()).min(1).max(2),
+      groups: z.array(z.enum(['mega', 'shadow', 'legendary'])),
+      attack: z
+        .object({
+          tier: z.enum(['S+', 'S', 'A', 'B', 'C', 'D']),
+          percentile: z.number().min(0).max(100),
+          score: z.number().positive(),
+          fast: z.string().min(1),
+          fastType: z.string(),
+          charged: z.string().min(1),
+          chargedType: z.string(),
+        })
+        .nullable(),
+      bulk: z.number().positive().nullable(),
+    }),
+  ),
+});
+
 export const commits = z
   .array(z.object({ commit: z.object({ committer: z.object({ date: z.iso.datetime() }) }) }))
   .min(1);

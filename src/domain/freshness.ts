@@ -57,7 +57,12 @@ export function assess(id: QueryId, state: SourceState, now: number): Health {
   }
   const limit = SOURCE_STALE_AFTER[id];
   if (limit !== undefined && snapshot.sourceUpdatedAt !== null && now - snapshot.sourceUpdatedAt > limit) {
-    messages.push(`La fuente no publica desde hace ${formatAge(now - snapshot.sourceUpdatedAt)}.`);
+    const since = formatAge(now - snapshot.sourceUpdatedAt);
+    messages.push(
+      id === 'gyms'
+        ? `Los datos de origen son de hace ${since}. Puede que la fuente no haya publicado o que su copia no se actualice.`
+        : `La fuente no publica desde hace ${since}.`,
+    );
   }
   if (snapshot.viaFallback) {
     messages.push('Datos de una copia de respaldo: pueden ir varias horas por detrás.');

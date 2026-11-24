@@ -94,10 +94,11 @@ export function useSources(): Sources {
     translations: useSource('translations'),
     pokebattler: useSource('pokebattler'),
     sprites: useSource('sprites'),
+    gyms: useSource('gyms'),
   };
 }
 
-export const TABS = ['pvp', 'incursiones', 'eventos', 'fuentes'] as const;
+export const TABS = ['pvp', 'incursiones', 'gimnasios', 'eventos', 'fuentes'] as const;
 export type Tab = (typeof TABS)[number];
 
 export interface Route {

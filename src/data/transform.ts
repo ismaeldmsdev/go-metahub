@@ -10,6 +10,7 @@ import type {
   CpRange,
   Featured,
   GameEvent,
+  GymData,
   PokebattlerBosses,
   PvpEntry,
   PvpMove,
@@ -17,7 +18,7 @@ import type {
   Species,
   Translations,
 } from './models';
-import { counters, gamemaster, locale, parseList, parseWith, pokebattler, raidBoss, rankingEntry, rawEvent } from './schemas';
+import { counters, gamemaster, gyms, locale, parseList, parseWith, pokebattler, raidBoss, rankingEntry, rawEvent } from './schemas';
 
 type Gamemaster = z.infer<typeof gamemaster>;
 
@@ -229,6 +230,22 @@ export function toCounters(raw: unknown, { id, tier }: Pick<CountersTarget, 'id'
     };
   });
   return { list: list.sort((a, b) => a.estimator - b.estimator), megaLevel: data.megaLevel };
+}
+
+/** Con menos que estos, el archivo está incompleto. */
+const MIN_GYM = 50;
+
+/** El resumen ya está validado al generarse; aquí se comprueba que ha llegado entero. */
+export function toGyms(raw: unknown): GymData {
+  const what = 'los datos de gimnasios';
+  const { source, changes, pokemon } = parseWith(gyms, raw, what);
+  if (pokemon.filter((p) => p.attack).length < MIN_GYM || pokemon.filter((p) => p.bulk !== null).length < MIN_GYM) {
+    throw new SourceError('format', `En ${what} faltan Pokémon`);
+  }
+  if (new Set(pokemon.map((p) => p.name)).size !== pokemon.length) {
+    throw new SourceError('format', `En ${what} hay Pokémon repetidos`);
+  }
+  return { source, changes, pokemon };
 }
 
 /** Lista de Pokémon de PokéAPI (CSV sin comillas): número de imagen, nombre y especie de cada forma. */

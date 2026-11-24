@@ -15,8 +15,14 @@ export interface TierGroup {
   entries: PvpEntry[];
 }
 
+export const searchWords = (search: string): string[] => search.split(/\s+/).map(normalize).filter(Boolean);
+
 /** Busca por nombre en español o inglés, por forma o por número de Pokédex. */
-function matchesSearch(entry: PvpEntry, words: string[], tr: Translations | undefined): boolean {
+export function matchesSearch(
+  entry: Pick<PvpEntry, 'name' | 'dex'>,
+  words: string[],
+  tr: Translations | undefined,
+): boolean {
   if (words.length === 0) return true;
   const label = pvpLabel(entry, tr);
   const text = [label.name, label.form ?? '', label.shadow ? 'oscuro' : '', entry.name].map(normalize).join(' ');
@@ -24,7 +30,7 @@ function matchesSearch(entry: PvpEntry, words: string[], tr: Translations | unde
 }
 
 export function filterPvp(entries: PvpEntry[], filters: PvpFilters, tr: Translations | undefined): TierGroup[] {
-  const words = filters.search.split(/\s+/).map(normalize).filter(Boolean);
+  const words = searchWords(filters.search);
   const groups = new Map<Tier | null, PvpEntry[]>();
   for (const entry of entries) {
     const tier = tierOf(entry.score);

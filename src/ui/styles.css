@@ -746,6 +746,10 @@ details[open] > summary::after {
   box-shadow: var(--elevation);
 }
 
+.segmented-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
 .segmented button {
   min-height: 50px;
   border: 0;
@@ -785,6 +789,15 @@ details[open] > summary::after {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 6px;
+}
+
+.gym-tiers {
+  grid-template-columns: minmax(0, 1.4fr) repeat(6, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.gym-tiers button {
+  font-size: 0.76rem;
 }
 
 .variant-filter {
@@ -837,6 +850,20 @@ details[open] > summary::after {
   display: grid;
   gap: 8px;
   grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+}
+
+.filter-search {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.filter-groups {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 760px) {
+  .filter-groups {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .filter-row input,
@@ -943,9 +970,15 @@ details[open] > summary::after {
   background: linear-gradient(140deg, #ffe08a, #f7a91c);
 }
 
+.tier-Splus {
+  color: #2a1a00;
+  background: linear-gradient(140deg, #fff3c4, #ffc94a 45%, #ff8a3d);
+}
+
 .tier-A { background: linear-gradient(140deg, #d83a22, #a91f13); }
 .tier-B { background: linear-gradient(140deg, #7440ea, #4a21b8); }
 .tier-C { background: linear-gradient(140deg, #1c74cf, #0f4f9c); }
+.tier-D { background: linear-gradient(140deg, #6a7196, #454b70); }
 
 .main .tier-group h2::before {
   display: none;
@@ -960,6 +993,19 @@ details[open] > summary::after {
 
 .more {
   justify-self: center;
+}
+
+.tied {
+  display: block;
+  color: var(--muted);
+  font-size: 0.71rem;
+  font-weight: 600;
+}
+
+.explain {
+  padding: 12px 14px;
+  border-left: 4px solid var(--gold);
+  font-size: 0.92rem;
 }
 
 /* Fichas de clasificación */

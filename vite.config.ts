@@ -33,7 +33,7 @@ export default defineConfig({
       manifest: {
         name: 'GO MetaHub',
         short_name: 'GO MetaHub',
-        description: 'Meta de Pokémon GO: PvP, incursiones y eventos',
+        description: 'Meta de Pokémon GO: PvP, incursiones, gimnasios y eventos',
         lang: 'es',
         // Relativos al manifiesto. Sin «id» propio, cada instalación se identifica por su dirección
         // y no choca con otras páginas del mismo usuario en github.io.

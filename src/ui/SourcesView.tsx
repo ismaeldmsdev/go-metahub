@@ -34,6 +34,12 @@ const INFO: Record<SourceId, { title: string; credit: string; url: string; note:
     url: 'https://github.com/PokeAPI/sprites',
     note: 'Lista de formas. Las imágenes se descargan solo al verlas. No informa de su fecha aquí.',
   },
+  gyms: {
+    title: 'Gimnasios',
+    credit: 'doctorpokegogo.com',
+    url: 'https://doctorpokegogo.com/',
+    note: 'Evaluación de atacantes y resistencia, CC BY 4.0. Resumen transformado por GO MetaHub; los originales se publican de forma irregular.',
+  },
   pokebattler: {
     title: 'Counters',
     credit: 'Pokébattler',
@@ -42,7 +48,7 @@ const INFO: Record<SourceId, { title: string; credit: string; url: string; note:
   },
 };
 
-const ORDER: SourceId[] = ['pvp', 'raids', 'events', 'translations', 'sprites', 'pokebattler'];
+const ORDER: SourceId[] = ['pvp', 'raids', 'gyms', 'events', 'translations', 'sprites', 'pokebattler'];
 
 export function SourcesView({ sources, storageOk }: { sources: Sources; storageOk: boolean }) {
   return (
@@ -88,7 +94,9 @@ export function SourcesView({ sources, storageOk }: { sources: Sources; storageO
           Eventos, incursiones e imágenes: <External href="https://leekduck.com">LeekDuck.com</External>, a través de{' '}
           <External href="https://github.com/bigfoott/ScrapedDuck">ScrapedDuck</External>. Clasificaciones:{' '}
           <External href="https://pvpoke.com">PvPoke</External>. Counters:{' '}
-          <External href="https://www.pokebattler.com">Pokébattler</External>. Nombres en español:{' '}
+          <External href="https://www.pokebattler.com">Pokébattler</External>. Gimnasios:{' '}
+          <External href="https://doctorpokegogo.com/">doctorpokegogo.com</External>,{' '}
+          <External href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</External>, transformados y resumidos. Nombres en español:{' '}
           <External href="https://github.com/WatWowMap/pogo-translations">WatWowMap</External>. Ilustraciones y sprites:{' '}
           <External href="https://github.com/PokeAPI/sprites">PokéAPI</External>, © The Pokémon Company.
         </p>

@@ -10,7 +10,7 @@ const PIXEL = Buffer.from(
 export async function network(context: BrowserContext) {
   const table: Record<string, unknown> = routes();
   const calls: string[] = [];
-  await context.route(/^https:\/\//, async (route) => {
+  await context.route(/^https:\/\/|\/data\/gimnasios\.json$/, async (route) => {
     const url = route.request().url();
     calls.push(url);
     if (url.includes('/PokeAPI/sprites/') && table.images !== 'fail') {

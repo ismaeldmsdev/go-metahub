@@ -6,7 +6,8 @@ import { SOURCES } from '../../src/data/sources';
 import { toCounters } from '../../src/data/transform';
 
 describe('fuentes reales', () => {
-  it.each(Object.keys(SOURCES) as (keyof typeof SOURCES)[])('%s responde con la estructura esperada', async (id) => {
+  // «gyms» es un archivo propio: lo comprueba `npm run gimnasios -- --comprobar`.
+  it.each((Object.keys(SOURCES) as (keyof typeof SOURCES)[]).filter((id) => id !== 'gyms'))('%s responde con la estructura esperada', async (id) => {
     const result = await SOURCES[id]({ previous: undefined });
     expect(result.viaFallback).toBe(false);
     expect(result.discarded).toBe(0);
