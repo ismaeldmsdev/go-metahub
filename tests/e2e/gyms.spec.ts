@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { NOW } from '../fixtures';
 import { network } from './network';
@@ -173,6 +174,26 @@ test.describe('defensores de gimnasio', () => {
     await expect(page.locator('.rank-card').first()).toContainText('Puesto 4');
     await expect(page.locator('.rank-card').first()).toContainText('Dondozo');
   });
+});
+
+test('con los datos que se van a publicar, funcionan Gimnasios y las demás secciones', async ({ page, context }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const file = JSON.parse(readFileSync('public/data/gimnasios.json', 'utf8'));
+  const total = (test: (p: any) => boolean) => new RegExp(`^${file.pokemon.filter(test).length} Pokémon`);
+  const net = await network(context);
+  net.table[FILE] = file;
+  await page.goto('/#gimnasios');
+  await expect(page.locator('.result-count')).toHaveText(total((p) => p.attack));
+  await expect(page.locator('.rank-card .pk-ready').first()).toBeVisible();
+  await expect(page.locator('.attribution')).toContainText('CC BY 4.0');
+  await page.getByRole('button', { name: 'Defensores' }).click();
+  await expect(page.locator('.result-count')).toHaveText(total((p) => p.bulk !== null));
+  for (const [tab, item] of [['PvP', '.rank-card'], ['Incursiones', '.boss'], ['Eventos', '.event'], ['Fuentes', '.source']] as const) {
+    await page.getByRole('navigation').getByRole('link', { name: tab }).click();
+    await expect(page.locator(item).first()).toBeVisible();
+  }
+  expect(errors).toEqual([]);
 });
 
 test.describe('datos y fallos', () => {

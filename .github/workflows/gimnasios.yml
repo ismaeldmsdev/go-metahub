@@ -1,13 +1,18 @@
 name: Datos de gimnasios
 
-# Comprueba si hay datos nuevos, los valida y guarda el resultado como artefacto. Por ahora solo se ejecuta a mano.
-# Para que sea diaria, hay que añadir debajo de «on»:
-#   schedule:
-#     - cron: '20 5 * * *'
-# Solo publica si la variable del repositorio GIMNASIOS_AUTOMATICO vale «si». Mientras no exista, no cambia nada.
-# Si GitHub pausa la tarea por inactividad: Actions › Datos de gimnasios › Enable workflow.
+# Cada día comprueba si hay datos nuevos y los valida. Solo si han cambiado, todas las pruebas pasan y la variable del
+# repositorio GIMNASIOS_AUTOMATICO vale «si», los guarda en main y lanza la publicación. Si algo falla, lo publicado se
+# queda como está y GitHub avisa por correo.
+# Para que siga comprobando sin publicar, se borra la variable. Para pararla: Actions › Datos de gimnasios › Disable workflow.
 on:
+  schedule:
+    # 05:20 UTC: 06:20 en invierno y 07:20 en verano en la península. GitHub puede retrasarlo.
+    - cron: '20 5 * * *'
   workflow_dispatch:
+  # También al cambiar el generador o esta tarea, para comprobar que siguen funcionando.
+  push:
+    branches: [main]
+    paths: ['scripts/**', '.github/workflows/gimnasios.yml']
 
 permissions:
   contents: read
@@ -19,7 +24,7 @@ concurrency:
 jobs:
   comprobar:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     outputs:
       changed: ${{ steps.datos.outputs.changed }}
       version: ${{ steps.datos.outputs.version }}
@@ -36,8 +41,12 @@ jobs:
       # Si los datos no cuadran, falla aquí y lo publicado se queda como está.
       - id: datos
         run: npm run gimnasios
+      # Con los datos nuevos, antes de que lleguen a main: pruebas, compilación y aplicación completa en el navegador.
       - if: steps.datos.outputs.changed == 'true'
-        run: npm test
+        run: |
+          npm test
+          npm run build
+          npm run test:e2e
       - if: steps.datos.outputs.changed == 'true'
         uses: actions/upload-artifact@v7
         with:
@@ -47,22 +56,32 @@ jobs:
 
   publicar:
     needs: comprobar
-    # Solo hay commit cuando los datos han cambiado de verdad.
-    if: needs.comprobar.outputs.changed == 'true' && vars.GIMNASIOS_AUTOMATICO == 'si'
+    # Fuera del horario, aunque no haya nada que publicar, comprueba el permiso de escritura.
+    if: >-
+      (needs.comprobar.outputs.changed == 'true' && vars.GIMNASIOS_AUTOMATICO == 'si') ||
+      github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       contents: write
       actions: write
+    env:
+      PUBLICAR: ${{ needs.comprobar.outputs.changed == 'true' && vars.GIMNASIOS_AUTOMATICO == 'si' }}
     steps:
       - uses: actions/checkout@v7
         with:
           ref: main
-      - uses: actions/download-artifact@v8
+      - name: Comprobar el permiso de escritura, sin escribir nada
+        run: |
+          git push --dry-run origin HEAD:main
+          echo "Publicación automática: ${{ vars.GIMNASIOS_AUTOMATICO == 'si' && 'activada' || 'desactivada (falta GIMNASIOS_AUTOMATICO=si)' }}" >> "$GITHUB_STEP_SUMMARY"
+      - if: env.PUBLICAR == 'true'
+        uses: actions/download-artifact@v8
         with:
           name: gimnasios
           path: public/data
       - name: Guardar los datos y lanzar la publicación
+        if: env.PUBLICAR == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.comprobar.outputs.version }}

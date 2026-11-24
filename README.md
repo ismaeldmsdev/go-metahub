@@ -5,6 +5,8 @@ el móvil, que se mantiene al día consultando fuentes de la comunidad.
 
 **Abrir:** https://ismaeldmsdev.github.io/go-metahub/
 
+[![Datos de gimnasios](https://github.com/ismaeldmsdev/go-metahub/actions/workflows/gimnasios.yml/badge.svg)](https://github.com/ismaeldmsdev/go-metahub/actions/workflows/gimnasios.yml)
+
 ## Qué incluye
 
 - **PvP:** clasificaciones completas de Liga Super, Ultra y Máster, con tiers, movimientos, buscador y filtros.
@@ -40,10 +42,11 @@ C desde 70. El puesto, la puntuación y los movimientos son los de PvPoke, sin r
   [`public/data/gimnasios.json`](public/data/gimnasios.json), el único que descarga el móvil (unos 45 KB comprimido). Solo
   se aceptan las fichas cuyo número, forma, tipos y estadísticas coinciden con los de PvPoke. Si algo no cuadra, el
   archivo no cambia. Con `-- --comprobar` no escribe nada.
-- [`gimnasios.yml`](.github/workflows/gimnasios.yml) hace lo mismo en GitHub, por ahora solo a mano: su horario diario está
-  desactivado y se explica en el propio archivo cómo añadirlo. Solo publica si la variable del repositorio
-  `GIMNASIOS_AUTOMATICO` vale `si` (Settings › Secrets and variables › Actions › Variables); borrarla lo detiene. Si
-  GitHub pausa la tarea por inactividad, se reactiva en Actions › Datos de gimnasios › Enable workflow.
+- [`gimnasios.yml`](.github/workflows/gimnasios.yml) lo hace cada día a las 05:20 UTC. Solo hay commit y publicación si los
+  datos cambian, pasan todas las pruebas y la variable `GIMNASIOS_AUTOMATICO` vale `si` (Settings › Secrets and variables ›
+  Actions › Variables); al borrarla, sigue comprobando sin publicar. Si algo falla, se conserva lo publicado y GitHub avisa
+  por correo. Se detiene en Actions › Datos de gimnasios › Disable workflow. Tras 60 días sin actividad en el repositorio,
+  GitHub la desactiva; se reactiva con Enable workflow, en la misma página.
 
 ## Fuentes y créditos
 
