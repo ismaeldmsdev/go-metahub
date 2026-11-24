@@ -1,11 +1,12 @@
 name: Datos de gimnasios
 
-# Cada día comprueba si hay datos nuevos, los valida y guarda el resultado como artefacto.
+# Comprueba si hay datos nuevos, los valida y guarda el resultado como artefacto. Por ahora solo se ejecuta a mano.
+# Para que sea diaria, hay que añadir debajo de «on»:
+#   schedule:
+#     - cron: '20 5 * * *'
 # Solo publica si la variable del repositorio GIMNASIOS_AUTOMATICO vale «si». Mientras no exista, no cambia nada.
 # Si GitHub pausa la tarea por inactividad: Actions › Datos de gimnasios › Enable workflow.
 on:
-  schedule:
-    - cron: '20 5 * * *'
   workflow_dispatch:
 
 permissions:

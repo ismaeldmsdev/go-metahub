@@ -367,6 +367,16 @@ h1 {
   }
 }
 
+/* En tabletas, con tipografías anchas, cada sección ocupa solo lo que necesita. */
+@media (min-width: 760px) and (max-width: 899px) {
+  .nav a {
+    flex: 1 1 auto;
+  }
+  .nav-icon {
+    width: 30px;
+  }
+}
+
 .grid {
   display: grid;
   gap: var(--gap);

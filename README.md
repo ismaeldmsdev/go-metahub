@@ -39,7 +39,8 @@ C desde 70. El puesto, la puntuación y los movimientos son los de PvPoke, sin r
   [`public/data/gimnasios.json`](public/data/gimnasios.json), el único que descarga el móvil (unos 45 KB comprimido). Solo
   se aceptan las fichas cuyo número, forma, tipos y estadísticas coinciden con los de PvPoke. Si algo no cuadra, el
   archivo no cambia. Con `-- --comprobar` no escribe nada.
-- [`gimnasios.yml`](.github/workflows/gimnasios.yml) lo hace cada día. Solo publica si la variable del repositorio
+- [`gimnasios.yml`](.github/workflows/gimnasios.yml) hace lo mismo en GitHub, por ahora solo a mano: su horario diario está
+  desactivado y se explica en el propio archivo cómo añadirlo. Solo publica si la variable del repositorio
   `GIMNASIOS_AUTOMATICO` vale `si` (Settings › Secrets and variables › Actions › Variables); borrarla lo detiene. Si
   GitHub pausa la tarea por inactividad, se reactiva en Actions › Datos de gimnasios › Enable workflow.
 
