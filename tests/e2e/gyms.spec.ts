@@ -35,11 +35,12 @@ test.describe('atacantes de gimnasio', () => {
     await expect(page.locator('.tier-group')).toHaveCount(6);
     const card = page.locator('.rank-card', { hasText: 'Mega-Gengar' });
     for (const text of ['Tier S+', 'Fantasma', 'Veneno', 'Bola Sombra', '99,6', '322,58']) await expect(card).toContainText(text);
-    await expect(card.locator('.pk-sprite, .pk-art').first()).toBeAttached();
+    await card.scrollIntoViewIfNeeded();
+    await expect(card.locator('.pk-ready')).toBeVisible();
     // Sin orden global: ningún atacante lleva puesto y el empate se ve.
     await expect(page.locator('.rank')).toHaveCount(0);
     await expect(card).toContainText('Empatan 9');
-    await expect(page.getByText('aparecer primero no significa ser el mejor')).toBeVisible();
+    await expect(page.getByText('Ninguno por delante')).not.toHaveCount(0);
     expect(errors).toEqual([]);
   });
 
@@ -56,11 +57,30 @@ test.describe('atacantes de gimnasio', () => {
     }
   });
 
+  test('S+ y los empates no parecen un puesto', async ({ page, context }) => {
+    await network(context);
+    await open(page);
+    const explain = page.getByRole('region', { name: 'Cómo elegir' });
+    await expect(explain).toBeInViewport({ ratio: 1 });
+    for (const text of ['S+ no significa el mejor contra cualquiera', 'depende del tipo', 'No hay un único ganador']) {
+      await expect(explain).toContainText(text);
+    }
+    const tie = page.getByRole('region', { name: 'Empate en el percentil 99,6' });
+    await expect(tie.locator('.rank-card')).toHaveCount(9);
+    await expect(tie.getByText('Empatan 9')).toHaveCount(9);
+    await expect(tie).toContainText('Ninguno por delante');
+    await expect(tie.locator('.rank-card', { hasText: 'Mega-Beedrill' })).toHaveCount(1);
+    // El primer atacante de la lista siempre va dentro del bloque de empatados.
+    expect(await page.locator('.rank-card').first().evaluate((el) => !!el.closest('.tie'))).toBe(true);
+  });
+
   test('el filtro por tipo avisa de que no es exhaustivo', async ({ page, context }) => {
     await network(context);
     await open(page);
     await page.getByLabel('Tipo del ataque cargado').selectOption('poison');
     await expect(page.locator('.filters')).toContainText('No es una lista completa');
+    await expect(page.locator('.filters')).toContainText('Tampoco filtra por el tipo del defensor');
+    await expect(page.getByLabel('Tipo del ataque cargado').locator('option:checked')).toHaveText('Ataque Veneno');
     const used = await page.locator('.rank-card .metrics div:last-child dd').allTextContents();
     expect(used.length).toBeGreaterThan(0);
     expect(new Set(used)).toEqual(new Set(['Veneno']));

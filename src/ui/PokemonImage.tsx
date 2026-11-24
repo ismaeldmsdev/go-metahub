@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { SPRITES } from '../data/config';
 
 const SETTLE = 150;
+/** Ilustraciones ya mostradas: al volver a una lista salen directamente, sin repetir la espera. */
+const shown = new Set<number>();
 const watched = new WeakMap<Element, (visible: boolean) => void>();
 let observer: IntersectionObserver | undefined;
 
@@ -11,7 +13,7 @@ function watch(element: Element, callback: (visible: boolean) => void): () => vo
     (entries) => {
       for (const entry of entries) watched.get(entry.target)?.(entry.isIntersecting);
     },
-    { rootMargin: '150px' },
+    { rootMargin: '400px' },
   );
   watched.set(element, callback);
   observer.observe(element);
@@ -37,8 +39,9 @@ interface Props {
 }
 
 /**
- * Muestra al instante el sprite (1 KB) y lo sustituye por la ilustración (unos 130 KB) cuando la
- * ficha lleva un momento a la vista. Al desplazarse deprisa no se descargan ilustraciones.
+ * Muestra solo la ilustración (unos 130 KB), que se pide cuando la ficha lleva un momento cerca de la vista: al
+ * desplazarse deprisa no se descargan las que pasan de largo. Mientras llega, queda el fondo de la ficha. El sprite
+ * de la misma forma (1 KB) solo se usa si la ilustración falla, o en su lugar si se pide ahorrar datos.
  */
 export function PokemonImage(props: Props) {
   return <Image key={props.id ?? `dex-${props.dex}`} {...props} />;
@@ -46,12 +49,15 @@ export function PokemonImage(props: Props) {
 
 function Image({ id, dex, type, shadow = false, small = false, pending = false }: Props) {
   const box = useRef<HTMLSpanElement>(null);
-  const [wanted, setWanted] = useState(false);
-  const [sprite, setSprite] = useState<'pending' | 'ok' | 'failed'>('pending');
-  const [art, setArt] = useState<'pending' | 'ok' | 'failed'>('pending');
+  const [known] = useState(() => id !== null && shown.has(id));
+  const [wanted, setWanted] = useState(known);
+  const [art, setArt] = useState<'pending' | 'ok' | 'failed'>(known ? 'ok' : 'pending');
+  const [spriteFailed, setSpriteFailed] = useState(false);
+  const spriteOnly = small || savesData();
+  const useSprite = spriteOnly || art === 'failed';
 
   useEffect(() => {
-    if (id === null || small || savesData() || !box.current) return;
+    if (id === null || spriteOnly || wanted || !box.current) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const stop = watch(box.current, (visible) => {
       clearTimeout(timer);
@@ -65,30 +71,36 @@ function Image({ id, dex, type, shadow = false, small = false, pending = false }
       clearTimeout(timer);
       stop();
     };
-  }, [id, small]);
+  }, [id, spriteOnly, wanted]);
 
-  const missing = !pending && (id === null || (sprite === 'failed' && art !== 'ok'));
+  const missing = !pending && (id === null || (useSprite && spriteFailed));
   const classes = ['pk', type ? `t-${type}` : '', shadow ? 'pk-shadow' : '', small ? 'pk-small' : '', missing ? 'pk-missing' : ''];
   const common = { alt: '', decoding: 'async', crossOrigin: 'anonymous', referrerPolicy: 'no-referrer' } as const;
   return (
     <span ref={box} class={classes.filter(Boolean).join(' ')}>
-      {id !== null && art !== 'ok' && sprite !== 'failed' && (
+      {id !== null && useSprite && !spriteFailed && (
         <img
           {...common}
           class="pk-sprite"
           src={SPRITES.small(id)}
           loading="lazy"
-          onLoad={() => setSprite('ok')}
-          onError={() => setSprite('failed')}
+          onError={() => setSpriteFailed(true)}
         />
       )}
-      {id !== null && wanted && art !== 'failed' && (
+      {id !== null && wanted && !useSprite && (
         <img
           {...common}
           class={art === 'ok' ? 'pk-art pk-ready' : 'pk-art'}
           src={SPRITES.art(id)}
-          onLoad={() => setArt('ok')}
-          onError={() => setArt('failed')}
+          loading={known ? 'lazy' : 'eager'}
+          onLoad={() => {
+            shown.add(id);
+            setArt('ok');
+          }}
+          onError={() => {
+            shown.delete(id);
+            setArt('failed');
+          }}
         />
       )}
       {missing && (

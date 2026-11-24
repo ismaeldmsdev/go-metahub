@@ -12,6 +12,7 @@ import {
   gymMove,
   PRESENCES,
   rankDefenders,
+  tieBlocks,
   type AttackerFilters,
   type AttackerGroup,
   type GymAttacker,
@@ -58,16 +59,18 @@ let rememberedDefenders = { type: 'all', search: '' };
 interface TypeSelectProps {
   label: string;
   all: string;
+  prefix?: string;
   value: string;
   onChange: (type: string) => void;
 }
 
-function TypeSelect({ label, all, value, onChange }: TypeSelectProps) {
+function TypeSelect({ label, all, prefix = '', value, onChange }: TypeSelectProps) {
   return (
     <select aria-label={label} value={value} onChange={(e) => onChange(e.currentTarget.value)}>
       <option value="all">{all}</option>
       {Object.keys(TYPES).map((type) => (
         <option key={type} value={type}>
+          {prefix}
           {typeName(type)}
         </option>
       ))}
@@ -178,6 +181,14 @@ interface TierSectionProps {
 function TierSection({ group, ties, sources, tr }: TierSectionProps) {
   const [shown, setShown] = useState(PAGE);
   const rest = group.entries.length - shown;
+  let left = shown;
+  const blocks = tieBlocks(group.entries)
+    .map(({ percentile, entries }) => {
+      const visible = entries.slice(0, Math.max(0, left));
+      left -= entries.length;
+      return { percentile, entries: visible };
+    })
+    .filter(({ entries }) => entries.length > 0);
   return (
     <section class="group tier-group">
       <h2>
@@ -185,17 +196,30 @@ function TierSection({ group, ties, sources, tr }: TierSectionProps) {
         Tier {group.tier} <span class="count">{group.entries.length}</span>
         <small>Sin puestos</small>
       </h2>
-      <ul class="ranking">
-        {group.entries.slice(0, shown).map((pokemon) => (
-          <AttackerCard
-            key={pokemon.name}
-            pokemon={pokemon}
-            tied={ties.get(pokemon.attack.percentile) ?? 1}
-            sources={sources}
-            tr={tr}
-          />
-        ))}
-      </ul>
+      {blocks.map(({ percentile, entries }) => {
+        const cards = (
+          <ul key={entries[0]!.name} class="ranking">
+            {entries.map((pokemon) => (
+              <AttackerCard
+                key={pokemon.name}
+                pokemon={pokemon}
+                tied={ties.get(pokemon.attack.percentile) ?? 1}
+                sources={sources}
+                tr={tr}
+              />
+            ))}
+          </ul>
+        );
+        if (percentile === null) return cards;
+        return (
+          <section key={percentile} class="tie" aria-label={`Empate en el percentil ${decimal(percentile, 1)}`}>
+            <h3>
+              Empate en el percentil {decimal(percentile, 1)} <small>Ninguno por delante. Van por tipo de ataque.</small>
+            </h3>
+            {cards}
+          </section>
+        );
+      })}
       {rest > 0 && (
         <button class="button more" type="button" onClick={() => setShown(shown + PAGE * 2)}>
           Mostrar más ({rest} restantes)
@@ -226,7 +250,7 @@ function AttackersMethod({ data }: { data: GymData }) {
           un Pokémon puede servir también con otros movimientos que aquí no aparecen.
         </li>
         <li>
-          <strong>Orden:</strong> por tier y, dentro, por percentil; los empates, por orden alfabético. No hay puestos, porque la fuente no ofrece un orden global
+          <strong>Orden:</strong> por tier y, dentro, por percentil; los empates, por tipo de ataque. No hay puestos, porque la fuente no ofrece un orden global
           fiable. Incluso en un mismo tipo, percentil y puntuación no siempre ordenan igual; se muestran ambos sin corregir.
         </li>
         <li>
@@ -259,6 +283,12 @@ function Attackers({ data, sources }: { data: GymData; sources: Sources }) {
   const filtered = key !== JSON.stringify(NO_FILTERS);
   return (
     <>
+      <section class="card explain" aria-label="Cómo elegir">
+        <p>
+          <strong>S+ no significa el mejor contra cualquiera.</strong> La mejor elección depende del tipo del Pokémon que
+          defiende: contra Blissey, de tipo Normal, conviene un ataque de Lucha. No hay un único ganador.
+        </p>
+      </section>
       <Attribution data={data} />
       <div class="filters">
         <div class="tier-filter gym-tiers" role="group" aria-label="Tier">
@@ -281,7 +311,8 @@ function Attackers({ data, sources }: { data: GymData; sources: Sources }) {
         <div class="filter-row filter-groups">
           <TypeSelect
             label="Tipo del ataque cargado"
-            all="Todos los tipos"
+            all="Todo ataque"
+            prefix="Ataque "
             value={filters.type}
             onChange={(type) => change({ type })}
           />
@@ -302,8 +333,9 @@ function Attackers({ data, sources }: { data: GymData; sources: Sources }) {
         </div>
         {filters.type !== 'all' && (
           <p class="note">
-            Pokémon cuyo ataque cargado recomendado es de tipo {typeName(filters.type)}. No es una lista completa de atacantes
-            de ese tipo.
+            Solo los que tienen como recomendado un ataque cargado de tipo {typeName(filters.type)}. No es una lista completa:
+            la fuente da una única combinación por Pokémon y faltan los que usan ese tipo con otros movimientos. Tampoco filtra
+            por el tipo del defensor.
           </p>
         )}
         <p class="result-count" role="status">
@@ -319,15 +351,9 @@ function Attackers({ data, sources }: { data: GymData; sources: Sources }) {
       {groups.length === 0 ? (
         <p class="empty">Ningún Pokémon coincide con los filtros.</p>
       ) : (
-        <>
-          <p class="note">
-            Se agrupan por tier y percentil. Los empates van por orden alfabético:{' '}
-            <strong>aparecer primero no significa ser el mejor</strong>.
-          </p>
-          {groups.map((group) => (
-            <TierSection key={`${group.tier}-${key}`} group={group} ties={ties} sources={sources} tr={tr} />
-          ))}
-        </>
+        groups.map((group) => (
+          <TierSection key={`${group.tier}-${key}`} group={group} ties={ties} sources={sources} tr={tr} />
+        ))
       )}
       <MoveLegend />
     </>

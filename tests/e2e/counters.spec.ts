@@ -29,7 +29,7 @@ test.describe('counters de un jefe', () => {
     for (const text of ['Puesto 1', 'Mega-Venusaur', 'Planta', 'Veneno', 'Poder Oculto (Bicho)', 'Pulso Umbrío+', '1,25', '30,5', '2.000']) {
       await expect(first).toContainText(text);
     }
-    await expect(first.locator('.pk-sprite, .pk-art').first()).toBeAttached();
+    await expect(first.locator('.pk-ready')).toBeVisible();
     await expect(cards.nth(4)).toContainText('Pidgeot');
     await expect(cards.nth(4)).toContainText('Oscuro');
     expect(net.count('raids/defenders')).toBe(1);

@@ -1,5 +1,5 @@
 import type { GymAttack, GymPokemon, PvpMove, Translations } from '../data/models';
-import { pvpLabel } from './names';
+import { pvpLabel, typeName } from './names';
 import { matchesSearch, searchWords } from './pvp';
 
 /** Tiers que publica doctorpokegogo, de mejor a peor. */
@@ -32,7 +32,7 @@ export const attackersOf = (pokemon: GymPokemon[]): GymAttacker[] =>
   pokemon.filter((p): p is GymAttacker => p.attack !== null);
 
 /**
- * Dentro de cada tier se sigue el percentil publicado y los empates van por orden alfabético, que no indica mérito.
+ * Dentro de cada tier se sigue el percentil publicado. Los empates van por tipo de ataque, que no indica mérito.
  * No se numeran: la puntuación depende del defensor de referencia de cada tipo y no permite un orden global.
  */
 export function filterAttackers(
@@ -48,13 +48,39 @@ export function filterAttackers(
       GYM_GROUPS.every((group) => filters[group] === 'with' || p.groups.includes(group) === (filters[group] === 'only')) &&
       matchesSearch(p, words, tr),
   );
-  const name = (p: GymAttacker) => pvpLabel(p, tr).name;
+  const key = (p: GymAttacker) => `${typeName(p.attack.chargedType)} ${pvpLabel(p, tr).name}`;
   return GYM_TIERS.map((tier) => ({
     tier,
     entries: matches
       .filter((p) => p.attack.tier === tier)
-      .sort((a, b) => b.attack.percentile - a.attack.percentile || name(a).localeCompare(name(b), 'es') || a.name.localeCompare(b.name)),
+      .sort(
+        (a, b) =>
+          b.attack.percentile - a.attack.percentile || key(a).localeCompare(key(b), 'es') || a.name.localeCompare(b.name),
+      ),
   })).filter((group) => group.entries.length > 0);
+}
+
+export interface AttackerBlock {
+  /** Percentil en el que empatan, o null si el bloque no es un empate amplio. */
+  percentile: number | null;
+  entries: GymAttacker[];
+}
+
+/** Desde este número, los empatados se presentan juntos. Con menos basta el aviso de cada ficha. */
+const WIDE_TIE = 4;
+
+/** Separa los empates amplios del resto, sin cambiar el orden. */
+export function tieBlocks(entries: GymAttacker[]): AttackerBlock[] {
+  const sizes = countPercentiles(entries);
+  const blocks: AttackerBlock[] = [];
+  for (const entry of entries) {
+    const { percentile } = entry.attack;
+    const tied = sizes.get(percentile)! >= WIDE_TIE ? percentile : null;
+    const last = blocks.at(-1);
+    if (last && last.percentile === tied) last.entries.push(entry);
+    else blocks.push({ percentile: tied, entries: [entry] });
+  }
+  return blocks;
 }
 
 /** Cuántos atacantes comparten cada percentil. */

@@ -13,7 +13,8 @@ export async function network(context: BrowserContext) {
   await context.route(/^https:\/\/|\/data\/gimnasios\.json$/, async (route) => {
     const url = route.request().url();
     calls.push(url);
-    if (url.includes('/PokeAPI/sprites/') && table.images !== 'fail') {
+    const broken = table.images === 'fail' || (table.art === 'fail' && url.includes('official-artwork'));
+    if (url.includes('/PokeAPI/sprites/') && !broken) {
       return route.fulfill({
         status: 200,
         headers: { 'access-control-allow-origin': '*', 'content-type': 'image/png' },

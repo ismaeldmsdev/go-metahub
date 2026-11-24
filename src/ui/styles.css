@@ -1005,6 +1005,26 @@ details[open] > summary::after {
   justify-self: center;
 }
 
+.tie {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr);
+  padding-left: 10px;
+  border-left: 3px solid var(--line);
+}
+
+.tie h3 {
+  font-size: 0.95rem;
+}
+
+.tie h3 small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 550;
+  letter-spacing: 0;
+}
+
 .tied {
   display: block;
   color: var(--muted);
@@ -1217,15 +1237,11 @@ details[open] > summary::after {
 .pk-art {
   padding: 4px;
   opacity: 0;
-  transform: scale(0.92);
-  transition:
-    opacity 0.25s,
-    transform 0.35s var(--ease);
+  transition: opacity 0.25s;
 }
 
 .pk-art.pk-ready {
   opacity: 1;
-  transform: none;
 }
 
 .pk-shadow {

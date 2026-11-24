@@ -13,9 +13,10 @@ import {
   GYM_TIERS,
   gymMove,
   rankDefenders,
+  tieBlocks,
   type AttackerFilters,
 } from '../../src/domain/gyms';
-import { moveName, pvpLabel } from '../../src/domain/names';
+import { moveName, pvpLabel, typeName } from '../../src/domain/names';
 import { spriteId } from '../../src/domain/sprites';
 import { fixtures, NOW } from '../fixtures';
 
@@ -242,12 +243,27 @@ describe('atacantes', () => {
     expect(Object.values(countGymTiers(all)).reduce((a, b) => a + b)).toBe(all.length);
   });
 
-  it('los empates van por orden alfabético en español y se cuentan', () => {
+  it('los empates van por tipo de ataque y se cuentan', () => {
     const [first] = filterAttackers(all, none, tr);
-    const tied = first!.entries.filter((p) => p.attack.percentile === 99.6).map((p) => pvpLabel(p, tr).name);
+    const tied = first!.entries.filter((p) => p.attack.percentile === 99.6).map((p) => typeName(p.attack.chargedType));
     expect(tied).toHaveLength(9);
     expect(tied).toEqual([...tied].sort((a, b) => a.localeCompare(b, 'es')));
     expect(countPercentiles(all).get(99.6)).toBe(9);
+  });
+
+  it('los empates amplios forman bloque sin perder ni reordenar a nadie', () => {
+    for (const { entries } of filterAttackers(all, none, tr)) {
+      const blocks = tieBlocks(entries);
+      expect(blocks.flatMap((b) => b.entries)).toEqual(entries);
+      for (const block of blocks) {
+        if (block.percentile === null) continue;
+        expect(block.entries.length).toBeGreaterThanOrEqual(4);
+        expect(block.entries.every((p) => p.attack.percentile === block.percentile)).toBe(true);
+      }
+    }
+    const [top, next] = tieBlocks(filterAttackers(all, none, tr)[0]!.entries);
+    expect([top!.percentile, top!.entries.length]).toEqual([99.6, 9]);
+    expect([next!.percentile, next!.entries.length]).toEqual([99.5, 16]);
   });
 
   it('la puntuación no interviene en el orden', () => {

@@ -4,7 +4,7 @@ import { network } from './network';
 const ART = 'official-artwork';
 
 test.describe('imágenes de Pokémon', () => {
-  test('sprite inmediato, ilustración al verse y oscuros identificados', async ({ page, context }) => {
+  test('ilustración al verse y oscuros identificados', async ({ page, context }) => {
     await network(context);
     await page.goto('/#pvp');
     const cards = page.locator('.rank-card');
@@ -15,6 +15,59 @@ test.describe('imágenes de Pokémon', () => {
     const mimikyu = cards.filter({ hasText: 'Mimikyu' }).first();
     await mimikyu.scrollIntoViewIfNeeded();
     await expect(mimikyu.locator('.pk-ready')).toHaveAttribute('src', /\/10143\.png$/);
+  });
+
+  test('mientras llega la ilustración no se ve ninguna otra imagen ni cambia el tamaño', async ({ page, context }) => {
+    await network(context);
+    let release = () => {};
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    await context.route(/official-artwork/, async (route) => {
+      await gate;
+      await route.fallback();
+    });
+    for (const hash of ['pvp', 'gimnasios', 'gimnasios/defensores', 'incursiones/cresselia']) {
+      await page.goto(`/#${hash}`);
+      const figure = page.locator('.rank-card').first().locator('.pk');
+      await expect(figure.locator('.pk-art')).toBeAttached();
+      await expect(page.locator('.pk-sprite, .pk-fallback')).toHaveCount(0);
+      await expect(figure.locator('.pk-art')).toHaveCSS('opacity', '0');
+      await expect(figure).toHaveCSS('width', '84px');
+    }
+    const figure = page.locator('.rank-card').first().locator('.pk');
+    const before = await figure.boundingBox();
+    release();
+    await expect(figure.locator('.pk-ready')).toHaveCSS('opacity', '1');
+    await expect(page.locator('.pk-sprite')).toHaveCount(0);
+    expect(await figure.boundingBox()).toEqual(before);
+  });
+
+  test('si falla la ilustración, usa el sprite de la misma forma', async ({ page, context }) => {
+    const net = await network(context);
+    net.table.art = 'fail';
+    await page.goto('/#pvp');
+    const figure = page.locator('.rank-card').first().locator('.pk');
+    await expect(figure.locator('.pk-sprite')).toHaveAttribute('src', /sprites\/pokemon\/809\.png$/);
+    await expect(figure.locator('.pk-art')).toHaveCount(0);
+  });
+
+  test('con ahorro de datos, solo el sprite, sin sustituirlo', async ({ page, context }) => {
+    const net = await network(context);
+    await page.addInitScript(() => Object.defineProperty(navigator, 'connection', { value: { saveData: true } }));
+    await page.goto('/#pvp');
+    await expect(page.locator('.rank-card').first().locator('.pk-sprite')).toBeVisible();
+    await page.waitForTimeout(500);
+    expect(net.count(ART)).toBe(0);
+  });
+
+  test('al volver a una lista, las ya vistas salen directamente', async ({ page, context }) => {
+    await network(context);
+    await page.goto('/#pvp');
+    await expect(page.locator('.rank-card').first().locator('.pk-ready')).toBeVisible();
+    await page.getByRole('link', { name: 'Eventos' }).click();
+    await page.getByRole('link', { name: 'PvP' }).click();
+    const first = page.locator('.rank-card').first();
+    await first.waitFor();
+    expect(await first.locator('.pk-ready').count()).toBe(1);
   });
 
   test('solo descarga ilustraciones de lo que está a la vista', async ({ page, context }) => {
@@ -79,7 +132,7 @@ test.describe('imágenes sin conexión', () => {
     await expect(page.locator('.pk-ready').first()).toBeVisible();
     await page.waitForTimeout(500);
     const names = await page.evaluate(() => caches.keys());
-    expect(names).toEqual(expect.arrayContaining(['go-metahub-ilustraciones', 'go-metahub-sprites']));
+    expect(names).toContain('go-metahub-ilustraciones');
     for (const key of Object.keys(net.table)) net.table[key] = 'fail';
     net.table.images = 'fail';
     await context.setOffline(true);

@@ -31,7 +31,8 @@ C desde 70. El puesto, la puntuación y los movimientos son los de PvPoke, sin r
 ## Gimnasios
 
 - **Atacantes:** datos originales de doctorpokegogo, sin recalcular y sin orden global: su puntuación depende del defensor
-  de referencia de cada tipo. Los empates de percentil van por orden alfabético. Hay un solo conjunto de movimientos por Pokémon.
+  de referencia de cada tipo. Los empates de percentil se presentan juntos, por tipo
+  de ataque. Hay un solo conjunto de movimientos por Pokémon.
 - **Defensores:** resistencia = defensa base × aguante base. No es una simulación: no cuenta movimientos, motivación ni
   enfrentamientos. Los oscuros pueden defender, pero no llevan ficha propia: la fuente no distingue su resistencia. Las
   exclusiones y su origen están en [`scripts/gyms.ts`](scripts/gyms.ts) y en la propia aplicación.
