@@ -1,4 +1,4 @@
-import type { BrowserContext } from '@playwright/test';
+import { expect, type BrowserContext, type Page } from '@playwright/test';
 import { routes } from '../fixtures';
 
 const PIXEL = Buffer.from(
@@ -32,3 +32,29 @@ export async function network(context: BrowserContext) {
   const count = (part: string) => calls.filter((url) => url.includes(part)).length;
   return { table, count, reset: () => void (calls.length = 0) };
 }
+
+/** El guardado termina después de pintar: antes de recargar hay que esperar a que estén las claves que empiezan así. */
+export const saved = (page: Page, ...prefixes: string[]) =>
+  expect
+    .poll(() =>
+      page.evaluate(
+        (wanted) =>
+          new Promise<string[]>((resolve, reject) => {
+            const open = indexedDB.open('pke-meta');
+            open.onerror = () => reject(open.error);
+            open.onsuccess = () => {
+              const keys = open.result.transaction('sources').objectStore('sources').getAllKeys();
+              keys.onsuccess = () => {
+                open.result.close();
+                resolve(wanted.filter((prefix) => !keys.result.some((key) => String(key).startsWith(prefix))));
+              };
+            };
+          }),
+        prefixes,
+      ),
+    )
+    .toEqual([]);
+
+export const ALL_SOURCES = [
+  'pvp', 'raids', 'events', 'translations', 'pokebattler', 'sprites', 'gyms', 'rocket', 'rocketContrast', 'rocketAttackers',
+];

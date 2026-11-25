@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { NOW, routes } from '../fixtures';
-import { network } from './network';
+import { ALL_SOURCES, network, saved } from './network';
 
 const HOUR = 3_600_000;
 
@@ -173,6 +173,7 @@ test.describe('actualización automática', () => {
     const net = await network(context);
     await open(page, 'fuentes');
     await expect(page.getByText('Consulta al día')).toHaveCount(10);
+    await saved(page, ...ALL_SOURCES);
     net.reset();
     await page.reload();
     await expect(page.getByText('Consulta al día')).toHaveCount(10);
@@ -224,6 +225,7 @@ test.describe('fallos', () => {
       const net = await network(context);
       await open(page, 'incursiones');
       await expect(page.locator('.boss')).toHaveCount(18);
+      await saved(page, 'raids');
       net.table['raids.min.json'] = reply;
       await page.clock.setSystemTime(NOW + 7 * HOUR);
       await page.reload();
@@ -262,6 +264,7 @@ test.describe('sin conexión con la aplicación instalada', () => {
     await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
     await page.reload();
     await expect(page.locator('.rank-card').first()).toBeVisible();
+    await saved(page, 'pvp', 'raids');
     for (const key of Object.keys(net.table)) net.table[key] = 'fail';
     await context.setOffline(true);
     await page.reload();

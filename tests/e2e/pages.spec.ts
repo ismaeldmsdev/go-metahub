@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { network } from './network';
+import { network, saved } from './network';
 
 const BASE = 'http://localhost:4184/go-metahub/';
 
@@ -50,6 +50,7 @@ test.describe('en una subcarpeta, como en GitHub Pages', () => {
     await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
     await page.reload();
     await expect(page.locator('.boss')).toHaveCount(18);
+    await saved(page, 'raids', 'events');
     for (const key of Object.keys(net.table)) net.table[key] = 'fail';
     await context.setOffline(true);
     await page.goto(`${BASE}#eventos`);

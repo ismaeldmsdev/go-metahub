@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { NOW } from '../fixtures';
-import { network } from './network';
+import { network, saved } from './network';
 
 const FILE = 'data/gimnasios.json';
 const DAY = 86_400_000;
@@ -10,22 +10,6 @@ async function open(page: Page, hash = 'gimnasios') {
   await page.clock.install({ time: NOW });
   await page.goto(`/#${hash}`);
 }
-
-/** ¿Ya están guardados en el dispositivo? */
-const stored = (page: Page) =>
-  page.evaluate(
-    () =>
-      new Promise<boolean>((resolve) => {
-        const open = indexedDB.open('pke-meta');
-        open.onsuccess = () => {
-          const keys = open.result.transaction('sources').objectStore('sources').getAllKeys();
-          keys.onsuccess = () => {
-            open.result.close();
-            resolve(keys.result.includes('gyms'));
-          };
-        };
-      }),
-  );
 
 test.describe('atacantes de gimnasio', () => {
   test('tier, percentil, puntuación, movimientos, imagen y nombre en español', async ({ page, context }) => {
@@ -202,8 +186,7 @@ test.describe('datos y fallos', () => {
     await open(page);
     await expect(page.locator('.rank-card').first()).toBeVisible();
     expect(net.count('doctorpokegogo')).toBe(0);
-    // El guardado termina después de pintar la lista.
-    await expect.poll(() => stored(page)).toBe(true);
+    await saved(page, 'gyms');
     net.reset();
     await page.reload();
     await expect(page.locator('.rank-card').first()).toBeVisible();
@@ -222,6 +205,7 @@ test.describe('datos y fallos', () => {
       const net = await network(context);
       await open(page);
       await expect(page.locator('.rank-card').first()).toBeVisible();
+      await saved(page, 'gyms');
       net.table[FILE] = reply;
       await page.clock.setSystemTime(NOW + 3 * DAY);
       await page.reload();

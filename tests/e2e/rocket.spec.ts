@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { fixtures, NOW } from '../fixtures';
-import { network } from './network';
+import { network, saved } from './network';
 
 const HOUR = 3_600_000;
 const MAIN = 'event-info/main/grunts/formatted.json';
@@ -21,23 +21,6 @@ const errorsOf = (page: Page) => {
   page.on('pageerror', (e) => errors.push(e.message));
   return errors;
 };
-
-/** ¿Ya están guardados en el dispositivo? */
-const stored = (page: Page, id: string) =>
-  page.evaluate(
-    (key) =>
-      new Promise<boolean>((resolve) => {
-        const open = indexedDB.open('pke-meta');
-        open.onsuccess = () => {
-          const keys = open.result.transaction('sources').objectStore('sources').getAllKeys();
-          keys.onsuccess = () => {
-            open.result.close();
-            resolve(keys.result.includes(key));
-          };
-        };
-      }),
-    id,
-  );
 
 test.describe('navegación', () => {
   for (const width of [320, 390]) {
@@ -290,7 +273,7 @@ test.describe('fallos y conexión', () => {
       const net = await network(context);
       await open(page);
       await expect(page.locator('.trainer')).toHaveCount(4);
-      await expect.poll(() => stored(page, 'rocket')).toBe(true);
+      await saved(page, 'rocket');
       net.table[MAIN] = reply;
       await page.clock.setSystemTime(NOW + 7 * HOUR);
       await page.reload();

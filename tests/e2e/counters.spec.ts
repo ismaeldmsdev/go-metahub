@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { NOW } from '../fixtures';
-import { network } from './network';
+import { network, saved } from './network';
 
 const CRESSELIA = 'raids/defenders/CRESSELIA/';
 const DAY = 86_400_000;
@@ -94,6 +94,7 @@ test.describe('caché y fallos', () => {
     const net = await network(context);
     await open(page);
     await expect(page.locator('.rank-card')).toHaveCount(30);
+    await saved(page, 'counters|', 'raids', 'pokebattler');
     net.reset();
     await page.reload();
     await expect(page.locator('.rank-card')).toHaveCount(30);
@@ -112,6 +113,7 @@ test.describe('caché y fallos', () => {
       const net = await network(context);
       await open(page);
       await expect(page.locator('.rank-card')).toHaveCount(30);
+      await saved(page, 'counters|', 'raids', 'pokebattler');
       net.table[CRESSELIA] = reply;
       await page.clock.setSystemTime(NOW + 8 * DAY);
       await page.reload();
