@@ -26,7 +26,7 @@ const INFO: Record<SourceId, { title: string; credit: string; url: string; note:
     title: 'Nombres en español',
     credit: 'WatWowMap',
     url: 'https://github.com/WatWowMap/pogo-translations',
-    note: 'Nombres de Pokémon y movimientos. Esta fuente no informa de su fecha aquí.',
+    note: 'Nombres de Pokémon y movimientos, y frases del Team GO Rocket. Esta fuente no informa de su fecha aquí.',
   },
   sprites: {
     title: 'Imágenes de Pokémon',
@@ -40,6 +40,24 @@ const INFO: Record<SourceId, { title: string; credit: string; url: string; note:
     url: 'https://doctorpokegogo.com/',
     note: 'Evaluación de atacantes y resistencia, CC BY 4.0. Resumen transformado por GO MetaHub; los originales se publican de forma irregular.',
   },
+  rocket: {
+    title: 'Alineaciones de Rocket',
+    credit: 'WatWowMap',
+    url: 'https://github.com/WatWowMap/event-info',
+    note: 'Licencia MIT, © 2022 WatWowMap. La fecha de publicación es la del último cambio en las alineaciones.',
+  },
+  rocketContrast: {
+    title: 'Contraste de Rocket',
+    credit: 'ScrapedDuck',
+    url: 'https://github.com/bigfoott/ScrapedDuck',
+    note: 'Datos de LeekDuck.com. Solo sirven para avisar si no coinciden con las alineaciones. No informa de su fecha aquí.',
+  },
+  rocketAttackers: {
+    title: 'Atacantes para Rocket',
+    credit: 'doctorpokegogo.com',
+    url: 'https://doctorpokegogo.com/',
+    note: 'Evaluación general, CC BY 4.0. Resumen transformado por GO MetaHub; los originales se publican de forma irregular.',
+  },
   pokebattler: {
     title: 'Counters',
     credit: 'Pokébattler',
@@ -48,7 +66,18 @@ const INFO: Record<SourceId, { title: string; credit: string; url: string; note:
   },
 };
 
-const ORDER: SourceId[] = ['pvp', 'raids', 'gyms', 'events', 'translations', 'sprites', 'pokebattler'];
+const ORDER: SourceId[] = [
+  'pvp',
+  'raids',
+  'gyms',
+  'events',
+  'rocket',
+  'rocketContrast',
+  'rocketAttackers',
+  'translations',
+  'sprites',
+  'pokebattler',
+];
 
 export function SourcesView({ sources, storageOk }: { sources: Sources; storageOk: boolean }) {
   return (
@@ -94,15 +123,18 @@ export function SourcesView({ sources, storageOk }: { sources: Sources; storageO
           Eventos, incursiones e imágenes: <External href="https://leekduck.com">LeekDuck.com</External>, a través de{' '}
           <External href="https://github.com/bigfoott/ScrapedDuck">ScrapedDuck</External>. Clasificaciones:{' '}
           <External href="https://pvpoke.com">PvPoke</External>. Counters:{' '}
-          <External href="https://www.pokebattler.com">Pokébattler</External>. Gimnasios:{' '}
+          <External href="https://www.pokebattler.com">Pokébattler</External>. Alineaciones del Team GO Rocket:{' '}
+          <External href="https://github.com/WatWowMap/event-info">WatWowMap</External> (
+          <External href="https://github.com/WatWowMap/event-info/blob/main/LICENSE">MIT</External>), contrastadas con{' '}
+          <External href="https://leekduck.com/rocket-lineups/">LeekDuck</External>. Gimnasios y atacantes para Rocket:{' '}
           <External href="https://doctorpokegogo.com/">doctorpokegogo.com</External>,{' '}
-          <External href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</External>, transformados y resumidos. Nombres en español:{' '}
+          <External href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</External>, transformados y resumidos. Nombres y frases en español:{' '}
           <External href="https://github.com/WatWowMap/pogo-translations">WatWowMap</External>. Ilustraciones y sprites:{' '}
           <External href="https://github.com/PokeAPI/sprites">PokéAPI</External>, © The Pokémon Company.
         </p>
         <p class="fine">
           Aplicación personal sin ánimo de lucro, no afiliada a Niantic, Nintendo ni The Pokémon Company. Pokémon y sus
-          nombres e imágenes pertenecen a sus titulares.
+          nombres, imágenes y frases pertenecen a sus titulares.
         </p>
       </section>
     </>

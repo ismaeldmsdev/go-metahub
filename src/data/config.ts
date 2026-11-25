@@ -46,6 +46,14 @@ export const ENDPOINTS = {
   }),
   /** Resumen propio, publicado junto a la aplicación: el original ocupa 7,6 MB y no admite lecturas desde otras webs. */
   gyms: { url: './data/gimnasios.json' } as Endpoint,
+  /** Alineaciones del Team GO Rocket: la principal y la de contraste. */
+  rocket: github('WatWowMap/event-info', 'main', 'grunts/formatted.json'),
+  rocketContrast: github('bigfoott/ScrapedDuck', 'data', 'rocketLineups.min.json'),
+  /** Resumen propio, como el de gimnasios. */
+  rocketAttackers: { url: './data/rocket.json' } as Endpoint,
+  /** Fecha del último cambio de ese archivo, que es el de las alineaciones. */
+  rocketCommit:
+    'https://api.github.com/repos/WatWowMap/event-info/commits?path=grunts/formatted.json&per_page=1',
   pvpokeCommit:
     'https://api.github.com/repos/pvpoke/pvpoke/commits?path=src/data/rankings/all/overall&per_page=1',
   scrapedDuckCommit:
@@ -62,7 +70,17 @@ export const MINUTE = 60_000;
 export const HOUR = 60 * MINUTE;
 export const DAY = 24 * HOUR;
 
-export type SourceId = 'pvp' | 'raids' | 'events' | 'translations' | 'pokebattler' | 'sprites' | 'gyms';
+export type SourceId =
+  | 'pvp'
+  | 'raids'
+  | 'events'
+  | 'translations'
+  | 'pokebattler'
+  | 'sprites'
+  | 'gyms'
+  | 'rocket'
+  | 'rocketContrast'
+  | 'rocketAttackers';
 
 /** Los counters se piden por jefe, así que no son una fuente única. */
 export type QueryId = SourceId | 'counters';
@@ -75,6 +93,9 @@ export const TTL: Record<QueryId, number> = {
   pokebattler: 6 * HOUR,
   sprites: DAY,
   gyms: DAY,
+  rocket: 6 * HOUR,
+  rocketContrast: 6 * HOUR,
+  rocketAttackers: DAY,
   // Pokébattler pide guardar las respuestas y avisa de que envejecen en días.
   counters: DAY,
 };
@@ -87,6 +108,7 @@ export const SOURCE_STALE_AFTER: Partial<Record<QueryId, number>> = {
   // PvPoke publica de forma irregular; puede pasar varias semanas sin cambios.
   pvp: 45 * DAY,
   gyms: 45 * DAY,
+  rocketAttackers: 45 * DAY,
 };
 
 /** Espera mínima tras un fallo antes de volver a consultar automáticamente. */
@@ -103,10 +125,13 @@ export const STORAGE_VERSION: Record<QueryId, number> = {
   pvp: 3,
   raids: 1,
   events: 1,
-  translations: 1,
+  translations: 2,
   pokebattler: 2,
   sprites: 1,
   gyms: 1,
+  rocket: 1,
+  rocketContrast: 1,
+  rocketAttackers: 1,
   counters: 1,
 };
 /** Los counters que no se actualizan desde hace este tiempo se borran. */

@@ -15,11 +15,14 @@ el móvil, que se mantiene al día consultando fuentes de la comunidad.
 - **Gimnasios:** atacantes con el tier, el percentil y los movimientos que publica doctorpokegogo, con filtros; y
   defensores ordenados por resistencia teórica, con sus debilidades.
 - **Eventos:** activos, próximos y sin fecha confirmada, en hora peninsular y con cuenta atrás.
+- **Team GO Rocket:** alineaciones actuales de Giovanni, los líderes y los reclutas, con sus frases; debilidades de cada
+  Pokémon, opciones con ventaja de tipo y los mejores atacantes generales según doctorpokegogo.
 - **Fuentes:** cuándo se consultó cada una, cuándo publicó y cuándo cambió de verdad.
 
 ## Cómo se mantiene al día
 
-- PvP, traducciones y lista de imágenes cada 24 horas. Incursiones, eventos y lista de jefes de Pokébattler cada 6 horas.
+- PvP, traducciones y lista de imágenes cada 24 horas. Incursiones, eventos, alineaciones de Rocket y lista de jefes de Pokébattler
+  cada 6 horas.
 - Los counters se piden solo al abrir un jefe y se guardan 24 horas por jefe y clima.
 - Se comprueba al abrir, al volver a primer plano y cada minuto con la aplicación visible.
 - Toda descarga se valida. Si falla, se conservan los últimos datos válidos y se avisa.
@@ -48,6 +51,22 @@ C desde 70. El puesto, la puntuación y los movimientos son los de PvPoke, sin r
   por correo. Se detiene en Actions › Datos de gimnasios › Disable workflow. Tras 60 días sin actividad en el repositorio,
   GitHub la desactiva; se reactiva con Enable workflow, en la misma página.
 
+## Team GO Rocket
+
+- **Alineaciones:** se leen de WatWowMap desde el propio dispositivo, sin volver a publicar la aplicación, y se contrastan
+  con LeekDuck. Si no coinciden, se avisa y se muestra lo que dice cada una. Solo se comparan especie y región.
+- **Frases:** las del juego en español, de WatWowMap/pogo-translations. Se enlazan por el número de cada entrenador. Si no hay
+  traducción, no se muestran. No se copian a este repositorio: las de las pruebas son inventadas.
+- **Atacantes generales:** tier, puntuación y movimientos originales de doctorpokegogo, sin puestos. Valoran a cada Pokémon
+  contra el Team GO Rocket en conjunto, **no contra un rival concreto**.
+- **Opciones con ventaja de tipo:** selección de GO MetaHub, **no son counters exactos ni una simulación**. Entran los de tier
+  general S+, S o A con ataque cargado eficaz, rápido no resistido y sin debilidad a los tipos del rival. No se consideran los
+  escudos, la resistencia, los ataques del rival ni el equipo. Se ven primero unas pocas especies. Con menos de tres especies, o si no se conocen los tipos del rival, no se sugiere nada.
+- `npm run rocket` genera [`public/data/rocket.json`](public/data/rocket.json) (unos 30 KB comprimido) con las mismas
+  comprobaciones que el de gimnasios. [`rocket.yml`](.github/workflows/rocket.yml) lo hace cada día a las 05:50 UTC y solo
+  publica si cambian los datos y la variable `ROCKET_AUTOMATICO` vale `si`. Un cambio de fecha sin cambios de contenido no se
+  publica hasta pasados 30 días.
+
 ## Fuentes y créditos
 
 | Contenido | Fuente | Condiciones |
@@ -56,7 +75,10 @@ C desde 70. El puesto, la puntuación y los movimientos son los de PvPoke, sin r
 | Incursiones y eventos | [LeekDuck](https://leekduck.com), a través de [ScrapedDuck](https://github.com/bigfoott/ScrapedDuck) | Sin anuncios ni pago, con atribución |
 | Counters de incursiones | [Pokébattler](https://www.pokebattler.com/developers) | API pública: con atribución, caché y uso ocasional |
 | Gimnasios | [doctorpokegogo.com](https://doctorpokegogo.com/) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); datos transformados y resumidos por GO MetaHub |
-| Nombres en español | [WatWowMap/pogo-translations](https://github.com/WatWowMap/pogo-translations) | Textos de sus titulares |
+| Alineaciones de Rocket | [WatWowMap/event-info](https://github.com/WatWowMap/event-info) | [MIT](https://github.com/WatWowMap/event-info/blob/main/LICENSE), © 2022 WatWowMap |
+| Contraste de Rocket | [LeekDuck](https://leekduck.com/rocket-lineups/), a través de [ScrapedDuck](https://github.com/bigfoott/ScrapedDuck) | Sin anuncios ni pago, con atribución |
+| Atacantes para Rocket | [doctorpokegogo.com](https://doctorpokegogo.com/) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); datos transformados y resumidos por GO MetaHub |
+| Nombres y frases en español | [WatWowMap/pogo-translations](https://github.com/WatWowMap/pogo-translations) | ISC según su `package.json`; textos de sus titulares |
 | Lista de formas | [PokéAPI](https://github.com/PokeAPI/pokeapi) | BSD-3-Clause |
 | Ilustraciones y sprites | [PokeAPI/sprites](https://github.com/PokeAPI/sprites) | Imágenes © The Pokémon Company |
 
@@ -64,9 +86,10 @@ Las imágenes no se incluyen en este repositorio: se cargan desde su origen al v
 
 Las copias de datos de `tests/fixtures` proceden de esas mismas fuentes, se tomaron el 23 de noviembre de 2026 y solo
 se usan en las pruebas. Las de gimnasios son del 22 de noviembre y están recortadas. Las de Pokébattler son sintéticas.
+Las de Rocket son del 25 de noviembre, con frases inventadas.
 
 Proyecto personal sin ánimo de lucro, no afiliado a Niantic, Scopely, Nintendo ni The Pokémon Company. Pokémon y sus
-nombres e imágenes pertenecen a sus titulares.
+nombres, imágenes y frases pertenecen a sus titulares.
 
 ## Desarrollo
 
@@ -91,5 +114,5 @@ Cada cambio en `main` se prueba, se compila y se publica en GitHub Pages mediant
 | `src/data` | Direcciones, descarga, validación, guardado y sincronización |
 | `src/domain` | Reglas sin interfaz: fechas, vigencia, tiers, nombres, imágenes y enlaces |
 | `src/ui` | Pantallas |
-| `scripts` | Generación y validación de los datos de gimnasios |
+| `scripts` | Generación y validación de los datos de gimnasios y de los atacantes para Rocket |
 | `tests` | Pruebas |

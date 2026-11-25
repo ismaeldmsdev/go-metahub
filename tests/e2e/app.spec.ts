@@ -134,7 +134,7 @@ test.describe('actualización automática', () => {
   test('durante el uso: 6 h incursiones y eventos, 24 h PvP', async ({ page, context }) => {
     const net = await network(context);
     await open(page, 'fuentes');
-    await expect(page.getByText('Consulta al día')).toHaveCount(7);
+    await expect(page.getByText('Consulta al día')).toHaveCount(10);
     net.reset();
     await page.clock.fastForward(5 * HOUR);
     expect(net.count('raids.min.json') + net.count('events.min.json')).toBe(0);
@@ -172,10 +172,10 @@ test.describe('actualización automática', () => {
   test('al abrir: no repite si está vigente y actualiza si caducó', async ({ page, context }) => {
     const net = await network(context);
     await open(page, 'fuentes');
-    await expect(page.getByText('Consulta al día')).toHaveCount(7);
+    await expect(page.getByText('Consulta al día')).toHaveCount(10);
     net.reset();
     await page.reload();
-    await expect(page.getByText('Consulta al día')).toHaveCount(7);
+    await expect(page.getByText('Consulta al día')).toHaveCount(10);
     expect(net.count('githubusercontent')).toBe(0);
     await page.clock.setSystemTime(NOW + 7 * HOUR);
     await page.reload();
@@ -292,13 +292,14 @@ test.describe('diseño adaptable', () => {
       await network(context);
       await open(page);
       await expect(page.locator('.rank-card').first()).toBeVisible();
-      for (const tab of ['PvP', 'Incursiones', 'Eventos', 'Fuentes']) {
-        await page.getByRole('navigation').getByRole('link', { name: tab }).click();
+      for (const tab of ['PvP', 'Incursiones', 'Eventos', 'Rocket', 'Fuentes']) {
+        const place = page.getByRole(tab === 'Fuentes' ? 'banner' : 'navigation');
+        await place.getByRole('link', { name: tab }).click();
         await expect(page.getByRole('heading', { level: 1 })).toHaveText(tab);
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
         expect(overflow).toBeLessThanOrEqual(0);
         // Solo lo que se ve: un botón dentro de un desplegable cerrado no se puede pulsar.
-        const small = await page.locator('nav a, button:not(.text-button), input, select').evaluateAll((els) =>
+        const small = await page.locator('nav a, .sources-link, button:not(.text-button), input, select').evaluateAll((els) =>
           els
             .filter((e) => e.checkVisibility() && e.getBoundingClientRect().height < 44)
             .map((e) => `${e.textContent} (${e.getBoundingClientRect().height} px)`),

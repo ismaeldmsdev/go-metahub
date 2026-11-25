@@ -1,10 +1,13 @@
 import type { z } from 'zod';
 import type { SpriteIndex } from '../domain/sprites';
+import { TYPES } from '../domain/names';
 import { leekDuckUrl, normalize, plainText } from '../domain/text';
 import { tierOf } from '../domain/tiers';
 import type { CountersTarget } from './config';
 import { SourceError } from './errors';
 import type {
+  ContrastPokemon,
+  ContrastTrainer,
   Counter,
   CountersData,
   CpRange,
@@ -15,10 +18,28 @@ import type {
   PvpEntry,
   PvpMove,
   RaidBoss,
+  RocketAttackersData,
+  RocketSlot,
+  RocketTrainer,
   Species,
   Translations,
 } from './models';
-import { counters, gamemaster, gyms, locale, parseList, parseWith, pokebattler, raidBoss, rankingEntry, rawEvent } from './schemas';
+import {
+  contrastTrainer,
+  counters,
+  gamemaster,
+  gyms,
+  locale,
+  parseList,
+  parseWith,
+  pokebattler,
+  raidBoss,
+  rankingEntry,
+  rawEvent,
+  rocketAttackers,
+  rocketList,
+  rocketTrainer,
+} from './schemas';
 
 type Gamemaster = z.infer<typeof gamemaster>;
 
@@ -156,10 +177,22 @@ export function toTranslations(rawEn: unknown, rawEs: unknown): Translations {
   const en = parseWith(locale, rawEn, 'las traducciones');
   const es = parseWith(locale, rawEs, 'las traducciones');
   const pokemon: Translations['pokemon'] = {};
+  const trainers: Translations['trainers'] = {};
   const candidates = new Map<string, { en: string; es: Set<string> }>();
   for (const [key, english] of Object.entries(en)) {
     const spanish = es[key];
     if (typeof english !== 'string' || typeof spanish !== 'string' || !english || !spanish) continue;
+    // «grunt_39» es el nombre; «grunt_quote_39», «grunt_quote_39_2»…, sus frases. Sin traducir no se usan.
+    const trainer = /^grunt_(quote_)?(\d+)(_\d+)?$/.exec(key);
+    if (trainer) {
+      if (spanish === english) continue;
+      const entry = (trainers[trainer[2]!] ??= { name: null, phrases: [] });
+      const text = plainText(spanish);
+      if (trainer[1]) {
+        if (text && !entry.phrases.includes(text)) entry.phrases.push(text);
+      } else if (!trainer[3]) entry.name = text || null;
+      continue;
+    }
     const dex = /^poke_(\d+)$/.exec(key)?.[1];
     if (dex) {
       pokemon[dex] = { en: english, es: spanish };
@@ -179,7 +212,7 @@ export function toTranslations(rawEn: unknown, rawEs: unknown): Translations {
   if (Object.keys(pokemon).length < 800 || Object.keys(moves).length < 200) {
     throw new SourceError('format', 'Faltan demasiadas traducciones en la fuente');
   }
-  return { pokemon, moves };
+  return { pokemon, moves, trainers };
 }
 
 const CURRENT_TIER = /^RAID_LEVEL_(?:[1-6]|MEGA|MEGA_5|ELITE|ULTRA_BEAST|[1-6]_SHADOW|[1-6]_MEGA_ENHANCED)$/;
@@ -242,6 +275,96 @@ export function toGyms(raw: unknown): GymData {
   if (pokemon.filter((p) => p.attack).length < MIN_GYM || pokemon.filter((p) => p.bulk !== null).length < MIN_GYM) {
     throw new SourceError('format', `En ${what} faltan Pokémon`);
   }
+  if (new Set(pokemon.map((p) => p.name)).size !== pokemon.length) {
+    throw new SourceError('format', `En ${what} hay Pokémon repetidos`);
+  }
+  return { source, changes, pokemon };
+}
+
+/** Con menos entrenadores que estos, la lista está incompleta (lo habitual son 26). */
+const MIN_TRAINERS = 10;
+
+const LEADERS: Record<string, string> = { GIOVANNI: 'Giovanni', CLIFF: 'Cliff', ARLO: 'Arlo', SIERRA: 'Sierra' };
+/** El juego llama así a estos tipos en los reclutas. */
+const GRUNT_TYPES: Record<string, string> = { metal: 'steel', darkness: 'dark' };
+
+/** Alineaciones de WatWowMap: solo los entrenadores en activo. */
+export function toRocket(raw: unknown): { data: RocketTrainer[]; discarded: number } {
+  const what = 'las alineaciones del Team GO Rocket';
+  const active = Object.entries(parseWith(rocketList, raw, what)).filter(([, trainer]) => trainer.active);
+  if (active.length < MIN_TRAINERS) throw new SourceError('empty', `En ${what} faltan entrenadores`);
+  const data: RocketTrainer[] = [];
+  for (const [number, value] of active) {
+    const parsed = rocketTrainer.safeParse(value);
+    if (!parsed.success) continue;
+    const { proto, type, grunt, gender: sex, encounters } = parsed.data;
+    const slot = (list: typeof encounters.first, reward: boolean): RocketSlot => ({
+      reward,
+      options: list.map(({ id, template }) => ({ dex: id, form: template?.replace(/_NORMAL$/, '') ?? null })),
+    });
+    const id = Number(number);
+    const leader = /_(GIOVANNI|CLIFF|ARLO|SIERRA)(?:_|$)/.exec(proto)?.[1];
+    const gender = sex === 1 ? 'm' : sex === 2 ? 'f' : null;
+    const known = GRUNT_TYPES[type.toLowerCase()] ?? type.toLowerCase();
+    const typed = Object.hasOwn(TYPES, known);
+    const isGrunt = !leader && grunt === 'Grunt' && (typed || known === 'mixed' || known === 'decoy');
+    let key = leader ? leader.toLowerCase() : isGrunt ? `${known}-${gender ?? 'x'}` : `otro-${id}`;
+    // Los de evento, o un tipo con dos nombres, no deben confundirse con los habituales.
+    const event = leader !== undefined && grunt === 'Event';
+    if (event || data.some((other) => other.key === key)) key += `-${id}`;
+    data.push({
+      id,
+      key,
+      kind: leader === 'GIOVANNI' ? 'giovanni' : leader ? 'leader' : isGrunt ? 'grunt' : 'other',
+      name: leader ? LEADERS[leader]! + (event ? ' (evento)' : '') : plainText(type),
+      type: isGrunt && typed ? known : null,
+      gender,
+      slots: [
+        slot(encounters.first, parsed.data.firstReward),
+        slot(encounters.second, parsed.data.secondReward),
+        slot(encounters.third, parsed.data.thirdReward),
+      ],
+    });
+  }
+  const discarded = active.length - data.length;
+  if (discarded / active.length > 0.2) throw new SourceError('format', `Demasiados registros incorrectos en ${what}`);
+  return { data, discarded };
+}
+
+/** «Cliff», «Water-type Female Grunt», «Male Grunt», «Decoy Female Grunt». */
+function contrastKey(name: string): string | null {
+  if (/^(?:Giovanni|Cliff|Arlo|Sierra)$/.test(name)) return name.toLowerCase();
+  const grunt = /^(?:(\w+)-type )?(Decoy )?(Male|Female) Grunt$/.exec(name);
+  if (!grunt) return null;
+  const type = grunt[1]?.toLowerCase() ?? (grunt[2] ? 'decoy' : 'mixed');
+  return `${type}-${grunt[3] === 'Male' ? 'm' : 'f'}`;
+}
+
+/** Alineaciones de LeekDuck. Sin número de Pokédex no se pueden comparar, así que el entrenador se descarta. */
+export function toRocketContrast(raw: unknown): { data: ContrastTrainer[]; discarded: number } {
+  const what = 'alineaciones de LeekDuck';
+  const { items, discarded } = parseList(contrastTrainer, raw, what);
+  const data: ContrastTrainer[] = [];
+  for (const { name, firstPokemon, secondPokemon, thirdPokemon } of items) {
+    const slots = [firstPokemon, secondPokemon, thirdPokemon].map((list) =>
+      list.flatMap((p): ContrastPokemon[] => {
+        const dex = dexFromImage(p.image);
+        return dex === null ? [] : [{ name: plainText(p.name), dex }];
+      }),
+    );
+    if (slots.flat().length !== firstPokemon.length + secondPokemon.length + thirdPokemon.length) continue;
+    const text = plainText(name);
+    data.push({ key: contrastKey(text), name: text, slots: slots as ContrastTrainer['slots'] });
+  }
+  if (data.length < MIN_TRAINERS) throw new SourceError('format', `En la lista de ${what} faltan entrenadores`);
+  return { data, discarded: discarded + items.length - data.length };
+}
+
+/** El resumen ya está validado al generarse; aquí se comprueba que ha llegado entero. */
+export function toRocketAttackers(raw: unknown): RocketAttackersData {
+  const what = 'los atacantes para Rocket';
+  const { source, changes, pokemon } = parseWith(rocketAttackers, raw, what);
+  if (pokemon.length < MIN_GYM) throw new SourceError('format', `En ${what} faltan Pokémon`);
   if (new Set(pokemon.map((p) => p.name)).size !== pokemon.length) {
     throw new SourceError('format', `En ${what} hay Pokémon repetidos`);
   }

@@ -208,6 +208,48 @@ summary {
   text-transform: uppercase;
 }
 
+/* Fuentes, en la cabecera: con su nombre, al otro extremo. */
+.sources-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 44px;
+  margin: 0 -8px 0 auto;
+  padding: 0 10px 0 8px;
+  border-radius: 999px;
+  color: var(--bar-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.sources-link[aria-current] {
+  color: var(--gold);
+}
+
+.sources-link:focus-visible {
+  outline-color: var(--gold);
+  outline-offset: -2px;
+}
+
+.sources-link svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sources-link .nav-alert {
+  top: 8px;
+  left: 21px;
+  right: auto;
+}
+
 h1 {
   font-size: 1.22rem;
   font-weight: 750;
@@ -360,7 +402,13 @@ h1 {
   .nav-icon {
     width: 40px;
   }
-  .nav-alert {
+  .sources-link {
+    font-size: 0.93rem;
+  }
+  .sources-link:hover {
+    color: var(--bar-text);
+  }
+  .nav .nav-alert {
     top: 16px;
     left: auto;
     right: 8px;
@@ -377,6 +425,21 @@ h1 {
   }
   .nav-icon {
     width: 30px;
+  }
+  .nav {
+    padding-right: 8px;
+  }
+  .header {
+    gap: 8px;
+    padding-right: 0;
+  }
+  .brand-name {
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+  .sources-link {
+    margin-right: 0;
+    padding: 0 4px;
   }
 }
 
@@ -1480,6 +1543,201 @@ details[open] > summary::after {
 .cp dd {
   font-variant-numeric: tabular-nums;
   font-weight: 700;
+}
+
+/* Rocket */
+.chip-plain,
+.chip-source,
+.chip-own {
+  color: var(--muted);
+  background: var(--raised);
+  letter-spacing: 0;
+}
+
+.chip-source {
+  color: var(--ok);
+}
+
+.chip-own {
+  color: var(--warn);
+  background: var(--warn-soft);
+}
+
+article.trainer {
+  display: grid;
+  gap: 8px;
+  background: linear-gradient(100deg, color-mix(in srgb, var(--t, var(--muted)) 6%, var(--card)), var(--card) 38%);
+}
+
+.phrases {
+  display: grid;
+  gap: 3px;
+}
+
+.phrase {
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+
+.rocket-warning {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.status.rocket-warning {
+  padding: 10px 14px;
+}
+
+.slot-name,
+.slots dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.slots {
+  display: grid;
+  gap: 3px;
+  font-size: 0.9rem;
+}
+
+.slots div {
+  display: grid;
+  grid-template-columns: 4.4rem minmax(0, 1fr);
+  align-items: baseline;
+}
+
+.lineup,
+.rocket-slots {
+  display: grid;
+  gap: 10px;
+}
+
+/* En la lista, el puesto a la izquierda y sus posibles Pokémon en la misma fila. */
+.lineup > div {
+  display: grid;
+  grid-template-columns: 3.9rem minmax(0, 1fr);
+  align-items: center;
+}
+
+.lineup-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.rivals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  max-width: 520px;
+  padding-top: 4px;
+}
+
+.rival {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+  padding: 8px 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  text-align: center;
+}
+
+button.rival {
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.rival[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.rival .pk {
+  width: 64px;
+  height: 64px;
+}
+
+.rival .pokemon-name {
+  justify-content: center;
+  max-width: 100%;
+  font-size: 0.84rem;
+  font-weight: 650;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.rival-small {
+  width: 80px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.rival-small .pk {
+  width: 52px;
+  height: 52px;
+}
+
+.rival-small .pokemon-name {
+  font-size: 0.76rem;
+}
+
+.rival-panel {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.suggested-type h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 0.98rem;
+}
+
+.rocket-tiers {
+  grid-template-columns: minmax(0, 1.4fr) repeat(auto-fit, minmax(38px, 1fr));
+  gap: 4px;
+}
+
+.rocket-tiers button {
+  font-size: 0.76rem;
+}
+
+@media (max-width: 759px) {
+  .filter-three select:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 760px) {
+  .filter-three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 359px) {
+  .lineup > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
+  }
+  .rival-small {
+    width: 76px;
+  }
 }
 
 /* Eventos */

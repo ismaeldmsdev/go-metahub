@@ -95,10 +95,15 @@ export function useSources(): Sources {
     pokebattler: useSource('pokebattler'),
     sprites: useSource('sprites'),
     gyms: useSource('gyms'),
+    rocket: useSource('rocket'),
+    rocketContrast: useSource('rocketContrast'),
+    rocketAttackers: useSource('rocketAttackers'),
   };
 }
 
-export const TABS = ['pvp', 'incursiones', 'gimnasios', 'eventos', 'fuentes'] as const;
+/** Las de la barra de navegación. «Fuentes» se abre desde la cabecera. */
+export const NAV_TABS = ['pvp', 'incursiones', 'gimnasios', 'eventos', 'rocket'] as const;
+export const TABS = [...NAV_TABS, 'fuentes'] as const;
 export type Tab = (typeof TABS)[number];
 
 export interface Route {

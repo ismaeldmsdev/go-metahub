@@ -15,7 +15,7 @@ const move = z.object({
   charge_type: z.string().min(1),
 });
 
-const record = z.object({
+export const record = z.object({
   canonical_id: z.string().regex(/^pm_\d{4}_[a-z0-9_]+$/),
   dex: z.number().int().positive(),
   form: z.string(),
@@ -44,7 +44,7 @@ const record = z.object({
   type_effectiveness: z.object({ weaknesses: z.array(z.object({ type: z.string(), multiplier: z.number() })) }),
 });
 
-const dataset = z.object({
+export const dataset = z.object({
   meta: z.object({
     schema_version: z.literal(3),
     license: z.literal(LICENSE),
@@ -55,7 +55,7 @@ const dataset = z.object({
   records: z.array(record),
 });
 
-const gamemaster = z.object({
+export const gamemaster = z.object({
   pokemon: z.array(
     z.object({
       speciesId: z.string(),
@@ -93,13 +93,13 @@ const FORM_ALIAS: Record<string, string> = {
 };
 
 /** Nombres que no siguen el patrón «Especie (Forma)». */
-const NAME_ALIAS: Record<string, string> = { mime_jr: 'Mime Jr.' };
+export const NAME_ALIAS: Record<string, string> = { mime_jr: 'Mime Jr.' };
 
 /**
  * PvPoke marca como no publicados a estos, que no usa en PvP. Publicación comprobada el 24-11-2026 en pogoapi.net
  * o en la wiki de Pokémon GO.
  */
-const RELEASED = new Set(['ditto', 'shedinja', 'spewpa', 'cosmog', 'cosmoem', 'toxtricity_low_key']);
+export const RELEASED = new Set(['ditto', 'shedinja', 'spewpa', 'cosmog', 'cosmoem', 'toxtricity_low_key']);
 
 /**
  * Tienen una forma que solo existe en combate y no pueden usarse en gimnasios, ni atacando ni defendiendo.
@@ -112,7 +112,7 @@ export const NOT_IN_GYMS = new Set([681, 774, 778, 845, 877]);
 /** Meltan y Melmetal son los únicos singulares que pueden defender. */
 const MYTHICAL_DEFENDERS = new Set([808, 809]);
 /** Legendarios y singulares que PvPoke no etiqueta: por si aparecen. */
-const EXTRA_LEGENDARY = new Set([489, 490, 772, 773, 789, 790]);
+export const EXTRA_LEGENDARY = new Set([489, 490, 772, 773, 789, 790]);
 
 const formKeys = (name: string): string[] =>
   [...name.matchAll(/\(([^)]+)\)/g)].map((m) =>
@@ -124,7 +124,7 @@ const formKeys = (name: string): string[] =>
   );
 
 /** Formas, al estilo de PvPoke, que describe el identificador del dataset. */
-function wantedForms(entry: Entry): string[] {
+function wantedForms(entry: Pick<Entry, 'canonical_id' | 'dex'>): string[] {
   let rest = entry.canonical_id.replace(/^pm_\d+_/, '');
   const forms: string[] = [];
   if (/^shadow(_|$)/.test(rest)) {
@@ -138,10 +138,13 @@ function wantedForms(entry: Entry): string[] {
   return usual ? [...forms, usual] : forms;
 }
 
-const plainTypes = (types: (string | null)[]): string[] => types.filter((t): t is string => !!t && t !== 'none');
+export const plainTypes = (types: (string | null)[]): string[] => types.filter((t): t is string => !!t && t !== 'none');
 
 /** La pareja solo vale si coinciden número, forma, tipos y las tres estadísticas base. */
-function matchSpecies(entry: Entry, candidates: Species[]): Species | null {
+export function matchSpecies(
+  entry: Pick<Entry, 'canonical_id' | 'dex' | 'type1' | 'type2' | 'base_stats'>,
+  candidates: Species[],
+): Species | null {
   const wanted = wantedForms(entry).sort().join();
   const found = candidates.filter(
     (s) =>
@@ -171,14 +174,14 @@ export interface GymFile extends GymData {
 
 export class DataError extends Error {}
 
-function parse<T>(schema: z.ZodType<T>, value: unknown, what: string): T {
+export function parse<T>(schema: z.ZodType<T>, value: unknown, what: string): T {
   const result = schema.safeParse(value);
   if (result.success) return result.data;
   const issue = result.error.issues[0]!;
   throw new DataError(`${what} no tiene la estructura esperada (${issue.path.join('.')}: ${issue.message})`);
 }
 
-const chart = (list: { type: string; multiplier: number }[]): string =>
+export const chart = (list: { type: string; multiplier: number }[]): string =>
   list
     .map((w) => `${w.type} ${w.multiplier.toFixed(2)}`)
     .sort()

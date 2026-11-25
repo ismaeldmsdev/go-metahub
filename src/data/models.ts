@@ -92,6 +92,8 @@ export interface Translations {
   pokemon: Record<string, { en: string; es: string }>;
   /** Por nombre inglés normalizado. */
   moves: Record<string, string>;
+  /** Nombre y frases en español de los entrenadores del Team GO Rocket, por su número en el juego. */
+  trainers: Record<string, { name: string | null; phrases: string[] }>;
 }
 
 /** Jefes que Pokébattler lista en su rotación actual y su nivel (null si figura en varios). */
@@ -134,6 +136,70 @@ export interface GymData {
   /** Qué se ha transformado respecto al original. */
   changes: string;
   pokemon: GymPokemon[];
+}
+
+export interface RocketPokemon {
+  dex: number;
+  /** Forma tal como la nombra WatWowMap («NINETALES_ALOLA»), o null si es la habitual. */
+  form: string | null;
+}
+
+export interface RocketSlot {
+  /** Puede capturarse al ganar. */
+  reward: boolean;
+  /** Uno de estos. */
+  options: RocketPokemon[];
+}
+
+export interface RocketTrainer {
+  /** Número en el juego, que comparten las alineaciones y las frases. */
+  id: number;
+  /** Identifica al entrenador en ambas fuentes y en la dirección: «cliff», «water-m». */
+  key: string;
+  kind: 'giovanni' | 'leader' | 'grunt' | 'other';
+  /** Nombre propio, o el de la fuente si no se reconoce. */
+  name: string;
+  /** Tipo en el que se especializa. */
+  type: string | null;
+  gender: 'm' | 'f' | null;
+  /** Primera, segunda y tercera posición. */
+  slots: [RocketSlot, RocketSlot, RocketSlot];
+}
+
+export interface ContrastPokemon {
+  /** Nombre inglés al estilo de LeekDuck: «Alolan Grimer». */
+  name: string;
+  dex: number;
+}
+
+/** Alineación de LeekDuck, solo para contrastar. */
+export interface ContrastTrainer {
+  /** Null si no se ha reconocido. */
+  key: string | null;
+  name: string;
+  slots: [ContrastPokemon[], ContrastPokemon[], ContrastPokemon[]];
+}
+
+export interface RocketAttacker {
+  /** Nombre inglés al estilo de PvPoke. */
+  name: string;
+  dex: number;
+  types: string[];
+  groups: GymPokemon['groups'];
+  /** Tier y puntuación originales de doctorpokegogo: una evaluación general, no contra un rival. */
+  tier: GymAttack['tier'];
+  score: number;
+  fast: string;
+  fastType: string;
+  charged: string;
+  chargedType: string;
+}
+
+/** Contenido de public/data/rocket.json. */
+export interface RocketAttackersData {
+  source: GymData['source'];
+  changes: string;
+  pokemon: RocketAttacker[];
 }
 
 export interface Counter {

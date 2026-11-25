@@ -30,18 +30,18 @@ import { PokemonImage } from './PokemonImage';
 const PAGE = 30;
 
 /** «S+» no puede ser parte de un nombre de clase. */
-const tierClass = (tier: GymTier): string => `tier tier-${tier === 'S+' ? 'Splus' : tier}`;
+export const tierClass = (tier: GymTier): string => `tier tier-${tier === 'S+' ? 'Splus' : tier}`;
 
 const decimal = (value: number, digits: number): string =>
   value.toLocaleString('es', { minimumFractionDigits: digits, maximumFractionDigits: digits, useGrouping: 'always' });
 
-const PRESENCE_NAMES: Record<GymGroup, Record<Presence, string>> = {
+export const PRESENCE_NAMES: Record<GymGroup, Record<Presence, string>> = {
   mega: { with: 'Con megas', without: 'Sin megas', only: 'Solo megas' },
   shadow: { with: 'Con oscuros', without: 'Sin oscuros', only: 'Solo oscuros' },
   legendary: { with: 'Con legendarios', without: 'Sin legendarios', only: 'Solo legendarios' },
 };
 
-const GROUP_LABELS: Record<GymGroup, string> = { mega: 'Megas', shadow: 'Oscuros', legendary: 'Legendarios' };
+export const GROUP_LABELS: Record<GymGroup, string> = { mega: 'Megas', shadow: 'Oscuros', legendary: 'Legendarios' };
 
 const NO_FILTERS: AttackerFilters = {
   tier: 'all',
@@ -64,7 +64,7 @@ interface TypeSelectProps {
   onChange: (type: string) => void;
 }
 
-function TypeSelect({ label, all, prefix = '', value, onChange }: TypeSelectProps) {
+export function TypeSelect({ label, all, prefix = '', value, onChange }: TypeSelectProps) {
   return (
     <select aria-label={label} value={value} onChange={(e) => onChange(e.currentTarget.value)}>
       <option value="all">{all}</option>
@@ -78,13 +78,19 @@ function TypeSelect({ label, all, prefix = '', value, onChange }: TypeSelectProp
   );
 }
 
-function Search({ value, onChange }: { value: string; onChange: (search: string) => void }) {
+interface SearchProps {
+  value: string;
+  onChange: (search: string) => void;
+  label?: string;
+}
+
+export function Search({ value, onChange, label = 'Buscar Pokémon' }: SearchProps) {
   return (
     <input
       type="search"
       value={value}
-      placeholder="Buscar Pokémon"
-      aria-label="Buscar Pokémon"
+      placeholder={label}
+      aria-label={label}
       autocomplete="off"
       onInput={(e) => onChange(e.currentTarget.value)}
     />
@@ -92,7 +98,7 @@ function Search({ value, onChange }: { value: string; onChange: (search: string)
 }
 
 /** Atribución siempre a la vista: origen, licencia, fecha y cambios hechos. */
-function Attribution({ data }: { data: GymData }) {
+export function Attribution({ data }: { data: Pick<GymData, 'source'> }) {
   const { source } = data;
   return (
     <p class="note attribution">

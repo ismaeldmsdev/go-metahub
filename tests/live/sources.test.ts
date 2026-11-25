@@ -4,10 +4,12 @@ import { ENDPOINTS } from '../../src/data/config';
 import { fetchJson } from '../../src/data/http';
 import { SOURCES } from '../../src/data/sources';
 import { toCounters } from '../../src/data/transform';
+import { compareLineups, phrasesOf } from '../../src/domain/rocket';
 
 describe('fuentes reales', () => {
-  // «gyms» es un archivo propio: lo comprueba `npm run gimnasios -- --comprobar`.
-  it.each((Object.keys(SOURCES) as (keyof typeof SOURCES)[]).filter((id) => id !== 'gyms'))('%s responde con la estructura esperada', async (id) => {
+  // Son archivos propios: los comprueban `npm run gimnasios -- --comprobar` y `npm run rocket -- --comprobar`.
+  const own = ['gyms', 'rocketAttackers'];
+  it.each((Object.keys(SOURCES) as (keyof typeof SOURCES)[]).filter((id) => !own.includes(id)))('%s responde con la estructura esperada', async (id) => {
     const result = await SOURCES[id]({ previous: undefined });
     expect(result.viaFallback).toBe(false);
     expect(result.discarded).toBe(0);
@@ -15,6 +17,23 @@ describe('fuentes reales', () => {
       sourceUpdatedAt: result.sourceUpdatedAt && new Date(result.sourceUpdatedAt).toISOString(),
       size: JSON.stringify(result.data).length,
     });
+  }, 60_000);
+});
+
+describe('alineaciones del Team GO Rocket', () => {
+  it('las dos fuentes hablan de los mismos entrenadores y hay frases en español', async () => {
+    const [main, contrast, tr] = await Promise.all([
+      SOURCES.rocket({ previous: undefined }),
+      SOURCES.rocketContrast({ previous: undefined }),
+      SOURCES.translations({ previous: undefined }),
+    ]);
+    expect(contrast.data.filter((t) => t.key === null).map((t) => t.name)).toEqual([]);
+    expect(main.data.filter((t) => t.kind === 'other').map((t) => t.name)).toEqual([]);
+    const comparison = compareLineups(main.data, contrast.data);
+    console.log('rocket', { coinciden: comparison.matching, distintos: [...comparison.differences.keys()] });
+    // Que difieran alguna vez es normal; que difieran casi todos indica que han dejado de entenderse.
+    expect(comparison.matching).toBeGreaterThan(main.data.length / 2);
+    expect(main.data.filter((t) => phrasesOf(t, tr.data).length === 0).map((t) => t.key)).toEqual([]);
   }, 60_000);
 });
 

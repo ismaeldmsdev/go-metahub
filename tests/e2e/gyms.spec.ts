@@ -190,7 +190,7 @@ test('con los datos que se van a publicar, funcionan Gimnasios y las demás secc
   await page.getByRole('button', { name: 'Defensores' }).click();
   await expect(page.locator('.result-count')).toHaveText(total((p) => p.bulk !== null));
   for (const [tab, item] of [['PvP', '.rank-card'], ['Incursiones', '.boss'], ['Eventos', '.event'], ['Fuentes', '.source']] as const) {
-    await page.getByRole('navigation').getByRole('link', { name: tab }).click();
+    await page.getByRole(tab === 'Fuentes' ? 'banner' : 'navigation').getByRole('link', { name: tab }).click();
     await expect(page.locator(item).first()).toBeVisible();
   }
   expect(errors).toEqual([]);

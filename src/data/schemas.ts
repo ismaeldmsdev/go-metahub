@@ -173,6 +173,53 @@ export const gyms = z.object({
   ),
 });
 
+const rocketSlot = z
+  .array(z.object({ id: z.number().int().positive(), template: z.string().min(1).optional() }))
+  .min(1);
+
+export const rocketTrainer = z.object({
+  proto: z.string().min(1),
+  type: z.string().min(1),
+  gender: z.number().int(),
+  grunt: z.string(),
+  firstReward: z.boolean(),
+  secondReward: z.boolean(),
+  thirdReward: z.boolean(),
+  encounters: z.object({ first: rocketSlot, second: rocketSlot, third: rocketSlot }),
+});
+
+/** Los que no están en activo no llevan Pokémon: solo se valida el resto. */
+export const rocketList = z.record(z.string().regex(/^\d+$/), z.looseObject({ active: z.boolean() }));
+
+const contrastSlot = z.array(z.object({ name: z.string().min(1), image: z.string() })).min(1);
+
+export const contrastTrainer = z.object({
+  name: z.string().min(1),
+  firstPokemon: contrastSlot,
+  secondPokemon: contrastSlot,
+  thirdPokemon: contrastSlot,
+});
+
+export const rocketAttackers = z.object({
+  format: z.literal(1),
+  source: gyms.shape.source,
+  changes: z.string().min(1),
+  pokemon: z.array(
+    z.object({
+      name: z.string().min(1),
+      dex: z.number().int().positive(),
+      types: z.array(z.string()).min(1).max(2),
+      groups: z.array(z.enum(['mega', 'shadow', 'legendary'])),
+      tier: z.enum(['S+', 'S', 'A', 'B', 'C', 'D']),
+      score: z.number().positive(),
+      fast: z.string().min(1),
+      fastType: z.string().min(1),
+      charged: z.string().min(1),
+      chargedType: z.string().min(1),
+    }),
+  ),
+});
+
 export const commits = z
   .array(z.object({ commit: z.object({ committer: z.object({ date: z.iso.datetime() }) }) }))
   .min(1);

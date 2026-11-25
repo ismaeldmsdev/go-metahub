@@ -7,7 +7,7 @@ import { useNow, type Source } from './hooks';
 
 export const TypeTag = ({ type }: { type: string }) => <span class={`type t-${type}`}>{typeName(type)}</span>;
 
-const multiplier = (value: number): string => `×${value.toLocaleString('es', { maximumFractionDigits: 2 })}`;
+export const multiplier = (value: number): string => `×${value.toLocaleString('es', { maximumFractionDigits: 2 })}`;
 
 export function Weaknesses({ types }: { types: string[] }) {
   const list = weaknesses(types);

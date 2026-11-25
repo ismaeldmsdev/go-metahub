@@ -3,7 +3,19 @@ import { ENDPOINTS, HOUR, RETRY_AFTER_ERROR, type CountersTarget, type Endpoint 
 import { SourceError } from './errors';
 import { fetchEndpoint, fetchJson } from './http';
 import type { SpriteIndex } from '../domain/sprites';
-import type { CountersData, GameEvent, GymData, PokebattlerBosses, PvpData, RaidBoss, Snapshot, Translations } from './models';
+import type {
+  ContrastTrainer,
+  CountersData,
+  GameEvent,
+  GymData,
+  PokebattlerBosses,
+  PvpData,
+  RaidBoss,
+  RocketAttackersData,
+  RocketTrainer,
+  Snapshot,
+  Translations,
+} from './models';
 import { commits, parseWith } from './schemas';
 import {
   parseGamemaster,
@@ -13,6 +25,9 @@ import {
   toPokebattlerBosses,
   toRaids,
   toRanking,
+  toRocket,
+  toRocketAttackers,
+  toRocketContrast,
   toSpecies,
   toSprites,
   toTranslations,
@@ -27,6 +42,9 @@ export interface SourceData {
   pokebattler: PokebattlerBosses;
   sprites: SpriteIndex;
   gyms: GymData;
+  rocket: RocketTrainer[];
+  rocketContrast: ContrastTrainer[];
+  rocketAttackers: RocketAttackersData;
 }
 
 export interface FetchContext<T> {
@@ -133,6 +151,28 @@ export const SOURCES: { [K in keyof SourceData]: Loader<SourceData[K]> } = {
   async gyms(ctx) {
     const { json } = await loaderFor(ctx)(ENDPOINTS.gyms);
     const data = toGyms(json);
+    return snapshot(ctx.previous, { data, sourceUpdatedAt: Date.parse(data.source.generatedAt) });
+  },
+
+  async rocket(ctx) {
+    const [result, sourceUpdatedAt] = await Promise.all([
+      loaderFor(ctx)(ENDPOINTS.rocket),
+      commitDate(ENDPOINTS.rocketCommit, ctx.signal),
+    ]);
+    const next = snapshot(ctx.previous, { ...toRocket(result.json), viaFallback: result.viaFallback, sourceUpdatedAt });
+    // La fecha es la de las alineaciones: si no han cambiado, la última conocida sigue valiendo.
+    if (!ctx.previous || next.changedAt !== ctx.previous.changedAt) return next;
+    return { ...next, sourceUpdatedAt: next.sourceUpdatedAt ?? ctx.previous.sourceUpdatedAt };
+  },
+
+  async rocketContrast(ctx) {
+    const { json, viaFallback } = await loaderFor(ctx)(ENDPOINTS.rocketContrast);
+    return snapshot(ctx.previous, { ...toRocketContrast(json), viaFallback });
+  },
+
+  async rocketAttackers(ctx) {
+    const { json } = await loaderFor(ctx)(ENDPOINTS.rocketAttackers);
+    const data = toRocketAttackers(json);
     return snapshot(ctx.previous, { data, sourceUpdatedAt: Date.parse(data.source.generatedAt) });
   },
 };

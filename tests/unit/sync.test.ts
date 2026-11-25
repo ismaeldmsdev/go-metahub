@@ -401,3 +401,76 @@ describe('avisos', () => {
     expect(assess('raids', { ...empty, error: new Error('x'), failedAt: NOW }, NOW).level).toBe('error');
   });
 });
+
+describe('Team GO Rocket', () => {
+  const COMMITS = 'repos/WatWowMap/event-info/commits';
+  const CHANGED = Date.parse('2026-10-04T04:51:19Z');
+
+  it('descarga las tres fuentes y la fecha del último cambio', async () => {
+    expect(await load('rocket')).toMatchObject({ sourceUpdatedAt: CHANGED, discarded: 0, data: { length: 26 } });
+    expect((await load('rocketContrast')).data).toHaveLength(26);
+    expect((await load('rocketAttackers')).data.source.license).toBe('CC BY 4.0');
+  });
+
+  it('un cambio en la fuente llega sin volver a publicar la aplicación', async () => {
+    await load('rocket');
+    vi.setSystemTime(NOW + 7 * HOUR);
+    const next = fixtures.rocket();
+    next['44'].encounters.third = [{ id: 643 }];
+    table['event-info/main/grunts/formatted.json'] = next;
+    table[COMMITS] = fixtures.commit('2026-11-23T15:00:00Z');
+    const { data, changedAt, sourceUpdatedAt } = await load('rocket');
+    expect(data.find((t) => t.kind === 'giovanni')!.slots[2].options).toEqual([{ dex: 643, form: null }]);
+    expect(changedAt).toBe(NOW + 7 * HOUR);
+    expect(sourceUpdatedAt).toBe(Date.parse('2026-11-23T15:00:00Z'));
+  });
+
+  it('si no se puede leer la fecha, conserva la conocida solo mientras no cambien las alineaciones', async () => {
+    await load('rocket');
+    vi.setSystemTime(NOW + 7 * HOUR);
+    table[COMMITS] = () => new Response('{}', { status: 403 });
+    expect((await load('rocket')).sourceUpdatedAt).toBe(CHANGED);
+    vi.setSystemTime(NOW + 14 * HOUR);
+    const next = fixtures.rocket();
+    next['44'].encounters.third = [{ id: 643 }];
+    table['event-info/main/grunts/formatted.json'] = next;
+    expect((await load('rocket')).sourceUpdatedAt).toBeNull();
+  });
+
+  it.each([
+    ['sin red', offline],
+    ['error del servidor', () => new Response('', { status: 503 })],
+    ['HTML', '<html></html>'],
+    ['lista vacía', {}],
+  ])('si la principal falla (%s), se conservan los últimos datos tras reabrir', async (_, reply) => {
+    await load('rocket');
+    table['event-info/main/grunts/formatted.json'] = reply;
+    vi.setSystemTime(NOW + 7 * HOUR);
+    await expect(load('rocket')).rejects.toThrow();
+    await reopen();
+    expect(client.getQueryData<Snapshot<unknown[]>>(['rocket'])!.data).toHaveLength(26);
+    expect(client.getQueryState(['rocket'])!.dataUpdatedAt).toBe(NOW);
+  });
+
+  it('si falla el contraste, las alineaciones no se ven afectadas', async () => {
+    await load('rocketContrast');
+    table['rocketLineups.min.json'] = offline;
+    vi.setSystemTime(NOW + 7 * HOUR);
+    await expect(load('rocketContrast')).rejects.toThrow();
+    expect((await load('rocket')).data).toHaveLength(26);
+    await reopen();
+    expect(client.getQueryData<Snapshot<unknown[]>>(['rocketContrast'])!.data).toHaveLength(26);
+  });
+
+  it('la primera vez usa la copia de respaldo si la principal no responde, y lo indica', async () => {
+    const copy = fixtures.rocket();
+    table = { 'cdn.jsdelivr.net/gh/WatWowMap/event-info@main': copy, 'raw.githubusercontent.com/WatWowMap/event-info': offline, ...table };
+    expect(await load('rocket')).toMatchObject({ viaFallback: true, data: { length: 26 } });
+  });
+
+  it('se consulta de nuevo a las seis horas', () => {
+    expect(lifetime('rocket', NOW, { viaFallback: false })).toBe(6 * HOUR);
+    expect(lifetime('rocketContrast', NOW, { viaFallback: false })).toBe(6 * HOUR);
+    expect(lifetime('rocketAttackers', NOW, { viaFallback: false })).toBe(DAY);
+  });
+});
