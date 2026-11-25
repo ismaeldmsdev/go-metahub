@@ -9,9 +9,12 @@ el móvil, que se mantiene al día consultando fuentes de la comunidad.
 
 ## Qué incluye
 
-- **PvP:** clasificaciones completas de Liga Super, Ultra y Máster, con tiers, movimientos, buscador y filtros.
+- **PvP:** clasificaciones completas de Liga Super, Ultra y Máster, con tiers, movimientos, buscador y filtros; rankings
+  propios de las ligas Mega y de las copas, con calendario y restricciones.
 - **Incursiones:** jefes listados actualmente, PC, tipos, vigencia conocida y debilidades. Al abrir un jefe, sus mejores
-  counters con movimientos, Estimator, eDPS y TDO. Enlaces a los mejores atacantes de cada tipo.
+  counters con movimientos, Estimator, eDPS y TDO. Atacantes por cada uno de los 18 tipos.
+- **Combates Max:** jefes con fecha anunciada, catálogo sin fecha, counters por jefe, fichas con estadísticas base y enlaces
+  por papel.
 - **Gimnasios:** atacantes con el tier, el percentil y los movimientos que publica doctorpokegogo, con filtros; y
   defensores ordenados por resistencia teórica, con sus debilidades.
 - **Eventos:** activos, próximos y sin fecha confirmada, en hora peninsular y con cuenta atrás.
@@ -21,9 +24,9 @@ el móvil, que se mantiene al día consultando fuentes de la comunidad.
 
 ## Cómo se mantiene al día
 
-- PvP, traducciones y lista de imágenes cada 24 horas. Incursiones, eventos, alineaciones de Rocket y lista de jefes de Pokébattler
-  cada 6 horas.
-- Los counters se piden solo al abrir un jefe y se guardan 24 horas por jefe y clima.
+- PvP, traducciones y lista de imágenes cada 24 horas. Incursiones, eventos, calendario de la Liga Combates GO, alineaciones
+  de Rocket y lista de jefes de Pokébattler cada 6 horas.
+- Los counters se piden solo al abrir un jefe, y los rankings de copas y ligas Mega al abrirlos. Se guardan 24 horas.
 - Se comprueba al abrir, al volver a primer plano y cada minuto con la aplicación visible.
 - Toda descarga se valida. Si falla, se conservan los últimos datos válidos y se avisa.
 - Los datos se guardan en IndexedDB. El service worker guarda la aplicación y las imágenes ya vistas, con límite.
@@ -32,6 +35,30 @@ el móvil, que se mantiene al día consultando fuentes de la comunidad.
 
 Son categorías propias sobre la puntuación original de PvPoke, **no oficiales**: S desde 90, A desde 85, B desde 80 y
 C desde 70. El puesto, la puntuación y los movimientos son los de PvPoke, sin recalcular.
+
+## Copas y ligas Mega
+
+- El calendario es el de LeekDuck, en hora peninsular. A veces deja de listar la semana en curso: si ya se conocía, se conserva
+  hasta que termina.
+- Cada liga o copa se empareja con el formato de PvPoke por su nombre y su límite de PC, sin contar los años. Si no hay una
+  coincidencia exacta y visible, se muestra su información **sin ranking**: nunca el de otra.
+- Puesto, puntuación y movimientos son los de PvPoke, **sin tiers**. Las restricciones salen de sus filtros; si difieren,
+  manda la página oficial, que va enlazada.
+
+## Incursiones por tipo
+
+- Datos originales de doctorpokegogo. Hay **una sola combinación por Pokémon**, así que cada uno sale únicamente en el tipo de ese
+  ataque: **no es un ranking completo**. Sin puestos; por el percentil de la fuente. Se enlaza a listas externas completas.
+- `npm run incursiones` genera [`public/data/incursiones.json`](public/data/incursiones.json) (unos 50 KB comprimido), en la
+  misma tarea diaria que los de Rocket.
+
+## Combates Max
+
+- **Confirmados** y **anunciados** son solo los eventos Max de LeekDuck con principio y fin. El **catálogo** es el de Pokébattler,
+  que no indica fechas: figurar en él no significa estar activo.
+- Los counters usan la misma API documentada que las incursiones, ordenados por Estimator. **No separan papeles**: para eso se
+  enlaza a las páginas de Pokébattler.
+- Las fichas muestran estadísticas base de PvPoke. **No son un ranking** de atacantes, tanques ni apoyo.
 
 ## Gimnasios
 
@@ -71,10 +98,10 @@ C desde 70. El puesto, la puntuación y los movimientos son los de PvPoke, sin r
 
 | Contenido | Fuente | Condiciones |
 |---|---|---|
-| Clasificaciones PvP | [PvPoke](https://github.com/pvpoke/pvpoke) | MIT, © 2019 pvpoke |
-| Incursiones y eventos | [LeekDuck](https://leekduck.com), a través de [ScrapedDuck](https://github.com/bigfoott/ScrapedDuck) | Sin anuncios ni pago, con atribución |
-| Counters de incursiones | [Pokébattler](https://www.pokebattler.com/developers) | API pública: con atribución, caché y uso ocasional |
-| Gimnasios | [doctorpokegogo.com](https://doctorpokegogo.com/) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); datos transformados y resumidos por GO MetaHub |
+| Clasificaciones PvP, copas y estadísticas base | [PvPoke](https://github.com/pvpoke/pvpoke) | MIT, © 2019 pvpoke |
+| Incursiones, eventos y calendario PvP | [LeekDuck](https://leekduck.com), a través de [ScrapedDuck](https://github.com/bigfoott/ScrapedDuck) | Sin anuncios ni pago, con atribución |
+| Counters de incursiones y Max, catálogo Max | [Pokébattler](https://www.pokebattler.com/developers) | API pública: con atribución, caché y uso ocasional |
+| Gimnasios e incursiones por tipo | [doctorpokegogo.com](https://doctorpokegogo.com/) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); datos transformados y resumidos por GO MetaHub |
 | Alineaciones de Rocket | [WatWowMap/event-info](https://github.com/WatWowMap/event-info) | [MIT](https://github.com/WatWowMap/event-info/blob/main/LICENSE), © 2022 WatWowMap |
 | Contraste de Rocket | [LeekDuck](https://leekduck.com/rocket-lineups/), a través de [ScrapedDuck](https://github.com/bigfoott/ScrapedDuck) | Sin anuncios ni pago, con atribución |
 | Atacantes para Rocket | [doctorpokegogo.com](https://doctorpokegogo.com/) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); datos transformados y resumidos por GO MetaHub |
@@ -86,7 +113,7 @@ Las imágenes no se incluyen en este repositorio: se cargan desde su origen al v
 
 Las copias de datos de `tests/fixtures` proceden de esas mismas fuentes, se tomaron el 23 de noviembre de 2026 y solo
 se usan en las pruebas. Las de gimnasios son del 22 de noviembre y están recortadas. Las de Pokébattler son sintéticas.
-Las de Rocket son del 25 de noviembre, con frases inventadas.
+Las de Rocket, copas e incursiones por tipo son del 25 de noviembre, con frases inventadas.
 
 Proyecto personal sin ánimo de lucro, no afiliado a Niantic, Scopely, Nintendo ni The Pokémon Company. Pokémon y sus
 nombres, imágenes y frases pertenecen a sus titulares.
@@ -114,5 +141,5 @@ Cada cambio en `main` se prueba, se compila y se publica en GitHub Pages mediant
 | `src/data` | Direcciones, descarga, validación, guardado y sincronización |
 | `src/domain` | Reglas sin interfaz: fechas, vigencia, tiers, nombres, imágenes y enlaces |
 | `src/ui` | Pantallas |
-| `scripts` | Generación y validación de los datos de gimnasios y de los atacantes para Rocket |
+| `scripts` | Generación y validación de los datos de gimnasios, de incursiones y de los atacantes para Rocket |
 | `tests` | Pruebas |

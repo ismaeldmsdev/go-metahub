@@ -148,10 +148,14 @@ test.describe('caché y fallos', () => {
 test.describe('enlaces por tipo', () => {
   test('los 18 tipos llevan a su clasificación', async ({ page, context }) => {
     await network(context);
-    await open(page, 'incursiones');
+    await open(page, 'incursiones/tipos');
     const links = page.locator('.type-links a');
     await expect(links).toHaveCount(18);
-    await expect(links.filter({ hasText: 'Dragón' })).toHaveAttribute('href', 'https://www.pokebattler.com/raids/attackers/type/dragon');
+    await links.filter({ hasText: 'Dragón' }).click();
+    await expect(page.locator('.note').getByRole('link', { name: 'Pokébattler' })).toHaveAttribute(
+      'href',
+      'https://www.pokebattler.com/raids/attackers/type/dragon',
+    );
   });
 });
 

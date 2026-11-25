@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/preact-query';
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
-import { COUNTERS_KEEP, MINUTE, STORAGE_VERSION, type SourceId } from './config';
+import { MINUTE, ON_DEMAND_KEEP, STORAGE_VERSION, type SourceId } from './config';
 import type { SourceData } from './sources';
 import type { Snapshot } from './models';
 import { SOURCES } from './sources';
@@ -34,13 +34,15 @@ function db() {
 
 const isSource = (id: unknown): id is SourceId => typeof id === 'string' && id in SOURCES;
 
-/** Los counters comparten almacén con las fuentes, con una clave por jefe, nivel y clima. */
-const COUNTERS = 'counters|';
+/** Comparten almacén con las fuentes, con una clave por jefe, nivel y clima, o por formato. */
+const ON_DEMAND = ['counters', 'format'] as const;
 
-const versionOf = (key: string): number => STORAGE_VERSION[key.startsWith(COUNTERS) ? 'counters' : (key as SourceId)];
+const kindOf = (key: string) => ON_DEMAND.find((kind) => key.startsWith(`${kind}|`));
+
+const versionOf = (key: string): number => STORAGE_VERSION[kindOf(key) ?? (key as SourceId)];
 
 function storageKey([id, detail]: readonly unknown[]): string | null {
-  if (id === 'counters' && typeof detail === 'string') return COUNTERS + detail;
+  if (ON_DEMAND.some((kind) => kind === id) && typeof detail === 'string') return `${String(id)}|${detail}`;
   return isSource(id) ? id : null;
 }
 
@@ -60,21 +62,25 @@ const credible = (checkedAt: number): number => (checkedAt > Date.now() + MINUTE
 /** Recupera los últimos datos válidos. */
 export async function restoreSources(client: QueryClient): Promise<void> {
   const database = await db();
+  // Una sola lectura: pedirlos uno a uno alarga el arranque en móviles lentos.
+  const tx = database.transaction('sources');
+  const [keys, values] = await Promise.all([tx.store.getAllKeys(), tx.store.getAll()]);
+  const all = new Map(keys.map((key, i) => [key, values[i]!]));
   for (const id of Object.keys(SOURCES) as SourceId[]) {
-    const stored = await database.get('sources', id);
+    const stored = all.get(id);
     if (!stored || stored.version !== STORAGE_VERSION[id]) continue;
     const updatedAt = credible(stored.checkedAt);
     client.setQueryData([id], stored.snapshot as Snapshot<SourceData[typeof id]>, { updatedAt });
   }
-  for (const key of await database.getAllKeys('sources')) {
-    if (!key.startsWith(COUNTERS)) continue;
-    const stored = await database.get('sources', key);
-    if (!stored || stored.version !== versionOf(key) || Date.now() - stored.checkedAt > COUNTERS_KEEP) {
+  for (const [key, stored] of all) {
+    const kind = kindOf(key);
+    if (!kind) continue;
+    if (stored.version !== versionOf(key) || Date.now() - stored.checkedAt > ON_DEMAND_KEEP) {
       await database.delete('sources', key);
       continue;
     }
     const updatedAt = credible(stored.checkedAt);
-    client.setQueryData(['counters', key.slice(COUNTERS.length)], stored.snapshot, { updatedAt });
+    client.setQueryData([kind, key.slice(kind.length + 1)], stored.snapshot, { updatedAt });
   }
 }
 

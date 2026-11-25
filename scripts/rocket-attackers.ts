@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { RocketAttacker, RocketAttackersData } from '../src/data/models';
+import type { GymData, RocketAttacker, RocketAttackersData } from '../src/data/models';
 import { weaknesses } from '../src/domain/types';
 import {
   chart,
@@ -37,7 +37,7 @@ const record = gymRecord.omit({ gym: true }).extend({
 
 const dataset = gymDataset.extend({ records: z.array(record) });
 
-const gamemaster = gymGamemaster.extend({
+export const gamemaster = gymGamemaster.extend({
   moves: z.array(z.object({ name: z.string().min(1), type: z.string().min(1) })),
 });
 
@@ -45,10 +45,20 @@ const gamemaster = gymGamemaster.extend({
  * Formas que no se pueden elegir: solo aparecen a mitad de un combate. Minior entra en forma Meteorito y pasa a Núcleo con
  * menos de la mitad de los PS, también contra Rocket (Bulbapedia, comprobado el 25-11-2026). Evaluarlo como Núcleo engaña.
  */
-const BATTLE_FORMS = new Set(['Minior (Core)']);
+export const BATTLE_FORMS = new Set(['Minior (Core)']);
 
 /** «Techno Blast Normal» y «Techno Blast (Normal)» son el mismo. El «+» distingue variantes. */
 const moveKey = (name: string): string => name.toLowerCase().replace(/[^a-z+]/g, '');
+
+/** Tipo de un movimiento por su nombre, solo si no hay duda. */
+export function moveTypes(moves: { name: string; type: string }[]): (name: string) => string | null {
+  const known = new Map<string, Set<string>>();
+  for (const { name, type } of moves) known.set(moveKey(name), (known.get(moveKey(name)) ?? new Set()).add(type));
+  return (name) => {
+    const types = [...(known.get(moveKey(name)) ?? [])];
+    return types.length === 1 ? types[0]! : null;
+  };
+}
 
 export interface RocketCoverage {
   records: number;
@@ -62,7 +72,7 @@ export interface RocketFile extends RocketAttackersData {
 }
 
 /** Las pruebas usan otros: trabajan con unas pocas fichas. */
-const LIMITS = { minRecords: 1500, unmatched: 0.02, doubtful: 0.01 };
+export const LIMITS = { minRecords: 1500, unmatched: 0.02, doubtful: 0.01 };
 
 export function build(
   rawDataset: unknown,
@@ -84,16 +94,7 @@ export function build(
     ...records.filter((r) => ['legendary', 'mythical', 'ultra_beast'].includes(r.form)).map((r) => r.dex),
     ...species.filter((s) => s.tags?.some((t) => ['legendary', 'mythical', 'ultrabeast'].includes(t))).map((s) => s.dex),
   ]);
-  const moveTypes = new Map<string, Set<string>>();
-  for (const { name, type } of moves) {
-    const types = moveTypes.get(moveKey(name)) ?? new Set();
-    moveTypes.set(moveKey(name), types.add(type));
-  }
-  /** Solo si no hay duda. */
-  const typeOfMove = (name: string): string | null => {
-    const types = [...(moveTypes.get(moveKey(name)) ?? [])];
-    return types.length === 1 ? types[0]! : null;
-  };
+  const typeOfMove = moveTypes(moves);
 
   const omitted: RocketCoverage['omitted'] = {
     gigantamax: [],
@@ -183,10 +184,18 @@ export function build(
   };
 }
 
+/** Lo que tienen en común los archivos de atacantes. */
+interface AttackersFile {
+  format: 1;
+  source: GymData['source'];
+  changes: string;
+  pokemon: object[];
+}
+
 const MAX_DROP = 0.05;
 
 /** Una caída brusca respecto a lo ya publicado indica un error, no un cambio del juego. */
-export function checkAgainst(previous: RocketFile | null, next: RocketFile): void {
+export function checkAgainst(previous: AttackersFile | null, next: AttackersFile): void {
   if (!previous) return;
   if (next.source.generatedAt < previous.source.generatedAt) {
     throw new DataError('El dataset descargado es más antiguo que el publicado');
@@ -200,16 +209,16 @@ export function checkAgainst(previous: RocketFile | null, next: RocketFile): voi
 const RENEW_AFTER = 30 * 24 * 60 * 60 * 1000;
 
 /** …salvo que la fecha publicada ya sea antigua, para que la aplicación no crea que la fuente se ha parado. */
-export function needsUpdate(previous: RocketFile | null, next: RocketFile): boolean {
+export function needsUpdate(previous: AttackersFile | null, next: AttackersFile): boolean {
   if (!previous) return true;
   const stamp = { version: '', generatedAt: '' };
-  const content = (file: RocketFile) => JSON.stringify({ ...file, source: { ...file.source, ...stamp } });
+  const content = (file: AttackersFile) => JSON.stringify({ ...file, source: { ...file.source, ...stamp } });
   if (content(previous) !== content(next)) return true;
   return Date.parse(next.source.generatedAt) - Date.parse(previous.source.generatedAt) > RENEW_AFTER;
 }
 
 /** Un Pokémon por línea: los cambios se pueden revisar. */
-export function serialize({ pokemon, ...head }: RocketFile): string {
+export function serialize({ pokemon, ...head }: AttackersFile): string {
   const rows = pokemon.map((p) => `  ${JSON.stringify(p)}`).join(',\n');
   return `${JSON.stringify(head, null, 1).slice(0, -2)},\n "pokemon": [\n${rows}\n ]\n}\n`;
 }

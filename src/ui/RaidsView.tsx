@@ -1,26 +1,28 @@
 import { useLayoutEffect } from 'preact/hooks';
 import { TYPES } from '../domain/names';
-import { bossSlug, groupRaids, typeRankingUrl } from '../domain/raids';
+import { bossSlug, groupRaids } from '../domain/raids';
 import { BossSummary } from './BossSummary';
 import { BossView } from './BossView';
 import { Placeholder, SourceStatus } from './common';
 import { useNow, type Sources } from './hooks';
+import { MaxView } from './MaxView';
+import { RaidTypesView } from './RaidTypesView';
 
-function TypeRankings() {
+const MODES = [
+  { id: 'jefes', name: 'Jefes', hash: 'incursiones' },
+  { id: 'tipos', name: 'Por tipo', hash: 'incursiones/tipos' },
+  { id: 'max', name: 'Max', hash: 'incursiones/max' },
+] as const;
+
+function Modes({ mode }: { mode: (typeof MODES)[number]['id'] }) {
   return (
-    <section class="group">
-      <h2>Mejores atacantes por tipo</h2>
-      <p class="note">Se abren en la web de Pokébattler, en inglés.</p>
-      <ul class="type-links">
-        {Object.keys(TYPES).map((type) => (
-          <li key={type}>
-            <a class={`type t-${type}`} href={typeRankingUrl(type)} target="_blank" rel="noopener noreferrer">
-              {TYPES[type]}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <div class="segmented" role="group" aria-label="Incursiones">
+      {MODES.map(({ id, name, hash }) => (
+        <button key={id} type="button" aria-pressed={mode === id} onClick={() => (location.hash = hash)}>
+          {name}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -56,7 +58,6 @@ function BossList({ sources, now }: { sources: Sources; now: number }) {
           </section>
         ))
       )}
-      <TypeRankings />
     </>
   );
 }
@@ -64,7 +65,34 @@ function BossList({ sources, now }: { sources: Sources; now: number }) {
 export function RaidsView({ sources, slug }: { sources: Sources; slug: string | null }) {
   const now = useNow(30_000);
   const { raids } = sources;
-  if (slug === null) return <BossList sources={sources} now={now} />;
+  if (slug === null) {
+    return (
+      <>
+        <Modes mode="jefes" />
+        <BossList sources={sources} now={now} />
+      </>
+    );
+  }
+  if (slug === 'tipos') {
+    return (
+      <>
+        <Modes mode="tipos" />
+        <RaidTypesView sources={sources} type={null} />
+      </>
+    );
+  }
+  const type = /^tipo-([a-z]+)$/.exec(slug)?.[1];
+  if (type && Object.hasOwn(TYPES, type)) return <RaidTypesView sources={sources} type={type} />;
+  if (slug === 'max') {
+    return (
+      <>
+        <Modes mode="max" />
+        <MaxView sources={sources} section="max" now={now} />
+      </>
+    );
+  }
+  // Los demás identificadores de jefe no llevan guiones.
+  if (slug.startsWith('max-')) return <MaxView sources={sources} section={slug} now={now} />;
   opened = slug;
   const boss = raids.data?.find((candidate) => bossSlug(candidate) === slug);
   if (boss) return <BossView key={slug} boss={boss} sources={sources} now={now} />;

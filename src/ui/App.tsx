@@ -94,7 +94,7 @@ export function App({ storageOk }: { storageOk: boolean }) {
         </nav>
       </div>
       <main key={`${tab}/${detail}`} class="main">
-        {tab === 'pvp' && <PvpView sources={sources} />}
+        {tab === 'pvp' && <PvpView sources={sources} section={detail} />}
         {tab === 'incursiones' && <RaidsView sources={sources} slug={detail} />}
         {tab === 'gimnasios' && <GymsView sources={sources} section={detail} />}
         {tab === 'eventos' && <EventsView sources={sources} />}

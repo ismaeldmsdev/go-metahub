@@ -3,6 +3,7 @@
  * Las de gimnasios son de doctorpokegogo.com (CC BY 4.0), recortadas, del 22 de noviembre de 2026.
  * Las de Rocket son del 25 de noviembre de 2026: WatWowMap (MIT), LeekDuck a través de ScrapedDuck y doctorpokegogo.com
  * (CC BY 4.0), recortadas. Las frases son inventadas: las del juego no se copian al repositorio.
+ * Las de copas e incursiones por tipo son del 25 de noviembre: PvPoke (MIT) y doctorpokegogo.com (CC BY 4.0), recortadas.
  * Las de Pokébattler son sintéticas: sus datos reales no deben subirse al repositorio sin su permiso.
  */
 import { readFileSync } from 'node:fs';
@@ -30,6 +31,22 @@ export const fixtures = {
   gyms: () => load('gimnasios'),
   /** Unas pocas fichas originales, con lo que PvPoke sabe de ellas. */
   gymsRaw: () => load('gyms-raw'),
+  /** Los mismos counters sintéticos, como si fueran de un jefe Max. */
+  maxCounters: () => {
+    const raw = load('counters');
+    raw.filterValue = raw.attackers[0].pokemonId = 'ESPURR';
+    raw.attackers[0].boss = 'RAID_LEVEL_1_MAX';
+    const { defenders } = raw.attackers[0].randomMove;
+    ['ZACIAN_CROWNED_SWORD_FORM', 'LAPRAS_GIGANTAMAX', 'CHARIZARD', 'VENUSAUR_GIGANTAMAX'].forEach((id, i) => {
+      defenders[i].pokemonId = id;
+      defenders[i].byMove = [{ move1: 'METAL_CLAW_FAST', move2: 'MOVE_NONE', result: { estimator: 0.1 * (i + 1), edps: 200, tdi: 500_000 } }];
+    });
+    return raw;
+  },
+  mega: () => load('rankings-mega-1500'),
+  laic: () => load('rankings-laic'),
+  raidTypes: () => load('raid-types'),
+  raidRaw: () => load('raid-raw'),
   rocket: () => load('rocket'),
   rocketContrast: () => load('rocket-contrast'),
   rocketAttackers: () => load('rocket-attackers'),
@@ -39,6 +56,11 @@ export const fixtures = {
 
 /** Respuestas por fragmento de URL para simular la red completa. */
 export const routes = (): Record<string, unknown> => ({
+  // Antes que las ligas, cuyos nombres de archivo coinciden.
+  'rankings/mega/overall/rankings-1500.json': fixtures.mega(),
+  'rankings/laic2027gbl/overall/rankings-1500.json': fixtures.laic(),
+  'data/incursiones.json': fixtures.raidTypes(),
+  'raids/defenders/ESPURR/': fixtures.maxCounters(),
   'rankings-1500.json': fixtures.great(),
   'rankings-2500.json': fixtures.ultra(),
   'rankings-10000.json': fixtures.master(),

@@ -59,7 +59,7 @@ export function assess(id: QueryId, state: SourceState, now: number): Health {
   if (limit !== undefined && snapshot.sourceUpdatedAt !== null && now - snapshot.sourceUpdatedAt > limit) {
     const since = formatAge(now - snapshot.sourceUpdatedAt);
     messages.push(
-      id === 'gyms' || id === 'rocketAttackers'
+      id === 'gyms' || id === 'rocketAttackers' || id === 'raidTypes'
         ? `Los datos de origen son de hace ${since}. Puede que la fuente no haya publicado o que su copia no se actualice.`
         : `La fuente no publica desde hace ${since}.`,
     );

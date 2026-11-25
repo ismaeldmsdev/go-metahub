@@ -27,6 +27,12 @@ export interface CountersTarget {
   weather: Weather;
 }
 
+/** Formato de PvPoke: una copa, o las ligas Mega, con su límite de PC. */
+export interface FormatTarget {
+  cup: string;
+  cp: number;
+}
+
 export const ENDPOINTS = {
   ranking: (league: League) =>
     github('pvpoke/pvpoke', 'master', `src/data/rankings/all/overall/rankings-${league}.json`),
@@ -54,6 +60,13 @@ export const ENDPOINTS = {
   /** Fecha del último cambio de ese archivo, que es el de las alineaciones. */
   rocketCommit:
     'https://api.github.com/repos/WatWowMap/event-info/commits?path=grunts/formatted.json&per_page=1',
+  /** Los rankings de ligas Mega y copas se piden solo al abrirlos. */
+  format: ({ cup, cp }: FormatTarget) =>
+    github('pvpoke/pvpoke', 'master', `src/data/rankings/${cup}/overall/rankings-${cp}.json`),
+  formatCommit: ({ cup }: FormatTarget) =>
+    `https://api.github.com/repos/pvpoke/pvpoke/commits?path=src/data/rankings/${cup}/overall&per_page=1`,
+  /** Resumen propio de incursiones por tipo, como el de gimnasios. */
+  raidTypes: { url: './data/incursiones.json' } as Endpoint,
   pvpokeCommit:
     'https://api.github.com/repos/pvpoke/pvpoke/commits?path=src/data/rankings/all/overall&per_page=1',
   scrapedDuckCommit:
@@ -80,10 +93,12 @@ export type SourceId =
   | 'gyms'
   | 'rocket'
   | 'rocketContrast'
-  | 'rocketAttackers';
+  | 'rocketAttackers'
+  | 'season'
+  | 'raidTypes';
 
-/** Los counters se piden por jefe, así que no son una fuente única. */
-export type QueryId = SourceId | 'counters';
+/** Los counters se piden por jefe y los formatos de PvP uno a uno, así que no son una fuente única. */
+export type QueryId = SourceId | 'counters' | 'format';
 
 export const TTL: Record<QueryId, number> = {
   pvp: DAY,
@@ -96,6 +111,9 @@ export const TTL: Record<QueryId, number> = {
   rocket: 6 * HOUR,
   rocketContrast: 6 * HOUR,
   rocketAttackers: DAY,
+  season: 6 * HOUR,
+  raidTypes: DAY,
+  format: DAY,
   // Pokébattler pide guardar las respuestas y avisa de que envejecen en días.
   counters: DAY,
 };
@@ -109,6 +127,7 @@ export const SOURCE_STALE_AFTER: Partial<Record<QueryId, number>> = {
   pvp: 45 * DAY,
   gyms: 45 * DAY,
   rocketAttackers: 45 * DAY,
+  raidTypes: 45 * DAY,
 };
 
 /** Espera mínima tras un fallo antes de volver a consultar automáticamente. */
@@ -122,17 +141,20 @@ export const REQUEST_TIMEOUT = 25_000;
 export const ZONE = 'Europe/Madrid';
 /** Se incrementa, por fuente, solo si cambia la forma de sus datos guardados. */
 export const STORAGE_VERSION: Record<QueryId, number> = {
-  pvp: 3,
+  pvp: 4,
   raids: 1,
   events: 1,
   translations: 2,
-  pokebattler: 2,
+  pokebattler: 3,
   sprites: 1,
   gyms: 1,
   rocket: 1,
   rocketContrast: 1,
   rocketAttackers: 1,
+  season: 1,
+  raidTypes: 1,
+  format: 1,
   counters: 1,
 };
-/** Los counters que no se actualizan desde hace este tiempo se borran. */
-export const COUNTERS_KEEP = 30 * DAY;
+/** Los counters y formatos que no se actualizan desde hace este tiempo se borran. */
+export const ON_DEMAND_KEEP = 30 * DAY;

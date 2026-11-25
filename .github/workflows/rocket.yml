@@ -1,5 +1,6 @@
 name: Datos de Rocket
 
+# Atacantes de doctorpokegogo: los de Rocket y los de incursiones por tipo, que salen del mismo dataset.
 # Cada día comprueba si hay datos nuevos y los valida. Solo si han cambiado, todas las pruebas pasan y la variable del
 # repositorio ROCKET_AUTOMATICO vale «si», los guarda en main y lanza la publicación. Si algo falla, lo publicado se
 # queda como está y GitHub avisa por correo.
@@ -26,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     outputs:
-      changed: ${{ steps.datos.outputs.changed }}
+      changed: ${{ steps.datos.outputs.changed == 'true' || steps.incursiones.outputs.changed == 'true' }}
       version: ${{ steps.datos.outputs.version }}
     steps:
       - uses: actions/checkout@v7
@@ -41,17 +42,21 @@ jobs:
       # Si los datos no cuadran, falla aquí y lo publicado se queda como está.
       - id: datos
         run: npm run rocket
+      - id: incursiones
+        run: npm run incursiones
       # Con los datos nuevos, antes de que lleguen a main: pruebas, compilación y aplicación completa en el navegador.
-      - if: steps.datos.outputs.changed == 'true'
+      - if: steps.datos.outputs.changed == 'true' || steps.incursiones.outputs.changed == 'true'
         run: |
           npm test
           npm run build
           npm run test:e2e
-      - if: steps.datos.outputs.changed == 'true'
+      - if: steps.datos.outputs.changed == 'true' || steps.incursiones.outputs.changed == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: rocket
-          path: public/data/rocket.json
+          path: |
+            public/data/rocket.json
+            public/data/incursiones.json
           retention-days: 14
 
   publicar:
@@ -88,8 +93,8 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add public/data/rocket.json
-          git commit -m "Actualizar los datos de Rocket ($VERSION)"
+          git add public/data/rocket.json public/data/incursiones.json
+          git commit -m "Actualizar los datos de Rocket e incursiones ($VERSION)"
           # Por si la tarea de gimnasios ha publicado mientras tanto.
           git pull --rebase origin main
           git push origin HEAD:main

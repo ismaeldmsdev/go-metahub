@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "gimnasios": "node scripts/gimnasios.mjs",
     "rocket": "node scripts/rocket.mjs",
+    "incursiones": "node scripts/incursiones.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run tests/unit",
     "test:e2e": "playwright test",

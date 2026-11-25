@@ -10,7 +10,7 @@ const PIXEL = Buffer.from(
 export async function network(context: BrowserContext) {
   const table: Record<string, unknown> = routes();
   const calls: string[] = [];
-  await context.route(/^https:\/\/|\/data\/(?:gimnasios|rocket)\.json$/, async (route) => {
+  await context.route(/^https:\/\/|\/data\/(?:gimnasios|rocket|incursiones)\.json$/, async (route) => {
     const url = route.request().url();
     calls.push(url);
     const broken = table.images === 'fail' || (table.art === 'fail' && url.includes('official-artwork'));
@@ -57,4 +57,5 @@ export const saved = (page: Page, ...prefixes: string[]) =>
 
 export const ALL_SOURCES = [
   'pvp', 'raids', 'events', 'translations', 'pokebattler', 'sprites', 'gyms', 'rocket', 'rocketContrast', 'rocketAttackers',
+  'season', 'raidTypes',
 ];

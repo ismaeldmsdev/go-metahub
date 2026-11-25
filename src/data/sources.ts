@@ -1,33 +1,40 @@
 import { replaceEqualDeep } from '@tanstack/preact-query';
-import { ENDPOINTS, HOUR, RETRY_AFTER_ERROR, type CountersTarget, type Endpoint } from './config';
+import { ENDPOINTS, HOUR, RETRY_AFTER_ERROR, type CountersTarget, type Endpoint, type FormatTarget } from './config';
 import { SourceError } from './errors';
-import { fetchEndpoint, fetchJson } from './http';
+import { fetchEndpoint, fetchJson, type Download } from './http';
 import type { SpriteIndex } from '../domain/sprites';
 import type {
   ContrastTrainer,
   CountersData,
+  FormatData,
   GameEvent,
   GymData,
-  PokebattlerBosses,
+  PokebattlerData,
   PvpData,
+  RaidAttackersData,
   RaidBoss,
   RocketAttackersData,
   RocketTrainer,
+  SeasonWeek,
   Snapshot,
   Translations,
 } from './models';
 import { commits, parseWith } from './schemas';
 import {
+  MIN_FORMAT,
   parseGamemaster,
   toCounters,
   toEvents,
+  toFormats,
   toGyms,
-  toPokebattlerBosses,
+  toPokebattlerData,
+  toRaidAttackers,
   toRaids,
   toRanking,
   toRocket,
   toRocketAttackers,
   toRocketContrast,
+  toSeason,
   toSpecies,
   toSprites,
   toTranslations,
@@ -39,12 +46,14 @@ export interface SourceData {
   raids: RaidBoss[];
   events: GameEvent[];
   translations: Translations;
-  pokebattler: PokebattlerBosses;
+  pokebattler: PokebattlerData;
   sprites: SpriteIndex;
   gyms: GymData;
   rocket: RocketTrainer[];
   rocketContrast: ContrastTrainer[];
   rocketAttackers: RocketAttackersData;
+  season: SeasonWeek[];
+  raidTypes: RaidAttackersData;
 }
 
 export interface FetchContext<T> {
@@ -86,6 +95,16 @@ const loaderFor =
   (endpoint: Endpoint, as: 'json' | 'text' = 'json') =>
     fetchEndpoint(endpoint, { signal: ctx.signal, allowFallback: ctx.previous === undefined, as });
 
+/** Eventos y calendario salen del mismo archivo: si coinciden, se descarga una sola vez. */
+let pendingEvents: Promise<Download> | null = null;
+
+function loadEvents({ previous }: FetchContext<unknown>): Promise<Download> {
+  pendingEvents ??= loaderFor({ previous })(ENDPOINTS.events).finally(() => {
+    pendingEvents = null;
+  });
+  return pendingEvents;
+}
+
 export const SOURCES: { [K in keyof SourceData]: Loader<SourceData[K]> } = {
   async pvp(ctx) {
     const load = loaderFor(ctx);
@@ -106,6 +125,7 @@ export const SOURCES: { [K in keyof SourceData]: Loader<SourceData[K]> } = {
         leagues: { 1500: a.entries, 2500: b.entries, 10000: c.entries },
         moves: usedMoves([a.entries, b.entries, c.entries], game),
         species: toSpecies(game),
+        formats: toFormats(game),
       },
       discarded: a.discarded + b.discarded + c.discarded,
       viaFallback: [great, ultra, master, gm].some((r) => r.viaFallback),
@@ -123,7 +143,7 @@ export const SOURCES: { [K in keyof SourceData]: Loader<SourceData[K]> } = {
 
   async events(ctx) {
     const [result, sourceUpdatedAt] = await Promise.all([
-      loaderFor(ctx)(ENDPOINTS.events),
+      loadEvents(ctx),
       commitDate(ENDPOINTS.scrapedDuckCommit, ctx.signal),
     ]);
     return snapshot(ctx.previous, { ...toEvents(result.json), viaFallback: result.viaFallback, sourceUpdatedAt });
@@ -140,7 +160,7 @@ export const SOURCES: { [K in keyof SourceData]: Loader<SourceData[K]> } = {
 
   async pokebattler(ctx) {
     const { json } = await loaderFor(ctx)(ENDPOINTS.pokebattler);
-    return snapshot(ctx.previous, { data: toPokebattlerBosses(json) });
+    return snapshot(ctx.previous, { data: toPokebattlerData(json) });
   },
 
   async sprites(ctx) {
@@ -170,12 +190,41 @@ export const SOURCES: { [K in keyof SourceData]: Loader<SourceData[K]> } = {
     return snapshot(ctx.previous, { ...toRocketContrast(json), viaFallback });
   },
 
+  async season(ctx) {
+    const { json, viaFallback } = await loadEvents(ctx);
+    return snapshot(ctx.previous, { data: toSeason(json, ctx.previous?.data ?? [], Date.now()), viaFallback });
+  },
+
+  async raidTypes(ctx) {
+    const { json } = await loaderFor(ctx)(ENDPOINTS.raidTypes);
+    const data = toRaidAttackers(json);
+    return snapshot(ctx.previous, { data, sourceUpdatedAt: Date.parse(data.source.generatedAt) });
+  },
+
   async rocketAttackers(ctx) {
     const { json } = await loaderFor(ctx)(ENDPOINTS.rocketAttackers);
     const data = toRocketAttackers(json);
     return snapshot(ctx.previous, { data, sourceUpdatedAt: Date.parse(data.source.generatedAt) });
   },
 };
+
+/** Ranking de una copa o liga Mega, con los movimientos de la misma versión. Solo al abrirlo. */
+export async function loadFormat(target: FormatTarget, ctx: FetchContext<FormatData>): Promise<Snapshot<FormatData>> {
+  const load = loaderFor(ctx);
+  const [ranking, gm, sourceUpdatedAt] = await Promise.all([
+    load(ENDPOINTS.format(target)),
+    load(ENDPOINTS.gamemaster),
+    commitDate(ENDPOINTS.formatCommit(target), ctx.signal),
+  ]);
+  const game = parseGamemaster(gm.json);
+  const { entries, discarded } = toRanking(ranking.json, game, 'este formato', MIN_FORMAT);
+  return snapshot(ctx.previous, {
+    data: { entries, moves: usedMoves([entries], game) },
+    discarded,
+    viaFallback: ranking.viaFallback || gm.viaFallback,
+    sourceUpdatedAt,
+  });
+}
 
 /** Si Pokébattler limita las consultas, se respeta su espera en todos los jefes y climas. */
 const MAX_PAUSE = HOUR;

@@ -5,7 +5,7 @@ import { QueryObserver, type QueryClient } from '@tanstack/preact-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DAY, HOUR, MINUTE, RETRY_AFTER_ERROR, type CountersTarget } from '../../src/data/config';
 import type { Snapshot } from '../../src/data/models';
-import { countersKey, countersQuery, createClient, isDue, lifetime, recentlyFailed, sourceQuery } from '../../src/data/queries';
+import { countersKey, countersQuery, createClient, formatKey, formatQuery, isDue, lifetime, recentlyFailed, sourceQuery } from '../../src/data/queries';
 import { SOURCES } from '../../src/data/sources';
 import { closeStorage, persistUpdates, restoreSources, saveSource } from '../../src/data/storage';
 import { toEvents } from '../../src/data/transform';
@@ -78,7 +78,7 @@ describe('descarga', () => {
     expect((await load('raids')).data).toHaveLength(18);
     expect((await load('events')).data).toHaveLength(39);
     expect(Object.keys((await load('translations')).data.moves).length).toBeGreaterThan(300);
-    expect((await load('pokebattler')).data).toHaveProperty('DARKRAI', 'RAID_LEVEL_5');
+    expect((await load('pokebattler')).data.raids).toHaveProperty('DARKRAI', 'RAID_LEVEL_5');
     expect((await load('sprites')).data['809']![0]).toEqual({ id: 809, name: 'melmetal' });
   });
 
@@ -472,5 +472,59 @@ describe('Team GO Rocket', () => {
     expect(lifetime('rocket', NOW, { viaFallback: false })).toBe(6 * HOUR);
     expect(lifetime('rocketContrast', NOW, { viaFallback: false })).toBe(6 * HOUR);
     expect(lifetime('rocketAttackers', NOW, { viaFallback: false })).toBe(DAY);
+  });
+});
+
+describe('copas, ligas Mega e incursiones por tipo', () => {
+  const target = { cup: 'mega', cp: 1500 };
+  const loadFormat = () => client.fetchQuery({ ...formatQuery(client, target), retry: false });
+
+  it('el ranking de un formato se pide solo al abrirlo', async () => {
+    await load('pvp');
+    expect(calls.filter((url) => url.includes('rankings/mega'))).toEqual([]);
+    const { data, sourceUpdatedAt } = await loadFormat();
+    expect(data.entries[0]!.name).toBe('Sableye (Mega)');
+    expect(sourceUpdatedAt).toBe(Date.parse('2026-11-20T16:56:34Z'));
+  });
+
+  it('se guarda por formato y sobrevive a un fallo y a reabrir', async () => {
+    await loadFormat();
+    table['rankings/mega/overall/rankings-1500.json'] = () => new Response('', { status: 404 });
+    vi.setSystemTime(NOW + 2 * DAY);
+    await expect(loadFormat()).rejects.toThrow(/404/);
+    await reopen();
+    expect(client.getQueryData<Snapshot<any>>(formatKey(target))!.data.entries).toHaveLength(120);
+    expect(client.getQueryState(formatKey(target))!.dataUpdatedAt).toBe(NOW);
+  });
+
+  it('los formatos que no se usan se borran', async () => {
+    await loadFormat();
+    await settle();
+    vi.setSystemTime(NOW + 31 * DAY);
+    await reopen();
+    expect(client.getQueryData(formatKey(target))).toBeUndefined();
+  });
+
+  it('una copa sin ranking publicado falla sin afectar a las ligas', async () => {
+
+    table = { 'rankings/fantasy': () => new Response('', { status: 404 }), ...table };
+    await expect(client.fetchQuery({ ...formatQuery(client, { cup: 'fantasy', cp: 1500 }), retry: false })).rejects.toThrow(/404/);
+    expect((await load('pvp')).data.leagues[1500]).toHaveLength(1156);
+  });
+
+  it('el calendario conserva la semana en curso si la fuente deja de listarla', async () => {
+    expect((await load('season')).data).toHaveLength(2);
+    table['events.min.json'] = fixtures.events().filter((e: any) => e.eventType !== 'go-battle-league');
+    vi.setSystemTime(NOW + 7 * HOUR);
+    expect((await load('season')).data).toHaveLength(1);
+    vi.setSystemTime(NOW + 9 * DAY);
+    expect((await load('season')).data).toEqual([]);
+  });
+
+  it('incursiones por tipo y catálogo Max', async () => {
+    expect((await load('raidTypes')).data.source.license).toBe('CC BY 4.0');
+    expect((await load('pokebattler')).data.max).toHaveLength(6);
+    expect(lifetime('format', NOW, { viaFallback: false })).toBe(DAY);
+    expect(lifetime('season', NOW, { viaFallback: false })).toBe(6 * HOUR);
   });
 });

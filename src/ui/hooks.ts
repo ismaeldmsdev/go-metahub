@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient, type QueryClient, type UseQueryResult } from '@tanstack/preact-query';
 import { useEffect, useState } from 'preact/hooks';
-import { MIN_COUNTERS_INTERVAL, MIN_MANUAL_INTERVAL, TTL, type CountersTarget, type QueryId } from '../data/config';
-import type { CountersData, GameEvent, Snapshot } from '../data/models';
-import { countersQuery, lifetime, sourceQuery } from '../data/queries';
+import { MIN_COUNTERS_INTERVAL, MIN_MANUAL_INTERVAL, TTL, type CountersTarget, type FormatTarget, type QueryId } from '../data/config';
+import type { CountersData, FormatData, GameEvent, Snapshot } from '../data/models';
+import { countersQuery, formatQuery, lifetime, sourceQuery } from '../data/queries';
 import type { SourceData } from '../data/sources';
 import { assess, type Health } from '../domain/freshness';
 
@@ -83,6 +83,13 @@ export function useCounters(target: CountersTarget): Source<CountersData> {
   return describe('counters', query, client, useNow(30_000), MIN_COUNTERS_INTERVAL);
 }
 
+/** Solo se consultan mientras el formato está abierto. */
+export function useFormat(target: FormatTarget): Source<FormatData> {
+  const client = useQueryClient();
+  const query = useQuery(formatQuery(client, target));
+  return describe('format', query, client, useNow(30_000), MIN_MANUAL_INTERVAL);
+}
+
 export type Sources = { [K in keyof SourceData]: Source<SourceData[K]> };
 
 /** Todas las fuentes se mantienen al día aunque su pestaña no esté abierta. */
@@ -98,6 +105,8 @@ export function useSources(): Sources {
     rocket: useSource('rocket'),
     rocketContrast: useSource('rocketContrast'),
     rocketAttackers: useSource('rocketAttackers'),
+    season: useSource('season'),
+    raidTypes: useSource('raidTypes'),
   };
 }
 

@@ -10,7 +10,8 @@ export const rankingEntry = z.object({
   speciesId: z.string().min(1),
   speciesName: z.string().min(1),
   score: z.number().min(0).max(100),
-  moveset: z.array(z.string().min(1)).min(1).max(3),
+  // Las supermegaevoluciones llevan un cuarto movimiento.
+  moveset: z.array(z.string().min(1)).min(1).max(4),
 });
 
 export const gamemaster = z.object({
@@ -21,6 +22,11 @@ export const gamemaster = z.object({
       dex: z.number().int().positive(),
       types: z.array(z.string()),
       eliteMoves: z.array(z.string()).optional(),
+      baseStats: z
+        .object({ atk: z.number().positive(), def: z.number().positive(), hp: z.number().positive() })
+        .optional()
+        .catch(undefined),
+      fastMoves: z.array(z.string()).optional().catch(undefined),
     }),
   ),
   moves: z.array(
@@ -31,6 +37,33 @@ export const gamemaster = z.object({
       energyGain: z.number(),
     }),
   ),
+  // Se validan aparte: si cambian, las ligas siguen funcionando.
+  formats: z.unknown().optional(),
+  cups: z.unknown().optional(),
+});
+
+/** Va en direcciones y claves: solo letras y números. */
+const cupId = z.string().regex(/^[a-z0-9]+$/);
+
+export const pvpFormat = z.object({
+  title: z.string().min(1),
+  cup: cupId,
+  cp: z.number().int().positive(),
+  showCup: z.boolean().optional(),
+  showFormat: z.boolean().optional(),
+  hideRankings: z.boolean().optional(),
+});
+
+const cupFilter = z.object({
+  filterType: z.string(),
+  values: z.array(z.union([z.string(), z.number()])),
+  leagues: z.array(z.number()).optional(),
+});
+
+export const pvpCup = z.object({
+  name: cupId,
+  include: z.array(cupFilter),
+  exclude: z.array(cupFilter),
 });
 
 const named = z.object({ name: z.string().min(1) });
@@ -100,6 +133,12 @@ export const pokebattler = z.object({
       }),
     )
     .min(1),
+});
+
+/** Aparte de los jefes de incursión: si cambia, estos siguen funcionando. */
+export const pokebattlerMax = z.object({
+  tiers: z.array(z.object({ tier: z.string(), raids: z.array(z.object({ pokemon: z.string().regex(/^[A-Z0-9_]+$/) })) })),
+  dynamaxPokemon: z.array(z.string().regex(/^[A-Z0-9_]+$/)).catch([]),
 });
 
 const metric = z.number().positive().nullable().catch(null);
@@ -212,6 +251,28 @@ export const rocketAttackers = z.object({
       groups: z.array(z.enum(['mega', 'shadow', 'legendary'])),
       tier: z.enum(['S+', 'S', 'A', 'B', 'C', 'D']),
       score: z.number().positive(),
+      fast: z.string().min(1),
+      fastType: z.string().min(1),
+      charged: z.string().min(1),
+      chargedType: z.string().min(1),
+    }),
+  ),
+});
+
+export const raidAttackers = z.object({
+  format: z.literal(1),
+  source: gyms.shape.source,
+  changes: z.string().min(1),
+  pokemon: z.array(
+    z.object({
+      name: z.string().min(1),
+      dex: z.number().int().positive(),
+      types: z.array(z.string()).min(1).max(2),
+      groups: z.array(z.enum(['mega', 'shadow', 'legendary'])),
+      tier: z.enum(['S+', 'S', 'A', 'B', 'C', 'D', 'E']),
+      percentile: z.number().min(0).max(100),
+      dps: z.number().positive(),
+      tdo: z.number().positive(),
       fast: z.string().min(1),
       fastType: z.string().min(1),
       charged: z.string().min(1),

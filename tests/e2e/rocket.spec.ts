@@ -52,7 +52,7 @@ test.describe('navegación', () => {
       await sources.click();
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Fuentes');
       await expect(sources).toHaveAttribute('aria-current', 'page');
-      await expect(page.locator('.source')).toHaveCount(10);
+      await expect(page.locator('.source')).toHaveCount(12);
     });
   }
 

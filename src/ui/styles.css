@@ -250,6 +250,15 @@ summary {
   right: auto;
 }
 
+/* Con la letra del sistema ampliada, hasta donde cabe. */
+.header h1 {
+  font-size: min(1.22rem, 6.2vw);
+}
+
+.sources-link span {
+  font-size: min(1em, 4vw);
+}
+
 h1 {
   font-size: 1.22rem;
   font-weight: 750;
@@ -422,6 +431,7 @@ h1 {
 @media (min-width: 760px) and (max-width: 1023px) {
   .nav a {
     flex: 1 1 auto;
+    gap: 0;
     /* Con la letra del sistema ampliada, hasta donde cabe. */
     font-size: min(0.93rem, 1.95vw);
   }
@@ -438,6 +448,12 @@ h1 {
   .brand-name {
     letter-spacing: 0;
     white-space: nowrap;
+  }
+  .header h1 {
+    font-size: min(1.22rem, 2.6vw);
+  }
+  .sources-link span {
+    font-size: min(1em, 1.5vw);
   }
   /* El nombre bajo el icono, como en la barra del móvil: así cabe con letras anchas. */
   .sources-link {
@@ -838,6 +854,15 @@ details[open] > summary::after {
   background: var(--card);
   box-shadow: 0 0 0 100vmax var(--bg);
   clip-path: inset(-12px -100vmax -8px);
+}
+
+/* Elige la pantalla: no queda fijo, para que solo lo haga el de las ligas. */
+.segmented-still {
+  position: static;
+  /* La franja opaca del selector fijo de debajo no debe taparlo. */
+  margin-bottom: 4px;
+  box-shadow: none;
+  clip-path: none;
 }
 
 .segmented-2 {
@@ -1554,6 +1579,115 @@ details[open] > summary::after {
 .cp dd {
   font-variant-numeric: tabular-nums;
   font-weight: 700;
+}
+
+/* Incursiones por tipo y Max */
+.type-links small {
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.variant-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.max-types {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+
+.max-bosses {
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  max-width: none;
+}
+
+.max-bosses li {
+  display: grid;
+}
+
+a.rival {
+  text-decoration: none;
+}
+
+.link-list {
+  display: grid;
+  gap: 2px;
+}
+
+.link-columns {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+.link-list .link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+/* Copas y ligas Mega */
+.rules {
+  display: grid;
+  gap: 6px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+}
+
+.rules ul,
+.season-week ul {
+  display: grid;
+  gap: 4px;
+}
+
+.season-week {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.season-dates {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.season-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.season-entry > :last-child {
+  flex: none;
+  max-width: 46%;
+  text-align: right;
+}
+
+.season-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+.season-name small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.season-open {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
 }
 
 /* Rocket */

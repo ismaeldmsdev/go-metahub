@@ -1,9 +1,9 @@
 import { QueryClient, queryOptions, type Query } from '@tanstack/preact-query';
 import { raidBoundaries } from '../domain/events';
-import { MINUTE, RETRY_AFTER_ERROR, TTL, type CountersTarget, type QueryId } from './config';
+import { MINUTE, RETRY_AFTER_ERROR, TTL, type CountersTarget, type FormatTarget, type QueryId } from './config';
 import { SourceError } from './errors';
-import type { CountersData, GameEvent, Snapshot } from './models';
-import { loadCounters, SOURCES, type SourceData } from './sources';
+import type { CountersData, FormatData, GameEvent, Snapshot } from './models';
+import { loadCounters, loadFormat, SOURCES, type SourceData } from './sources';
 
 type AnyQuery = Query<any, any, any, any>;
 
@@ -70,6 +70,17 @@ export function countersQuery(client: QueryClient, target: CountersTarget) {
     queryFn: ({ signal }) =>
       loadCounters(target, { previous: client.getQueryData<Snapshot<CountersData>>(countersKey(target)), signal }),
     staleTime: (query) => queryLifetime(client, 'counters', query),
+  });
+}
+
+export const formatKey = ({ cup, cp }: FormatTarget) => ['format', `${cup}|${cp}`] as const;
+
+export function formatQuery(client: QueryClient, target: FormatTarget) {
+  return queryOptions<Snapshot<FormatData>, Error>({
+    queryKey: formatKey(target),
+    queryFn: ({ signal }) =>
+      loadFormat(target, { previous: client.getQueryData<Snapshot<FormatData>>(formatKey(target)), signal }),
+    staleTime: (query) => queryLifetime(client, 'format', query),
   });
 }
 

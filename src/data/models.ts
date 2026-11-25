@@ -37,6 +37,42 @@ export interface Species {
   name: string;
   dex: number;
   types: string[];
+  /** Estadísticas base. */
+  stats?: { atk: number; def: number; hp: number };
+  /** Tipos de sus ataques rápidos. */
+  fastTypes?: string[];
+}
+
+/** Condición de una copa, tal como la define PvPoke. */
+export interface FormatFilter {
+  /** «other» si no se sabe explicar: se remite a la página oficial. */
+  kind: 'type' | 'tag' | 'id' | 'evolution' | 'other';
+  values: string[];
+}
+
+export interface PvpFormat {
+  title: string;
+  cup: string;
+  cp: number;
+  include: FormatFilter[];
+  exclude: FormatFilter[];
+}
+
+/** Semana de la Liga Combates GO, según LeekDuck. */
+export interface SeasonWeek {
+  id: string;
+  /** Nombre inglés de la temporada: «Daydream Destinations». */
+  season: string;
+  start: string | null;
+  end: string | null;
+  link: string | null;
+  /** «Great League: Mega Edition», «Mountain Cup: Great League Edition». */
+  entries: string[];
+}
+
+export interface FormatData {
+  entries: PvpEntry[];
+  moves: Record<string, PvpMove>;
 }
 
 export interface PvpData {
@@ -45,6 +81,8 @@ export interface PvpData {
   moves: Record<string, PvpMove>;
   /** Todas las formas que conoce PvPoke, con megas y oscuros, por identificador. */
   species: Record<string, Species>;
+  /** Copas y ligas Mega que PvPoke enseña ahora. */
+  formats: PvpFormat[];
 }
 
 export interface CpRange {
@@ -98,6 +136,21 @@ export interface Translations {
 
 /** Jefes que Pokébattler lista en su rotación actual y su nivel (null si figura en varios). */
 export type PokebattlerBosses = Record<string, string | null>;
+
+export interface MaxBoss {
+  /** Identificador de Pokébattler. */
+  id: string;
+  /** Null si figura en varios niveles. */
+  tier: string | null;
+}
+
+export interface PokebattlerData {
+  raids: PokebattlerBosses;
+  /** Catálogo de jefes Max. La fuente no da fechas: no es una rotación. */
+  max: MaxBoss[];
+  /** Pokémon que la fuente admite en los combates Max. */
+  dynamax: string[];
+}
 
 export interface GymAttack {
   /** Tier, percentil y puntuación originales de doctorpokegogo. */
@@ -200,6 +253,30 @@ export interface RocketAttackersData {
   source: GymData['source'];
   changes: string;
   pokemon: RocketAttacker[];
+}
+
+export interface RaidAttacker {
+  /** Nombre inglés al estilo de PvPoke. */
+  name: string;
+  dex: number;
+  types: string[];
+  groups: GymPokemon['groups'];
+  /** Tier, percentil y métricas originales de doctorpokegogo. */
+  tier: 'S+' | 'S' | 'A' | 'B' | 'C' | 'D' | 'E';
+  percentile: number;
+  dps: number;
+  tdo: number;
+  fast: string;
+  fastType: string;
+  charged: string;
+  chargedType: string;
+}
+
+/** Contenido de public/data/incursiones.json. */
+export interface RaidAttackersData {
+  source: GymData['source'];
+  changes: string;
+  pokemon: RaidAttacker[];
 }
 
 export interface Counter {

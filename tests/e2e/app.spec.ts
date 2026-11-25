@@ -134,7 +134,7 @@ test.describe('actualización automática', () => {
   test('durante el uso: 6 h incursiones y eventos, 24 h PvP', async ({ page, context }) => {
     const net = await network(context);
     await open(page, 'fuentes');
-    await expect(page.getByText('Consulta al día')).toHaveCount(10);
+    await expect(page.getByText('Consulta al día')).toHaveCount(12);
     net.reset();
     await page.clock.fastForward(5 * HOUR);
     expect(net.count('raids.min.json') + net.count('events.min.json')).toBe(0);
@@ -172,11 +172,11 @@ test.describe('actualización automática', () => {
   test('al abrir: no repite si está vigente y actualiza si caducó', async ({ page, context }) => {
     const net = await network(context);
     await open(page, 'fuentes');
-    await expect(page.getByText('Consulta al día')).toHaveCount(10);
+    await expect(page.getByText('Consulta al día')).toHaveCount(12);
     await saved(page, ...ALL_SOURCES);
     net.reset();
     await page.reload();
-    await expect(page.getByText('Consulta al día')).toHaveCount(10);
+    await expect(page.getByText('Consulta al día')).toHaveCount(12);
     expect(net.count('githubusercontent')).toBe(0);
     await page.clock.setSystemTime(NOW + 7 * HOUR);
     await page.reload();

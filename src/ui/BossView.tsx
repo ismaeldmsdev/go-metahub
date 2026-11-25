@@ -1,6 +1,7 @@
+import type { ComponentChildren } from 'preact';
 import { useState } from 'preact/hooks';
 import { WEATHERS, type Weather } from '../data/config';
-import type { RaidBoss } from '../data/models';
+import type { Counter, RaidBoss, Species } from '../data/models';
 import {
   COUNTER_VARIANTS,
   counterMove,
@@ -28,15 +29,23 @@ const VARIANT_NAMES: Record<CounterVariant, string> = {
 const number = (value: number, digits: number): string =>
   value.toLocaleString('es', { minimumFractionDigits: digits, maximumFractionDigits: digits, useGrouping: 'always' });
 
-function CounterCard({ counter, sources }: { counter: RankedCounter; sources: Sources }) {
+interface CounterCardProps {
+  counter: RankedCounter;
+  sources: Sources;
+  species: Species;
+  /** Nombre con el que buscar la imagen, si no es el suyo. */
+  sprite?: { name: string; dex: number };
+  chip?: ComponentChildren;
+}
+
+export function CounterCard({ counter, sources, species, sprite = species, chip }: CounterCardProps) {
   const tr = sources.translations.data;
-  const species = counterSpecies(counter.id, sources.pvp.data?.species, tr);
   const label = pvpLabel(species, tr);
   return (
     <li class={`card rank-card t-${species.types[0] ?? ''}`}>
       <div class="rank-figure">
         <PokemonImage
-          id={spriteId(species, sources.sprites.data)}
+          id={spriteId(sprite, sources.sprites.data)}
           dex={species.dex}
           type={species.types[0]}
           shadow={label.shadow}
@@ -47,13 +56,15 @@ function CounterCard({ counter, sources }: { counter: RankedCounter; sources: So
       <div class="rank-body">
         <PokemonName label={label} />
         <div class="rank-meta">
+          {chip}
           {species.types.map((type) => (
             <TypeTag key={type} type={type} />
           ))}
         </div>
         <ul class="moves">
           <Move fast name={moveName(counterMove(counter.fast), tr)} />
-          <Move fast={false} name={moveName(counterMove(counter.charged), tr)} />
+          {/* En combates Max, a veces lo mejor es no usar el cargado. */}
+          {counter.charged !== 'MOVE_NONE' && <Move fast={false} name={moveName(counterMove(counter.charged), tr)} />}
         </ul>
         <dl class="metrics">
           <div>
@@ -110,18 +121,29 @@ interface CountersProps {
   now: number;
 }
 
-function Counters({ target, url, sources, now }: CountersProps) {
+interface PanelProps<V extends string> extends CountersProps {
+  title?: string;
+  /** El primero es el de partida. */
+  variants: readonly V[];
+  names: Record<V, string>;
+  filter: (list: Counter[], variant: V) => RankedCounter[];
+  card: (counter: RankedCounter) => ComponentChildren;
+  explanation: ComponentChildren | ((megaLevel: number | null) => ComponentChildren);
+}
+
+export function CountersPanel<V extends string>(props: PanelProps<V>) {
+  const { target, url, now, variants, names, filter, card, explanation, title = 'Mejores counters' } = props;
   const [weather, setWeather] = useState<Weather>('NO_WEATHER');
-  const [variant, setVariant] = useState<CounterVariant>('all');
+  const [variant, setVariant] = useState<V>(variants[0]!);
   const counters = useCounters({ ...target, weather });
   const list = counters.data?.list;
-  const shown = list ? filterCounters(list, variant) : [];
+  const shown = list ? filter(list, variant) : [];
   // Sin avisos, el estado va después de la lista: lo primero son los counters.
   const healthy = list && counters.health.level === 'ok';
   return (
     <>
       <div class="counters-head">
-        <h2>Mejores counters</h2>
+        <h2>{title}</h2>
         <select aria-label="Clima" value={weather} onChange={(e) => setWeather(e.currentTarget.value as Weather)}>
           {WEATHERS.map((id) => (
             <option key={id} value={id}>
@@ -130,11 +152,15 @@ function Counters({ target, url, sources, now }: CountersProps) {
           ))}
         </select>
       </div>
-      <div class="tier-filter variant-filter" role="group" aria-label="Variante">
-        {COUNTER_VARIANTS.map((id) => (
+      <div
+        class={variants.length === 3 ? 'tier-filter variant-filter variant-three' : 'tier-filter variant-filter'}
+        role="group"
+        aria-label="Variante"
+      >
+        {variants.map((id) => (
           <button key={id} type="button" aria-pressed={variant === id} onClick={() => setVariant(id)}>
-            {VARIANT_NAMES[id]}
-            <small>{list ? filterCounters(list, id).length : '–'}</small>
+            {names[id]}
+            <small>{list ? filter(list, id).length : '–'}</small>
           </button>
         ))}
       </div>
@@ -152,13 +178,11 @@ function Counters({ target, url, sources, now }: CountersProps) {
             <p class="empty">Ninguno de los {list.length} mejores es de este grupo.</p>
           ) : (
             <ol class="ranking">
-              {shown.map((counter) => (
-                <CounterCard key={counter.id} counter={counter} sources={sources} />
-              ))}
+              {shown.map(card)}
             </ol>
           )}
           <MoveLegend />
-          <Explanation megaLevel={counters.data!.megaLevel} />
+          {typeof explanation === 'function' ? explanation(counters.data!.megaLevel) : explanation}
           {healthy && <SourceStatus source={counters} />}
         </>
       )}
@@ -166,8 +190,29 @@ function Counters({ target, url, sources, now }: CountersProps) {
   );
 }
 
+function Counters(props: CountersProps) {
+  const { sources } = props;
+  return (
+    <CountersPanel
+      {...props}
+      variants={COUNTER_VARIANTS}
+      names={VARIANT_NAMES}
+      filter={filterCounters}
+      card={(counter) => (
+        <CounterCard
+          key={counter.id}
+          counter={counter}
+          sources={sources}
+          species={counterSpecies(counter.id, sources.pvp.data?.species, sources.translations.data)}
+        />
+      )}
+      explanation={(megaLevel) => <Explanation megaLevel={megaLevel} />}
+    />
+  );
+}
+
 export function BossView({ boss, sources, now }: { boss: RaidBoss; sources: Sources; now: number }) {
-  const link = countersLink(boss, sources.pokebattler.data);
+  const link = countersLink(boss, sources.pokebattler.data?.raids);
   return (
     <>
       <a class="link back" href="#incursiones">

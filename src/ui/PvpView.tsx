@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'preact/hooks';
 import { LEAGUES, type League } from '../data/config';
-import type { PvpData, PvpEntry, Translations } from '../data/models';
+import type { PvpEntry, PvpMove, Translations } from '../data/models';
 import { moveName, pvpLabel } from '../domain/names';
 import { spriteId, type SpriteIndex } from '../domain/sprites';
 import { countTiers, filterPvp, type PvpFilters, type TierGroup } from '../domain/pvp';
 import { tierOf, TIER_MIN, TIERS, VARIANTS, type Tier, type Variant } from '../domain/tiers';
 import { External, Move, MoveLegend, PokemonName, Placeholder, Rank, SourceStatus, TypeTag } from './common';
 import type { Sources } from './hooks';
+import { CupsView, CupView, MegaView, parseFormatSlug } from './FormatsView';
 import { PokemonImage } from './PokemonImage';
 
 const LEAGUE_NAMES: Record<League, { name: string; limit: string }> = {
@@ -40,13 +41,19 @@ interface Selection extends PvpFilters {
 let remembered: Selection = { league: 1500, tier: 'all', variant: 'all', search: '' };
 
 interface ListProps {
-  data: PvpData;
+  moves: Record<string, PvpMove>;
   tr: Translations | undefined;
   sprites: SpriteIndex | undefined;
   imagesPending: boolean;
 }
 
-function Card({ entry, data, tr, sprites, imagesPending }: ListProps & { entry: PvpEntry }) {
+interface CardProps extends ListProps {
+  entry: PvpEntry;
+  /** Los tiers propios solo se aplican a las tres ligas. */
+  tiered?: boolean;
+}
+
+export function PvpCard({ entry, moves, tr, sprites, imagesPending, tiered = true }: CardProps) {
   const tier = tierOf(entry.score);
   const label = pvpLabel(entry, tr);
   return (
@@ -70,17 +77,19 @@ function Card({ entry, data, tr, sprites, imagesPending }: ListProps & { entry: 
           </span>
         </div>
         <div class="rank-meta">
-          <span class={`tier tier-${tier ?? 'none'}`}>
-            <span class="sr-only">Tier </span>
-            {tier ?? '–'}
-          </span>
+          {tiered && (
+            <span class={`tier tier-${tier ?? 'none'}`}>
+              <span class="sr-only">Tier </span>
+              {tier ?? '–'}
+            </span>
+          )}
           {entry.types.map((type) => (
             <TypeTag key={type} type={type} />
           ))}
         </div>
         <ul class="moves">
           {entry.moves.map((id) => {
-            const move = data.moves[id];
+            const move = moves[id];
             if (!move) return null;
             return <Move key={id} name={moveName(move, tr)} fast={move.fast} elite={entry.elite.includes(id)} />;
           })}
@@ -102,7 +111,7 @@ function Group({ group, ...list }: ListProps & { group: TierGroup }) {
       </h2>
       <ol class="ranking">
         {group.entries.slice(0, shown).map((entry) => (
-          <Card key={entry.id} entry={entry} {...list} />
+          <PvpCard key={entry.id} entry={entry} {...list} />
         ))}
       </ol>
       {rest > 0 && (
@@ -114,8 +123,24 @@ function Group({ group, ...list }: ListProps & { group: TierGroup }) {
   );
 }
 
-export function PvpView({ sources }: { sources: Sources }) {
-  const [selection, setSelection] = useState<Selection>(remembered);
+export function LeagueButtons({ league, onChange }: { league: League; onChange: (league: League) => void }) {
+  return (
+    <div class="segmented" role="group" aria-label="Liga">
+      {LEAGUES.map((id) => (
+        <button key={id} type="button" aria-pressed={league === id} onClick={() => onChange(id)}>
+          {LEAGUE_NAMES[id].name}
+          <small>{LEAGUE_NAMES[id].limit}</small>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function LeaguesView({ sources, initial }: { sources: Sources; initial: League | null }) {
+  const [selection, setSelection] = useState<Selection>(() => {
+    if (initial) remembered = { ...remembered, league: initial };
+    return remembered;
+  });
   const { pvp, translations } = sources;
   const tr = translations.data;
   const change = (part: Partial<Selection>) => {
@@ -134,14 +159,7 @@ export function PvpView({ sources }: { sources: Sources }) {
 
   return (
     <>
-      <div class="segmented" role="group" aria-label="Liga">
-        {LEAGUES.map((id) => (
-          <button key={id} type="button" aria-pressed={league === id} onClick={() => change({ league: id })}>
-            {LEAGUE_NAMES[id].name}
-            <small>{LEAGUE_NAMES[id].limit}</small>
-          </button>
-        ))}
-      </div>
+      <LeagueButtons league={league} onChange={(id) => change({ league: id })} />
       <SourceStatus source={pvp} />
       {!tr && pvp.data && (
         <p class="note">Las traducciones aún no están disponibles. Se muestran los nombres originales.</p>
@@ -229,7 +247,7 @@ export function PvpView({ sources }: { sources: Sources }) {
               <Group
                 key={`${league}-${group.tier}-${tier}-${variant}-${search}`}
                 group={group}
-                data={pvp.data!}
+                moves={pvp.data!.moves}
                 tr={tr}
                 sprites={sources.sprites.data}
                 imagesPending={sources.sprites.health.level === 'loading'}
@@ -241,6 +259,35 @@ export function PvpView({ sources }: { sources: Sources }) {
           </MoveLegend>
         </>
       )}
+    </>
+  );
+}
+
+const MODES = [
+  { id: 'normal', name: 'Normal', hash: 'pvp' },
+  { id: 'mega', name: 'Mega', hash: 'pvp/mega' },
+  { id: 'copas', name: 'Copas', hash: 'pvp/copas' },
+] as const;
+
+export function PvpView({ sources, section }: { sources: Sources; section: string | null }) {
+  const target = section === null ? null : parseFormatSlug(section);
+  if (target) return <CupView key={section} target={target} sources={sources} />;
+  // «liga-1500» y «mega-2500» abren directamente esa liga, desde el calendario.
+  const direct = /^(liga|mega)-(1500|2500|10000)$/.exec(section ?? '');
+  const initial = direct ? (Number(direct[2]) as League) : null;
+  const mode = section === 'copas' ? 'copas' : section === 'mega' || direct?.[1] === 'mega' ? 'mega' : 'normal';
+  return (
+    <>
+      <div class="segmented segmented-still" role="group" aria-label="Formato">
+        {MODES.map(({ id, name, hash }) => (
+          <button key={id} type="button" aria-pressed={mode === id} onClick={() => (location.hash = hash)}>
+            {name}
+          </button>
+        ))}
+      </div>
+      {mode === 'normal' && <LeaguesView sources={sources} initial={initial} />}
+      {mode === 'mega' && <MegaView sources={sources} initial={initial} />}
+      {mode === 'copas' && <CupsView sources={sources} />}
     </>
   );
 }

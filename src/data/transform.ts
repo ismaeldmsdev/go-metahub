@@ -1,5 +1,6 @@
 import type { z } from 'zod';
 import type { SpriteIndex } from '../domain/sprites';
+import { eventStatus } from '../domain/events';
 import { TYPES } from '../domain/names';
 import { leekDuckUrl, normalize, plainText } from '../domain/text';
 import { tierOf } from '../domain/tiers';
@@ -12,15 +13,21 @@ import type {
   CountersData,
   CpRange,
   Featured,
+  FormatFilter,
   GameEvent,
   GymData,
+  MaxBoss,
   PokebattlerBosses,
+  PokebattlerData,
   PvpEntry,
+  PvpFormat,
   PvpMove,
+  RaidAttackersData,
   RaidBoss,
   RocketAttackersData,
   RocketSlot,
   RocketTrainer,
+  SeasonWeek,
   Species,
   Translations,
 } from './models';
@@ -33,6 +40,10 @@ import {
   parseList,
   parseWith,
   pokebattler,
+  pokebattlerMax,
+  pvpCup,
+  pvpFormat,
+  raidAttackers,
   raidBoss,
   rankingEntry,
   rawEvent,
@@ -53,10 +64,15 @@ const MIN_RANKING = 100;
  * El puesto es la posición en el archivo, así que debe llegar ordenado. Entre los Pokémon con tier
  * no se tolera ningún registro defectuoso: un hueco falsearía la lista. Por debajo se omite y se cuenta.
  */
-export function toRanking(raw: unknown, gm: Gamemaster, league: string): { entries: PvpEntry[]; discarded: number } {
+export function toRanking(
+  raw: unknown,
+  gm: Gamemaster,
+  league: string,
+  minimum = MIN_RANKING,
+): { entries: PvpEntry[]; discarded: number } {
   const what = `la clasificación de ${league}`;
   const { items } = parseList(rankingEntry, raw, what, 0.05);
-  if (items.length < MIN_RANKING) throw new SourceError('format', `En ${what} faltan Pokémon`);
+  if (items.length < minimum) throw new SourceError('format', `En ${what} faltan Pokémon`);
   if (items.some((entry, i) => i > 0 && entry.score > items[i - 1]!.score)) {
     throw new SourceError('format', `En ${what} los puestos no llegan ordenados`);
   }
@@ -105,14 +121,70 @@ export function usedMoves(lists: PvpEntry[][], gm: Gamemaster): Record<string, P
   );
 }
 
-/** Nombre, número y tipos de cada forma, para identificar a los Pokémon de otras fuentes. */
-export const toSpecies = (gm: Gamemaster): Record<string, Species> =>
-  Object.fromEntries(
-    gm.pokemon.map((p): [string, Species] => [
-      p.speciesId,
-      { name: p.speciesName, dex: p.dex, types: p.types.filter((t) => t !== 'none') },
-    ]),
+/** Nombre, número, tipos y estadísticas de cada forma, para identificar a los Pokémon de otras fuentes. */
+export function toSpecies(gm: Gamemaster): Record<string, Species> {
+  const moveTypes = new Map(gm.moves.map((m) => [m.moveId, m.type]));
+  return Object.fromEntries(
+    gm.pokemon.map((p): [string, Species] => {
+      const entry: Species = { name: p.speciesName, dex: p.dex, types: p.types.filter((t) => t !== 'none') };
+      if (p.baseStats) entry.stats = p.baseStats;
+      if (p.fastMoves) {
+        // Con Poder Oculto, el ataque Max siempre es de tipo Normal.
+        const types = p.fastMoves.map((id) => (id.startsWith('HIDDEN_POWER') ? 'normal' : moveTypes.get(id)));
+        entry.fastTypes = [...new Set(types.filter((t): t is string => t !== undefined))];
+      }
+      return [p.speciesId, entry];
+    }),
   );
+}
+
+const FILTER_KINDS = new Set(['type', 'tag', 'id', 'evolution']);
+
+/** Copas y ligas Mega que PvPoke enseña. Si cambian de forma, se omiten sin afectar a las ligas. */
+export function toFormats(gm: Gamemaster): PvpFormat[] {
+  const list = <T>(schema: z.ZodType<T>, value: unknown): T[] =>
+    (Array.isArray(value) ? value : []).flatMap((item) => {
+      const parsed = schema.safeParse(item);
+      return parsed.success ? [parsed.data] : [];
+    });
+  const cups = new Map(list(pvpCup, gm.cups).map((cup) => [cup.name, cup]));
+  const formats: PvpFormat[] = [];
+  for (const { title, cup: id, cp, showCup, showFormat, hideRankings } of list(pvpFormat, gm.formats)) {
+    const cup = cups.get(id);
+    // Los ocultos son restos de temporadas pasadas o listas sin ranking propio.
+    if (!cup || !(showCup && showFormat) || hideRankings || id === 'all' || id === 'custom') continue;
+    const filters = (items: typeof cup.include): FormatFilter[] =>
+      items
+        .filter((f) => !f.leagues || f.leagues.includes(cp))
+        .map((f) => ({
+          kind: FILTER_KINDS.has(f.filterType) ? (f.filterType as FormatFilter['kind']) : 'other',
+          values: f.values.map(String),
+        }));
+    formats.push({ title, cup: id, cp, include: filters(cup.include), exclude: filters(cup.exclude) });
+  }
+  return formats;
+}
+
+/** La copa más restrictiva que se espera tiene unas decenas de Pokémon. */
+export const MIN_FORMAT = 20;
+
+/**
+ * Semanas de la Liga Combates GO. LeekDuck deja a veces de listar la que está en curso: si ya se conocía, se conserva
+ * hasta que termine. Las futuras que desaparecen, no.
+ */
+export function toSeason(raw: unknown, previous: SeasonWeek[], now: number): SeasonWeek[] {
+  const weeks = toEvents(raw)
+    .data.filter((event) => event.type === 'go-battle-league')
+    .map((event): SeasonWeek => {
+      const [list = '', season = ''] = event.name.split(/\s*\|\s*/);
+      const entries = list.split(/,\s*(?:and\s+)?|\s+and\s+/).map((entry) => entry.trim());
+      const { id, start, end, link } = event;
+      return { id, season, start, end, link, entries: entries.filter(Boolean) };
+    });
+  const known = new Set(weeks.map((week) => week.id));
+  const kept = previous.filter((week) => !known.has(week.id) && eventStatus(week, now) === 'active');
+  return [...kept, ...weeks];
+}
 
 const validRange = (range: CpRange): CpRange | null =>
   range.min > 0 && range.max >= range.min ? { min: range.min, max: range.max } : null;
@@ -226,6 +298,24 @@ export function toPokebattlerBosses(raw: unknown): PokebattlerBosses {
   }
   if (Object.keys(bosses).length === 0) throw new SourceError('empty', 'Pokébattler no lista ningún jefe actual');
   return bosses;
+}
+
+const MAX_TIER = /^RAID_LEVEL_[1-6](?:_5)?_MAX$/;
+
+/** Catálogo Max de la misma respuesta. Si cambia de forma, queda vacío sin afectar a los jefes de incursión. */
+export function toPokebattlerData(raw: unknown): PokebattlerData {
+  const raids = toPokebattlerBosses(raw);
+  const parsed = pokebattlerMax.safeParse(raw);
+  if (!parsed.success) return { raids, max: [], dynamax: [] };
+  const bosses = new Map<string, MaxBoss>();
+  for (const { tier, raids: list } of parsed.data.tiers) {
+    if (!MAX_TIER.test(tier)) continue;
+    for (const { pokemon: id } of list) {
+      const known = bosses.get(id);
+      bosses.set(id, { id, tier: known && known.tier !== tier ? null : tier });
+    }
+  }
+  return { raids, max: [...bosses.values()], dynamax: [...new Set(parsed.data.dynamaxPokemon)] };
 }
 
 /** Un equipo de incursión son seis: con menos, la respuesta está incompleta. */
@@ -364,6 +454,17 @@ export function toRocketContrast(raw: unknown): { data: ContrastTrainer[]; disca
 export function toRocketAttackers(raw: unknown): RocketAttackersData {
   const what = 'los atacantes para Rocket';
   const { source, changes, pokemon } = parseWith(rocketAttackers, raw, what);
+  if (pokemon.length < MIN_GYM) throw new SourceError('format', `En ${what} faltan Pokémon`);
+  if (new Set(pokemon.map((p) => p.name)).size !== pokemon.length) {
+    throw new SourceError('format', `En ${what} hay Pokémon repetidos`);
+  }
+  return { source, changes, pokemon };
+}
+
+/** El resumen ya está validado al generarse; aquí se comprueba que ha llegado entero. */
+export function toRaidAttackers(raw: unknown): RaidAttackersData {
+  const what = 'los atacantes de incursión';
+  const { source, changes, pokemon } = parseWith(raidAttackers, raw, what);
   if (pokemon.length < MIN_GYM) throw new SourceError('format', `En ${what} faltan Pokémon`);
   if (new Set(pokemon.map((p) => p.name)).size !== pokemon.length) {
     throw new SourceError('format', `En ${what} hay Pokémon repetidos`);

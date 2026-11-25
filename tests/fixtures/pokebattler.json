@@ -124,6 +124,67 @@
      "pokemon": "ABOMASNOW"
     }
    ]
+  },
+  {
+   "tier": "RAID_LEVEL_1_MAX",
+   "raids": [
+    {
+     "pokemon": "ESPURR"
+    },
+    {
+     "pokemon": "CHARIZARD"
+    }
+   ]
+  },
+  {
+   "tier": "RAID_LEVEL_3_MAX",
+   "raids": [
+    {
+     "pokemon": "CRYOGONAL"
+    },
+    {
+     "pokemon": "CHARIZARD"
+    }
+   ]
+  },
+  {
+   "tier": "RAID_LEVEL_6_MAX",
+   "raids": [
+    {
+     "pokemon": "LAPRAS_GIGANTAMAX"
+    },
+    {
+     "pokemon": "ETERNATUS_ETERNAMAX_FORM"
+    }
+   ]
+  },
+  {
+   "tier": "RAID_LEVEL_6_MAX_LEGACY",
+   "raids": [
+    {
+     "pokemon": "VENUSAUR_GIGANTAMAX"
+    }
+   ]
+  },
+  {
+   "tier": "RAID_LEVEL_5_MAX_FUTURE",
+   "raids": [
+    {
+     "pokemon": "ARTICUNO"
+    }
+   ]
   }
+ ],
+ "dynamaxPokemon": [
+  "VENUSAUR",
+  "CHARIZARD",
+  "BLISSEY",
+  "DARMANITAN",
+  "TOXTRICITY_AMPED_FORM",
+  "ETERNATUS",
+  "CRYOGONAL",
+  "ZACIAN_CROWNED_SWORD_FORM",
+  "LAPRAS_GIGANTAMAX",
+  "VENUSAUR_GIGANTAMAX"
  ]
 }

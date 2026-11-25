@@ -8,7 +8,7 @@ const INFO: Record<SourceId, { title: string; credit: string; url: string; note:
     title: 'PvP',
     credit: 'PvPoke',
     url: 'https://pvpoke.com',
-    note: 'Clasificaciones y movimientos. Licencia MIT, © 2019 pvpoke.',
+    note: 'Clasificaciones, movimientos, copas y estadísticas base. Los rankings de ligas Mega y copas se piden al abrirlos. Licencia MIT, © 2019 pvpoke.',
   },
   raids: {
     title: 'Incursiones',
@@ -52,6 +52,18 @@ const INFO: Record<SourceId, { title: string; credit: string; url: string; note:
     url: 'https://github.com/bigfoott/ScrapedDuck',
     note: 'Datos de LeekDuck.com. Solo sirven para avisar si no coinciden con las alineaciones. No informa de su fecha aquí.',
   },
+  season: {
+    title: 'Calendario de la Liga Combates GO',
+    credit: 'ScrapedDuck',
+    url: 'https://github.com/bigfoott/ScrapedDuck',
+    note: 'Datos de LeekDuck.com. Si deja de listar la semana en curso, se conserva la última conocida hasta que termine.',
+  },
+  raidTypes: {
+    title: 'Atacantes por tipo',
+    credit: 'doctorpokegogo.com',
+    url: 'https://doctorpokegogo.com/',
+    note: 'Evaluación de incursiones, CC BY 4.0, con una sola combinación de movimientos por Pokémon. Resumen transformado por GO MetaHub; los originales se publican de forma irregular.',
+  },
   rocketAttackers: {
     title: 'Atacantes para Rocket',
     credit: 'doctorpokegogo.com',
@@ -59,16 +71,18 @@ const INFO: Record<SourceId, { title: string; credit: string; url: string; note:
     note: 'Evaluación general, CC BY 4.0. Resumen transformado por GO MetaHub; los originales se publican de forma irregular.',
   },
   pokebattler: {
-    title: 'Counters',
+    title: 'Counters y catálogo Max',
     credit: 'Pokébattler',
     url: 'https://www.pokebattler.com',
-    note: 'Lista de jefes. Los counters de cada uno se piden al abrirlo y se guardan 24 h. No informa de su fecha.',
+    note: 'Lista de jefes de incursión y Max, y Pokémon compatibles con Max. Los counters de cada uno se piden al abrirlo y se guardan 24 h. No informa de su fecha.',
   },
 };
 
 const ORDER: SourceId[] = [
   'pvp',
+  'season',
   'raids',
+  'raidTypes',
   'gyms',
   'events',
   'rocket',
@@ -126,7 +140,8 @@ export function SourcesView({ sources, storageOk }: { sources: Sources; storageO
           <External href="https://www.pokebattler.com">Pokébattler</External>. Alineaciones del Team GO Rocket:{' '}
           <External href="https://github.com/WatWowMap/event-info">WatWowMap</External> (
           <External href="https://github.com/WatWowMap/event-info/blob/main/LICENSE">MIT</External>), contrastadas con{' '}
-          <External href="https://leekduck.com/rocket-lineups/">LeekDuck</External>. Gimnasios y atacantes para Rocket:{' '}
+          <External href="https://leekduck.com/rocket-lineups/">LeekDuck</External>. Gimnasios, incursiones por tipo y atacantes
+          para Rocket:{' '}
           <External href="https://doctorpokegogo.com/">doctorpokegogo.com</External>,{' '}
           <External href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</External>, transformados y resumidos. Nombres y frases en español:{' '}
           <External href="https://github.com/WatWowMap/pogo-translations">WatWowMap</External>. Ilustraciones y sprites:{' '}
