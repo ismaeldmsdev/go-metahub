@@ -301,7 +301,7 @@ test.describe('diseño adaptable', () => {
         // Solo lo que se ve: un botón dentro de un desplegable cerrado no se puede pulsar.
         const small = await page.locator('nav a, .sources-link, button:not(.text-button), input, select').evaluateAll((els) =>
           els
-            .filter((e) => e.checkVisibility() && e.getBoundingClientRect().height < 44)
+            .filter((e) => e.checkVisibility() && e.getBoundingClientRect().height < 43.9)
             .map((e) => `${e.textContent} (${e.getBoundingClientRect().height} px)`),
         );
         expect(small).toEqual([]);

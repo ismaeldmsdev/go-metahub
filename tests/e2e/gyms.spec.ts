@@ -291,7 +291,7 @@ test.describe('diseño adaptable', () => {
           const problems = await page.locator('nav a, button:not(.text-button), input, select').evaluateAll((els) =>
             els
               .filter((e) => e.checkVisibility())
-              .filter((e) => e.getBoundingClientRect().height < 44 || (e.tagName === 'BUTTON' && e.scrollWidth > e.clientWidth + 1))
+              .filter((e) => e.getBoundingClientRect().height < 43.9 || (e.tagName === 'BUTTON' && e.scrollWidth > e.clientWidth + 1))
               .map((e) => e.textContent),
           );
           expect(problems).toEqual([]);

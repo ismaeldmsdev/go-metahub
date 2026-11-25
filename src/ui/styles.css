@@ -419,9 +419,11 @@ h1 {
 }
 
 /* En tabletas, con tipografías anchas, cada sección ocupa solo lo que necesita. */
-@media (min-width: 760px) and (max-width: 899px) {
+@media (min-width: 760px) and (max-width: 1023px) {
   .nav a {
     flex: 1 1 auto;
+    /* Con la letra del sistema ampliada, hasta donde cabe. */
+    font-size: min(0.93rem, 1.95vw);
   }
   .nav-icon {
     width: 30px;
@@ -437,9 +439,18 @@ h1 {
     letter-spacing: 0;
     white-space: nowrap;
   }
+  /* El nombre bajo el icono, como en la barra del móvil: así cabe con letras anchas. */
   .sources-link {
+    flex-direction: column;
+    justify-content: center;
+    gap: 1px;
     margin-right: 0;
-    padding: 0 4px;
+    padding: 0 2px;
+    font-size: 0.7rem;
+  }
+  .sources-link .nav-alert {
+    top: 2px;
+    left: calc(50% + 8px);
   }
 }
 
@@ -1731,6 +1742,10 @@ button.rival {
 }
 
 @media (max-width: 359px) {
+  .nav a {
+    font-size: 0.66rem;
+    letter-spacing: -0.03em;
+  }
   .lineup > div {
     grid-template-columns: minmax(0, 1fr);
     gap: 3px;

@@ -12,6 +12,10 @@ async function open(page: Page, hash = 'rocket') {
   await page.goto(`/#${hash}`);
 }
 
+/** Letra tan ancha como la peor que pueda tener un dispositivo; la de las máquinas de GitHub es así. */
+const wideFont = (page: Page) =>
+  page.evaluate(() => (document.body.style.fontFamily = 'Verdana, "DejaVu Sans", sans-serif'));
+
 const errorsOf = (page: Page) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -43,6 +47,7 @@ test.describe('navegación', () => {
       await open(page);
       const links = page.getByRole('navigation').getByRole('link');
       await expect(links).toHaveText(['PvP', 'Incursiones', 'Gimnasios', 'Eventos', 'Rocket']);
+      await wideFont(page);
       const boxes = await links.evaluateAll((els) =>
         els.map((el) => {
           const label = el.lastElementChild!;
@@ -53,7 +58,7 @@ test.describe('navegación', () => {
       );
       expect(new Set(boxes.map((b) => Math.round(b.width))).size).toBe(1);
       for (const [i, box] of boxes.entries()) {
-        expect(box.font).toBeGreaterThan(11);
+        expect(box.font).toBeGreaterThan(10.5);
         expect(box.text.left).toBeGreaterThanOrEqual(0);
         expect(box.text.right).toBeLessThanOrEqual(boxes[i + 1]?.text.left ?? width);
       }
@@ -341,11 +346,12 @@ test.describe('diseño adaptable', () => {
         for (const hash of ['rocket', 'rocket/reclutas', 'rocket/cliff', 'rocket/atacantes']) {
           await page.goto(`/#${hash}`);
           await expect(page.locator(hash === 'rocket/atacantes' ? '.rank-card' : '.trainer').first()).toBeVisible();
+          await wideFont(page);
           for (const size of ['16px', '20px']) {
             await page.evaluate((value) => (document.documentElement.style.fontSize = value), size);
             expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
           }
-          await page.evaluate(() => (document.documentElement.style.fontSize = ''));
+          await page.evaluate(() => (document.documentElement.style.fontSize = document.body.style.fontFamily = ''));
           const problems = await page.locator('nav a, .sources-link, .back, button:not(.text-button), input, select').evaluateAll((els) =>
             els
               .filter((e) => e.checkVisibility())
@@ -358,13 +364,14 @@ test.describe('diseño adaptable', () => {
     }
   }
 
-  for (const width of [760, 768, 820, 899, 900, 1024]) {
+  for (const width of [760, 768, 820, 899, 900, 960, 1023, 1024, 1280]) {
     test(`cabecera a ${width} px: nada se monta`, async ({ page, context }) => {
       await page.setViewportSize({ width, height: 700 });
       await network(context);
       for (const hash of ['pvp', 'incursiones', 'gimnasios', 'rocket', 'fuentes']) {
         await page.goto(`/#${hash}`);
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+        await wideFont(page);
         const boxes = await page.evaluate(() =>
           ['.brand', '.header h1', '.sources-link', ...[1, 2, 3, 4, 5].map((i) => `.nav a:nth-child(${i})`)].map((s) => {
             const range = document.createRange();

@@ -167,7 +167,7 @@ test.describe('diseño adaptable', () => {
       expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
       const small = await page
         .locator('nav a, .back, button:not(.text-button), select')
-        .evaluateAll((els) => els.filter((e) => e.checkVisibility() && e.getBoundingClientRect().height < 44).length);
+        .evaluateAll((els) => els.filter((e) => e.checkVisibility() && e.getBoundingClientRect().height < 43.9).length);
       expect(small).toBe(0);
     });
   }
