@@ -31,7 +31,7 @@ test.describe('imágenes de Pokémon', () => {
       await expect(figure.locator('.pk-art')).toBeAttached();
       await expect(page.locator('.pk-sprite, .pk-fallback')).toHaveCount(0);
       await expect(figure.locator('.pk-art')).toHaveCSS('opacity', '0');
-      await expect(figure).toHaveCSS('width', '92px');
+      await expect(figure).toHaveCSS('width', '100px');
     }
     const figure = page.locator('.rank-card').first().locator('.pk');
     const before = await figure.boundingBox();

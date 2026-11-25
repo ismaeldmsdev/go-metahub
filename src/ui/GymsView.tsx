@@ -23,9 +23,11 @@ import {
 } from '../domain/gyms';
 import { moveName, pvpLabel, typeName, TYPES } from '../domain/names';
 import { spriteId } from '../domain/sprites';
-import { External, Move, MoveLegend, PokemonName, Placeholder, Rank, SourceStatus, TypeTag, Weaknesses } from './common';
+import { External, Move, MoveLegend, Placeholder, SourceStatus, Weaknesses } from './common';
+import { Head, Pin, type FilterGroup } from './frame';
 import type { Sources } from './hooks';
 import { PokemonImage } from './PokemonImage';
+import { RankCard } from './RankCard';
 
 const PAGE = 30;
 
@@ -56,25 +58,71 @@ const NO_FILTERS: AttackerFilters = {
 let rememberedAttackers = NO_FILTERS;
 let rememberedDefenders = { type: 'all', search: '' };
 
-interface TypeSelectProps {
-  label: string;
-  all: string;
-  prefix?: string;
-  value: string;
-  onChange: (type: string) => void;
+export const typeGroup = (label: string, all: string, prefix: string, value: string, onChange: (type: string) => void): FilterGroup => ({
+  label,
+  value,
+  prefix: value === 'all' ? '' : prefix,
+  onChange,
+  options: [{ value: 'all', name: all }, ...Object.keys(TYPES).map((type) => ({ value: type, name: typeName(type) }))],
+});
+
+/** Megas, oscuros y legendarios: con, sin o solo ellos. */
+export const presenceGroups = (
+  value: Record<GymGroup, Presence>,
+  onChange: (part: Partial<Record<GymGroup, Presence>>) => void,
+): FilterGroup[] =>
+  GYM_GROUPS.map((group) => ({
+    label: GROUP_LABELS[group],
+    value: value[group],
+    onChange: (id) => onChange({ [group]: id as Presence }),
+    options: PRESENCES.map((id) => ({ value: id, name: PRESENCE_NAMES[group][id] })),
+  }));
+
+export const tierGroup = <T extends GymTier>(
+  tiers: readonly T[],
+  counts: Record<T, number> | undefined,
+  value: T | 'all',
+  onChange: (tier: T | 'all') => void,
+): FilterGroup => ({
+  label: 'Tier',
+  prefix: 'Tier ',
+  value,
+  onChange: (id) => onChange(id as T | 'all'),
+  options: [
+    { value: 'all', name: 'Todos' },
+    ...tiers.map((tier) => ({
+      value: tier,
+      name: tier,
+      count: counts?.[tier],
+      badge: <span class={tierClass(tier)}>{tier}</span>,
+    })),
+  ],
+});
+
+interface TierCellsProps<T extends GymTier> {
+  tiers: readonly T[];
+  counts: Record<T, number>;
+  value: T | 'all';
+  onChange: (tier: T | 'all') => void;
 }
 
-export function TypeSelect({ label, all, prefix = '', value, onChange }: TypeSelectProps) {
+/** Todos los tiers a la vista, en celdas iguales. */
+export function TierCells<T extends GymTier>({ tiers, counts, value, onChange }: TierCellsProps<T>) {
   return (
-    <select aria-label={label} value={value} onChange={(e) => onChange(e.currentTarget.value)}>
-      <option value="all">{all}</option>
-      {Object.keys(TYPES).map((type) => (
-        <option key={type} value={type}>
-          {prefix}
-          {typeName(type)}
-        </option>
+    <div class="tier-filter" role="group" aria-label="Tier" style={{ '--n': tiers.length + 1 }}>
+      <button type="button" aria-pressed={value === 'all'} onClick={() => onChange('all')}>
+        Todos
+      </button>
+      {tiers.map((tier) => (
+        <button key={tier} type="button" aria-pressed={value === tier} onClick={() => onChange(tier)}>
+          <span class={tierClass(tier)}>
+            <span class="sr-only">Tier </span>
+            {tier}
+          </span>
+          <small>{counts[tier]}</small>
+        </button>
       ))}
-    </select>
+    </div>
   );
 }
 
@@ -136,44 +184,28 @@ interface AttackerCardProps extends CardProps {
 function AttackerCard({ pokemon, sources, tr, tied }: AttackerCardProps) {
   const { attack } = pokemon;
   return (
-    <li class={`card rank-card t-${pokemon.types[0] ?? ''}`}>
-      <div class="rank-figure">
-        <Figure pokemon={pokemon} sources={sources} tr={tr} />
-      </div>
-      <div class="rank-body">
-        <PokemonName label={pvpLabel(pokemon, tr)} />
-        <div class="rank-meta">
-          <span class={tierClass(attack.tier)}>
-            <span class="sr-only">Tier </span>
-            {attack.tier}
-          </span>
-          {pokemon.types.map((type) => (
-            <TypeTag key={type} type={type} />
-          ))}
-        </div>
-        <ul class="moves">
+    <RankCard
+      label={pvpLabel(pokemon, tr)}
+      types={pokemon.types}
+      figure={<Figure pokemon={pokemon} sources={sources} tr={tr} />}
+      tier={
+        <span class={tierClass(attack.tier)}>
+          <span class="sr-only">Tier </span>
+          {attack.tier}
+        </span>
+      }
+      moves={
+        <>
           <Move fast name={moveName(gymMove(attack.fast, attack.fastType), tr)} />
           <Move fast={false} name={moveName(gymMove(attack.charged, attack.chargedType), tr)} />
-        </ul>
-        <dl class="metrics">
-          <div>
-            <dt>Percentil</dt>
-            <dd>
-              {decimal(attack.percentile, 1)}
-              {tied > 1 && <small class="tied">Empatan {tied}</small>}
-            </dd>
-          </div>
-          <div>
-            <dt>Puntuación</dt>
-            <dd>{decimal(attack.score, 2)}</dd>
-          </div>
-          <div>
-            <dt>Ataca con</dt>
-            <dd>{typeName(attack.chargedType)}</dd>
-          </div>
-        </dl>
-      </div>
-    </li>
+        </>
+      }
+      value={{ text: decimal(attack.percentile, 1), label: 'Percentil', note: tied > 1 && `Empatan ${tied}` }}
+      metrics={[
+        ['Puntuación', decimal(attack.score, 2)],
+        ['Ataca con', typeName(attack.chargedType)],
+      ]}
+    />
   );
 }
 
@@ -277,7 +309,7 @@ function Attackers({ data, sources }: { data: GymData; sources: Sources }) {
   const [filters, setFilters] = useState(rememberedAttackers);
   const tr = sources.translations.data;
   const change = (part: Partial<AttackerFilters>) => {
-    rememberedAttackers = { ...filters, ...part };
+    rememberedAttackers = { ...rememberedAttackers, ...part };
     setFilters(rememberedAttackers);
   };
   const all = useMemo(() => attackersOf(data.pokemon), [data]);
@@ -289,61 +321,18 @@ function Attackers({ data, sources }: { data: GymData; sources: Sources }) {
   const filtered = key !== JSON.stringify(NO_FILTERS);
   return (
     <>
-      <section class="card explain" aria-label="Cómo elegir">
-        <p>
-          <strong>S+ no significa el mejor contra cualquiera.</strong> La mejor elección depende del tipo del Pokémon que
-          defiende: contra Blissey, de tipo Normal, conviene un ataque de Lucha. No hay un único ganador.
-        </p>
-      </section>
-      <Attribution data={data} />
-      <div class="filters">
-        <div class="tier-filter gym-tiers" role="group" aria-label="Tier">
-          <button type="button" aria-pressed={filters.tier === 'all'} onClick={() => change({ tier: 'all' })}>
-            Todos
-          </button>
-          {GYM_TIERS.map((tier) => (
-            <button key={tier} type="button" aria-pressed={filters.tier === tier} onClick={() => change({ tier })}>
-              <span class={tierClass(tier)}>
-                <span class="sr-only">Tier </span>
-                {tier}
-              </span>
-              <small>{counts[tier]}</small>
-            </button>
-          ))}
-        </div>
-        <div class="filter-row filter-search">
-          <Search value={filters.search} onChange={(search) => change({ search })} />
-        </div>
-        <div class="filter-row filter-groups">
-          <TypeSelect
-            label="Tipo del ataque cargado"
-            all="Todo ataque"
-            prefix="Ataque "
-            value={filters.type}
-            onChange={(type) => change({ type })}
-          />
-          {GYM_GROUPS.map((group) => (
-            <select
-              key={group}
-              aria-label={GROUP_LABELS[group]}
-              value={filters[group]}
-              onChange={(e) => change({ [group]: e.currentTarget.value as Presence })}
-            >
-              {PRESENCES.map((id) => (
-                <option key={id} value={id}>
-                  {PRESENCE_NAMES[group][id]}
-                </option>
-              ))}
-            </select>
-          ))}
-        </div>
-        {filters.type !== 'all' && (
-          <p class="note">
-            Solo los que tienen como recomendado un ataque cargado de tipo {typeName(filters.type)}. No es una lista completa:
-            la fuente da una única combinación por Pokémon y faltan los que usan ese tipo con otros movimientos. Tampoco filtra
-            por el tipo del defensor.
-          </p>
-        )}
+      <Pin
+        search={filters.search}
+        groups={[
+          tierGroup(GYM_TIERS, counts, filters.tier, (tier) => change({ tier })),
+          ...presenceGroups(filters, change),
+          typeGroup('Tipo del ataque cargado', 'Todo ataque', 'Ataque ', filters.type, (type) => change({ type })),
+        ]}
+      >
+        <Search value={filters.search} onChange={(search) => change({ search })} />
+      </Pin>
+      <div class="meta">
+        <SourceStatus source={sources.gyms} />
         <p class="result-count" role="status">
           {total} Pokémon
           {filtered && (
@@ -353,6 +342,23 @@ function Attackers({ data, sources }: { data: GymData; sources: Sources }) {
           )}
         </p>
       </div>
+      <div class="filters">
+        <TierCells tiers={GYM_TIERS} counts={counts} value={filters.tier} onChange={(tier) => change({ tier })} />
+        {filters.type !== 'all' && (
+          <p class="note">
+            Solo los que tienen como recomendado un ataque cargado de tipo {typeName(filters.type)}. No es una lista completa:
+            la fuente da una única combinación por Pokémon y faltan los que usan ese tipo con otros movimientos. Tampoco filtra
+            por el tipo del defensor.
+          </p>
+        )}
+      </div>
+      <section class="card explain" aria-label="Cómo elegir">
+        <p>
+          <strong>S+ no significa el mejor contra cualquiera.</strong> La mejor elección depende del tipo del Pokémon que
+          defiende: contra Blissey, de tipo Normal, conviene un ataque de Lucha. No hay un único ganador.
+        </p>
+      </section>
+      <Attribution data={data} />
       <AttackersMethod data={data} />
       {groups.length === 0 ? (
         <p class="empty">Ningún Pokémon coincide con los filtros.</p>
@@ -368,27 +374,19 @@ function Attackers({ data, sources }: { data: GymData; sources: Sources }) {
 
 function DefenderCard({ pokemon, sources, tr }: CardProps & { pokemon: GymDefender }) {
   return (
-    <li class={`card rank-card t-${pokemon.types[0] ?? ''}`}>
-      <div class="rank-figure">
-        <Figure pokemon={pokemon} sources={sources} tr={tr} />
-        <Rank value={pokemon.rank} />
-      </div>
-      <div class="rank-body">
-        <div class="rank-head">
-          <PokemonName label={pvpLabel(pokemon, tr)} />
-          <span class="score" title="Resistencia: defensa base × aguante base">
-            <span class="sr-only">Resistencia </span>
-            {decimal(pokemon.bulk, 0)}
-          </span>
-        </div>
-        <div class="rank-meta">
-          {pokemon.types.map((type) => (
-            <TypeTag key={type} type={type} />
-          ))}
-        </div>
-        <Weaknesses types={pokemon.types} />
-      </div>
-    </li>
+    <RankCard
+      label={pvpLabel(pokemon, tr)}
+      types={pokemon.types}
+      figure={<Figure pokemon={pokemon} sources={sources} tr={tr} />}
+      rank={pokemon.rank}
+      value={{
+        text: decimal(pokemon.bulk, 0),
+        label: 'Resistencia',
+        title: 'Resistencia: defensa base × aguante base',
+      }}
+    >
+      <Weaknesses types={pokemon.types} />
+    </RankCard>
   );
 }
 
@@ -432,7 +430,7 @@ function Defenders({ data, sources }: { data: GymData; sources: Sources }) {
   const [shown, setShown] = useState(PAGE);
   const tr = sources.translations.data;
   const change = (part: Partial<typeof filters>) => {
-    rememberedDefenders = { ...filters, ...part };
+    rememberedDefenders = { ...rememberedDefenders, ...part };
     setFilters(rememberedDefenders);
     setShown(PAGE);
   };
@@ -442,19 +440,14 @@ function Defenders({ data, sources }: { data: GymData; sources: Sources }) {
   const rest = list.length - shown;
   return (
     <>
-      <section class="card explain" aria-label="Cómo se calcula">
-        <p>
-          <strong>Resistencia = defensa base × aguante base.</strong> Es una clasificación provisional y teórica,{' '}
-          <strong>no una simulación</strong>: no tiene en cuenta movimientos, motivación, nivel, tipos ni enfrentamientos
-          concretos.
-        </p>
-      </section>
-      <Attribution data={data} />
-      <div class="filters">
-        <div class="filter-row">
-          <Search value={filters.search} onChange={(search) => change({ search })} />
-          <TypeSelect label="Tipo del Pokémon" all="Todo tipo" value={filters.type} onChange={(type) => change({ type })} />
-        </div>
+      <Pin
+        search={filters.search}
+        groups={[typeGroup('Tipo del Pokémon', 'Todo tipo', '', filters.type, (type) => change({ type }))]}
+      >
+        <Search value={filters.search} onChange={(search) => change({ search })} />
+      </Pin>
+      <div class="meta">
+        <SourceStatus source={sources.gyms} />
         <p class="result-count" role="status">
           {list.length} Pokémon
           {filtered && (
@@ -464,6 +457,14 @@ function Defenders({ data, sources }: { data: GymData; sources: Sources }) {
           )}
         </p>
       </div>
+      <section class="card explain" aria-label="Cómo se calcula">
+        <p>
+          <strong>Resistencia = defensa base × aguante base.</strong> Es una clasificación provisional y teórica,{' '}
+          <strong>no una simulación</strong>: no tiene en cuenta movimientos, motivación, nivel, tipos ni enfrentamientos
+          concretos.
+        </p>
+      </section>
+      <Attribution data={data} />
       <DefendersMethod data={data} />
       {list.length === 0 ? (
         <p class="empty">
@@ -491,16 +492,18 @@ export function GymsView({ sources, section }: { sources: Sources; section: stri
   const defending = section === 'defensores';
   return (
     <>
-      <div class="segmented segmented-2" role="group" aria-label="Clasificación">
-        <button type="button" aria-pressed={!defending} onClick={() => (location.hash = 'gimnasios')}>
-          Atacantes
-        </button>
-        <button type="button" aria-pressed={defending} onClick={() => (location.hash = 'gimnasios/defensores')}>
-          Defensores
-        </button>
-      </div>
-      <SourceStatus source={gyms} />
-      {!sources.translations.data && gyms.data && (
+      <Head>
+        <div class="segmented segmented-2" role="group" aria-label="Clasificación">
+          <button type="button" aria-pressed={!defending} onClick={() => (location.hash = 'gimnasios')}>
+            Atacantes
+          </button>
+          <button type="button" aria-pressed={defending} onClick={() => (location.hash = 'gimnasios/defensores')}>
+            Defensores
+          </button>
+        </div>
+      </Head>
+      {!gyms.data && <SourceStatus source={gyms} />}
+            {!sources.translations.data && gyms.data && (
         <p class="note">Las traducciones aún no están disponibles. Se muestran los nombres originales.</p>
       )}
       {!gyms.data ? (

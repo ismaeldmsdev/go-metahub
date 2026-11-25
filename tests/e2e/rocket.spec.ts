@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { fixtures, NOW } from '../fixtures';
-import { network, saved } from './network';
+import { network, pick, saved } from './network';
 
 const HOUR = 3_600_000;
 const MAIN = 'event-info/main/grunts/formatted.json';
@@ -177,10 +177,7 @@ test.describe('rival elegido', () => {
     await network(context);
     await open(page, 'rocket/cliff');
     const options = page.getByRole('region', { name: 'Opciones con ventaja de tipo' });
-    await options.getByText('Filtrar megas, oscuros y legendarios').click();
-    await options.getByLabel('Megas').selectOption('without');
-    await options.getByLabel('Legendarios').selectOption('without');
-    await options.getByLabel('Oscuros').selectOption('only');
+    await pick(page, ['Megas', 'Sin megas'], ['Legendarios', 'Sin legendarios'], ['Oscuros', 'Solo oscuros']);
     await expect(options.locator('.rank-card').first()).toContainText('Oscuro');
     await expect(options.locator('.rank-card', { hasText: /Mega-|Primigenio/ })).toHaveCount(0);
   });

@@ -25,9 +25,11 @@ import { typeName } from '../domain/names';
 import { spriteId } from '../domain/sprites';
 import { CounterCard, CountersPanel } from './BossView';
 import { External, Loading, Placeholder, PokemonName, SourceStatus, TypeTag, Weaknesses } from './common';
-import { Search, TypeSelect } from './GymsView';
+import { Back, Pin } from './frame';
+import { Search, typeGroup } from './GymsView';
 import type { Sources } from './hooks';
 import { PokemonImage } from './PokemonImage';
+import { RankCard } from './RankCard';
 
 const PAGE = 30;
 
@@ -72,7 +74,6 @@ function Announced({ item, sources }: { item: AnnouncedBoss; sources: Sources })
   const pokemon = item.boss && of(item.boss.id, sources);
   return (
     <li class={`card boss t-${pokemon?.species.types[0] ?? ''}`}>
-      {pokemon && <Figure pokemon={pokemon} sources={sources} />}
       <div class="boss-body">
         {pokemon ? (
           <div class="rank-meta">
@@ -87,14 +88,16 @@ function Announced({ item, sources }: { item: AnnouncedBoss; sources: Sources })
         <p class={item.status === 'active' ? 'validity ok' : 'validity'}>
           {item.status === 'active' ? `Hasta el ${formatDate(item.end)}` : `Del ${formatDate(item.start)} al ${formatDate(item.end)}`}
         </p>
-        {item.boss ? (
-          <a class="link boss-open" href={`#incursiones/${maxSlug(item.boss.id)}`}>
-            Ver counters
-          </a>
-        ) : (
-          <p class="fine">LeekDuck no nombra un jefe concreto o no está en el catálogo.</p>
-        )}
+        {!item.boss && <p class="fine">LeekDuck no nombra un jefe concreto o no está en el catálogo.</p>}
       </div>
+      {item.boss && pokemon && (
+        <div class="boss-side">
+          <Figure pokemon={pokemon} sources={sources} />
+          <a class="link boss-open" href={`#incursiones/${maxSlug(item.boss.id)}`}>
+            <span class="sr-only">Ver </span>Counters
+          </a>
+        </div>
+      )}
     </li>
   );
 }
@@ -141,14 +144,14 @@ function BossList({ sources, now }: { sources: Sources; now: number }) {
   const upcoming = announced.filter((item) => item.status === 'upcoming');
   return (
     <>
-      <section class="card boss">
+      <section class="card boss boss-link">
         <div class="boss-body">
           <h2>Pokémon compatibles con Max</h2>
           <p class="fine">Estadísticas base y tipos de su ataque Max.</p>
-          <a class="link boss-open" href="#incursiones/max-pokemon">
-            Ver fichas
-          </a>
         </div>
+        <a class="link boss-open" href="#incursiones/max-pokemon">
+          Ver fichas
+        </a>
       </section>
       <section class="group" aria-label="Confirmados ahora">
         <h2>
@@ -258,13 +261,10 @@ function Boss({ boss, sources, now }: { boss: MaxBoss; sources: Sources; now: nu
   const announced = announcedBosses(sources.events.data, [boss], now).filter((item) => item.boss?.id === boss.id);
   const active = announced.find((item) => item.status === 'active');
   const next = announced.find((item) => item.status === 'upcoming');
-  return (
+  const back = <Back href="#incursiones/max" label="Todos los jefes Max" title={pokemon.label.name} />;
+  const subject = (
     <>
-      <a class="link back" href="#incursiones/max">
-        Todos los jefes Max
-      </a>
-      <article class={`card boss t-${pokemon.species.types[0] ?? ''}`}>
-        <Figure pokemon={pokemon} sources={sources} />
+      <article class={`card boss boss-detail t-${pokemon.species.types[0] ?? ''}`}>
         <div class="boss-body">
           <div class="rank-meta">
             <PokemonName label={pokemon.label} />
@@ -284,6 +284,9 @@ function Boss({ boss, sources, now }: { boss: MaxBoss; sources: Sources; now: nu
             <p class="validity">Sin fecha: está en el catálogo, pero puede no estar activo.</p>
           )}
         </div>
+        <div class="boss-side">
+          <Figure pokemon={pokemon} sources={sources} />
+        </div>
       </article>
       <div class="card explain">
         <p>
@@ -292,8 +295,14 @@ function Boss({ boss, sources, now }: { boss: MaxBoss; sources: Sources; now: nu
         </p>
       </div>
       <RoleLinks id={boss.id} />
+    </>
+  );
+  return (
+    <>
       {boss.tier ? (
         <CountersPanel
+          back={back}
+          subject={subject}
           target={{ id: boss.id, tier: boss.tier }}
           url={roleUrl(boss.id, '')}
           sources={sources}
@@ -318,7 +327,11 @@ function Boss({ boss, sources, now }: { boss: MaxBoss; sources: Sources; now: nu
           explanation={<Explanation />}
         />
       ) : (
-        <p class="empty">Pokébattler lista a este jefe en varios niveles, así que no se muestran sus counters.</p>
+        <>
+          <Pin>{back}</Pin>
+          {subject}
+          <p class="empty">Pokébattler lista a este jefe en varios niveles, así que no se muestran sus counters.</p>
+        </>
       )}
     </>
   );
@@ -326,45 +339,39 @@ function Boss({ boss, sources, now }: { boss: MaxBoss; sources: Sources; now: nu
 
 /* Fichas */
 
-function Card({ pokemon, sources }: { pokemon: MaxPokemon; sources: Sources }) {
+interface CardProps {
+  pokemon: MaxPokemon;
+  sources: Sources;
+  /** La estadística que ordena la lista es la cifra destacada. */
+  sort: MaxSort;
+}
+
+function Card({ pokemon, sources, sort }: CardProps) {
   const { species, kind } = pokemon;
+  const stats = [
+    { id: 'atk', label: 'Ataque base', text: integer(species.stats?.atk) },
+    { id: 'bulk', label: 'Resistencia', text: integer(bulkOf(species)) },
+    { id: 'hp', label: 'PS base', text: integer(species.stats?.hp) },
+  ];
+  const main = [...stats].sort((a, b) => Number(b.id === sort) - Number(a.id === sort));
   return (
-    <li class={`card rank-card t-${species.types[0] ?? ''}`}>
-      <div class="rank-figure">
-        <Figure pokemon={pokemon} sources={sources} />
-      </div>
-      <div class="rank-body">
-        <PokemonName label={pokemon.label} />
-        <div class="rank-meta">
-          <Kind pokemon={pokemon} />
-          {species.types.map((type) => (
-            <TypeTag key={type} type={type} />
-          ))}
-        </div>
-        <p class="fine max-types">
-          Ataque Max:{' '}
-          {kind === 'dinamax'
-            ? species.fastTypes?.length
-              ? species.fastTypes.map((type) => <TypeTag key={type} type={type} />)
-              : 'sin datos'
-            : `${MAX_KINDS[kind]} propio`}
-        </p>
-        <dl class="metrics">
-          <div>
-            <dt>Ataque base</dt>
-            <dd>{integer(species.stats?.atk)}</dd>
-          </div>
-          <div>
-            <dt>Resistencia</dt>
-            <dd>{integer(bulkOf(species))}</dd>
-          </div>
-          <div>
-            <dt>PS base</dt>
-            <dd>{integer(species.stats?.hp)}</dd>
-          </div>
-        </dl>
-      </div>
-    </li>
+    <RankCard
+      label={pokemon.label}
+      types={species.types}
+      chip={<Kind pokemon={pokemon} />}
+      figure={<Figure pokemon={pokemon} sources={sources} />}
+      value={main[0]}
+      metrics={main.slice(1).map(({ label, text }) => [label, text])}
+    >
+      <p class="max-types">
+        <span class="fine">Ataque Max:</span>{' '}
+        {kind === 'dinamax'
+          ? species.fastTypes?.length
+            ? species.fastTypes.map((type) => <TypeTag key={type} type={type} />)
+            : 'sin datos'
+          : `${MAX_KINDS[kind]} propio`}
+      </p>
+    </RankCard>
   );
 }
 
@@ -378,16 +385,33 @@ function Cards({ sources }: { sources: Sources }) {
   const all = useMemo(() => (ids ?? []).map((id) => maxPokemon(id, species, tr)), [ids, species, tr]);
   const list = useMemo(() => filterMax(all, filters, tr), [all, filters, tr]);
   const change = (part: Partial<MaxFilters>) => {
-    remembered = { ...filters, ...part };
+    remembered = { ...remembered, ...part };
     setFilters(remembered);
     setShown(PAGE);
   };
   const rest = list.length - shown;
   return (
     <>
-      <a class="link back" href="#incursiones/max">
-        Combates Max
-      </a>
+      <Pin
+        search={filters.search}
+        groups={[
+          {
+            label: 'Clase',
+            value: filters.kind,
+            onChange: (id) => change({ kind: id as MaxFilters['kind'] }),
+            options: MAX_VARIANTS.map((id) => ({ value: id, name: VARIANT_NAMES[id] })),
+          },
+          {
+            label: 'Orden',
+            value: filters.sort,
+            onChange: (id) => change({ sort: id as MaxSort }),
+            options: MAX_SORTS.map((id) => ({ value: id, name: SORT_NAMES[id] })),
+          },
+          typeGroup('Tipo del ataque Max', 'Todo ataque', 'Ataque ', filters.type, (type) => change({ type })),
+        ]}
+      >
+        <Back href="#incursiones/max" label="Combates Max" title="Compatibles con Max" />
+      </Pin>
       <h2>Pokémon compatibles con Max</h2>
       <section class="card explain" aria-label="Qué se muestra">
         <p>
@@ -399,45 +423,14 @@ function Cards({ sources }: { sources: Sources }) {
         Lista de <External href="https://www.pokebattler.com/max">Pokébattler</External>; estadísticas y movimientos de{' '}
         <External href="https://pvpoke.com">PvPoke</External>.
       </p>
-      <SourceStatus source={pokebattler} />
+      {!ids && <SourceStatus source={pokebattler} />}
       {!ids ? (
         <Placeholder source={pokebattler} />
       ) : (
         <>
           <div class="filters">
-            <div class="filter-row filter-search">
+            <div class="filter-row">
               <Search value={filters.search} onChange={(search) => change({ search })} />
-            </div>
-            <div class="filter-row filter-groups filter-three">
-              <select
-                aria-label="Clase"
-                value={filters.kind}
-                onChange={(e) => change({ kind: e.currentTarget.value as MaxFilters['kind'] })}
-              >
-                {MAX_VARIANTS.map((id) => (
-                  <option key={id} value={id}>
-                    {VARIANT_NAMES[id]}
-                  </option>
-                ))}
-              </select>
-              <TypeSelect
-                label="Tipo del ataque Max"
-                all="Todo ataque"
-                prefix="Ataque "
-                value={filters.type}
-                onChange={(type) => change({ type })}
-              />
-              <select
-                aria-label="Orden"
-                value={filters.sort}
-                onChange={(e) => change({ sort: e.currentTarget.value as MaxSort })}
-              >
-                {MAX_SORTS.map((id) => (
-                  <option key={id} value={id}>
-                    {SORT_NAMES[id]}
-                  </option>
-                ))}
-              </select>
             </div>
             {filters.type !== 'all' && (
               <p class="note">
@@ -445,14 +438,17 @@ function Cards({ sources }: { sources: Sources }) {
                 ataque y no entran en este filtro.
               </p>
             )}
-            <p class="result-count" role="status">
-              {list.length} Pokémon
-              {JSON.stringify(filters) !== JSON.stringify(NO_FILTERS) && (
-                <button class="text-button" type="button" onClick={() => change(NO_FILTERS)}>
-                  Quitar filtros
-                </button>
-              )}
-            </p>
+            <div class="meta">
+              <SourceStatus source={pokebattler} />
+              <p class="result-count" role="status">
+                {list.length} Pokémon
+                {JSON.stringify(filters) !== JSON.stringify(NO_FILTERS) && (
+                  <button class="text-button" type="button" onClick={() => change(NO_FILTERS)}>
+                    Quitar filtros
+                  </button>
+                )}
+              </p>
+            </div>
           </div>
           <details class="method">
             <summary>Qué significa cada dato</summary>
@@ -482,7 +478,7 @@ function Cards({ sources }: { sources: Sources }) {
           ) : (
             <ul class="ranking">
               {list.slice(0, shown).map((pokemon) => (
-                <Card key={pokemon.id} pokemon={pokemon} sources={sources} />
+                <Card key={pokemon.id} pokemon={pokemon} sources={sources} sort={filters.sort} />
               ))}
             </ul>
           )}
@@ -506,14 +502,23 @@ export function MaxView({ sources, section, now }: { sources: Sources; section: 
   opened = section;
   const boss = pokebattler.data?.max.find(({ id }) => maxSlug(id) === section);
   if (boss) return <Boss key={section} boss={boss} sources={sources} now={now} />;
-  if (pokebattler.health.level === 'loading') return <Loading />;
-  if (!pokebattler.data) return <Placeholder source={pokebattler} />;
   return (
-    <div class="empty">
-      <p>Este jefe ya no figura en el catálogo Max.</p>
-      <a class="link" href="#incursiones/max">
-        Ver los combates Max
-      </a>
-    </div>
+    <>
+      <Pin>
+        <Back href="#incursiones/max" label="Todos los jefes Max" title="Jefe Max" />
+      </Pin>
+      {pokebattler.health.level === 'loading' ? (
+        <Loading />
+      ) : !pokebattler.data ? (
+        <Placeholder source={pokebattler} />
+      ) : (
+        <div class="empty">
+          <p>Este jefe ya no figura en el catálogo Max.</p>
+          <a class="link" href="#incursiones/max">
+            Ver los combates Max
+          </a>
+        </div>
+      )}
+    </>
   );
 }

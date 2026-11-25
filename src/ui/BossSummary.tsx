@@ -29,7 +29,6 @@ interface BossProps {
 export function BossSummary({ boss, sources, now, detail = false }: BossProps) {
   return (
     <>
-      <Picture src={boss.image} className="boss-image" />
       <div class="boss-body">
         <PokemonName label={bossLabel(boss, sources.translations.data)} />
         <div class="types">
@@ -54,9 +53,12 @@ export function BossSummary({ boss, sources, now, detail = false }: BossProps) {
           </dl>
         )}
         <ValidityNote validity={raidValidity(boss, sources.events.data, now)} />
+      </div>
+      <div class="boss-side">
+        <Picture src={boss.image} className="boss-image" />
         {!detail && (
           <a class="link boss-open" href={`#incursiones/${bossSlug(boss)}`}>
-            Ver mejores counters
+            <span class="sr-only">Ver mejores </span>Counters
           </a>
         )}
       </div>

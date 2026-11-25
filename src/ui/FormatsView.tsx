@@ -1,3 +1,4 @@
+import type { ComponentChildren } from 'preact';
 import { useMemo, useState } from 'preact/hooks';
 import { type FormatTarget, type League } from '../data/config';
 import type { PvpFormat, SeasonWeek } from '../data/models';
@@ -19,6 +20,8 @@ import {
 } from '../domain/formats';
 import { parseEventDate } from '../domain/events';
 import { External, MoveLegend, Placeholder, SourceStatus } from './common';
+import { Back, Head, Pin } from './frame';
+import { Search } from './GymsView';
 import { useFormat, useNow, type Sources } from './hooks';
 import { LeagueButtons, PvpCard } from './PvpView';
 
@@ -36,7 +39,15 @@ let rememberedLeague: League = 1500;
 
 /* Ranking de una copa o liga Mega */
 
-function Ranking({ target, sources }: { target: FormatTarget; sources: Sources }) {
+interface RankingProps {
+  target: FormatTarget;
+  sources: Sources;
+  /** Volver y el nombre de la copa. Sin ello, la fila fija lleva el buscador. */
+  back?: ComponentChildren;
+  children: ComponentChildren;
+}
+
+function Ranking({ target, sources, back, children }: RankingProps) {
   const source = useFormat(target);
   const [variant, setVariant] = useState<FormatVariant>('all');
   const [search, setSearch] = useState('');
@@ -45,10 +56,42 @@ function Ranking({ target, sources }: { target: FormatTarget; sources: Sources }
   const data = source.data;
   const list = useMemo(() => (data ? filterFormat(data.entries, { variant, search }, tr) : []), [data, variant, search, tr]);
   const rest = list.length - shown;
-  const reset = () => setShown(PAGE);
+  const find = (
+    <Search
+      value={search}
+      onChange={(value) => {
+        setSearch(value);
+        setShown(PAGE);
+      }}
+    />
+  );
   return (
     <>
-      <SourceStatus source={source} />
+      <Pin
+        search={search}
+        groups={[
+          {
+            label: 'Variante',
+            value: variant,
+            onChange: (id) => {
+              setVariant(id as FormatVariant);
+              setShown(PAGE);
+            },
+            options: FORMAT_VARIANTS.map((id) => ({ value: id, name: VARIANT_NAMES[id] })),
+          },
+        ]}
+      >
+        {back ?? find}
+      </Pin>
+      {children}
+      <div class="meta">
+        <SourceStatus source={source} />
+        {data && (
+          <p class="result-count" role="status">
+            {list.length} Pokémon
+          </p>
+        )}
+      </div>
       {!data ? (
         <Placeholder source={source} />
       ) : (
@@ -57,38 +100,7 @@ function Ranking({ target, sources }: { target: FormatTarget; sources: Sources }
             Puesto, puntuación y movimientos de <External href="https://pvpoke.com">PvPoke</External> para este formato, sin
             recalcular. Sin tiers: no se comparan con los de otras ligas.
           </p>
-          <div class="filters">
-            <div class="filter-row">
-              <input
-                type="search"
-                value={search}
-                placeholder="Buscar Pokémon"
-                aria-label="Buscar Pokémon"
-                autocomplete="off"
-                onInput={(e) => {
-                  setSearch(e.currentTarget.value);
-                  reset();
-                }}
-              />
-              <select
-                aria-label="Variante"
-                value={variant}
-                onChange={(e) => {
-                  setVariant(e.currentTarget.value as FormatVariant);
-                  reset();
-                }}
-              >
-                {FORMAT_VARIANTS.map((id) => (
-                  <option key={id} value={id}>
-                    {VARIANT_NAMES[id]}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <p class="result-count" role="status">
-              {list.length} Pokémon
-            </p>
-          </div>
+          {back && <div class="filter-row">{find}</div>}
           {list.length === 0 ? (
             <p class="empty">Ningún Pokémon de este formato coincide.</p>
           ) : (
@@ -166,18 +178,19 @@ export function MegaView({ sources, initial }: { sources: Sources; initial: Leag
   const format = formatFor({ kind: 'league', league, mega: true }, pvp.data.formats);
   return (
     <>
-      <LeagueButtons
-        league={league}
-        onChange={(next) => {
-          rememberedLeague = next;
-          setLeague(next);
-        }}
-      />
+      <Head>
+        <LeagueButtons
+          league={league}
+          onChange={(next) => {
+            rememberedLeague = next;
+            setLeague(next);
+          }}
+        />
+      </Head>
       {format ? (
-        <>
+        <Ranking key={league} target={{ cup: format.cup, cp: format.cp }} sources={sources}>
           <Rules format={format} sources={sources} />
-          <Ranking key={league} target={{ cup: format.cup, cp: format.cp }} sources={sources} />
-        </>
+        </Ranking>
       ) : (
         <p class="empty">PvPoke no publica ahora mismo un ranking de {LEAGUE_TITLES[league]}: Edición Mega.</p>
       )}
@@ -314,15 +327,13 @@ export function parseFormatSlug(slug: string): FormatTarget | null {
 export function CupView({ target, sources }: { target: FormatTarget; sources: Sources }) {
   const { pvp, season } = sources;
   const format = pvp.data?.formats.find((f) => f.cup === target.cup && f.cp === target.cp);
-  const back = (
-    <a class="link back" href="#pvp/copas">
-      Calendario y copas
-    </a>
+  const back = (title: string, lang?: string) => (
+    <Back href="#pvp/copas" label="Calendario y copas" title={title} lang={lang} heading />
   );
   if (!pvp.data) {
     return (
       <>
-        {back}
+        <Pin>{back('Copa')}</Pin>
         <Placeholder source={pvp} />
       </>
     );
@@ -330,7 +341,7 @@ export function CupView({ target, sources }: { target: FormatTarget; sources: So
   if (!format) {
     return (
       <>
-        {back}
+        <Pin>{back('Copa')}</Pin>
         <p class="empty">PvPoke ya no muestra esta copa.</p>
       </>
     );
@@ -341,13 +352,8 @@ export function CupView({ target, sources }: { target: FormatTarget; sources: So
     .find((entry) => formatFor(entry, [format]) !== null);
   const label = named ? entryLabel(named) : { name: format.title, untranslated: true };
   return (
-    <>
-      {back}
-      <h2>
-        <Name label={label} />
-      </h2>
+    <Ranking target={target} sources={sources} back={back(label.name, label.untranslated ? 'en' : undefined)}>
       <Rules format={format} sources={sources} />
-      <Ranking target={target} sources={sources} />
-    </>
+    </Ranking>
   );
 }

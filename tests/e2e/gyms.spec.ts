@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { NOW } from '../fixtures';
-import { network, saved } from './network';
+import { network, pick, saved } from './network';
 
 const FILE = 'data/gimnasios.json';
 const DAY = 86_400_000;
@@ -62,10 +62,10 @@ test.describe('atacantes de gimnasio', () => {
   test('el filtro por tipo avisa de que no es exhaustivo', async ({ page, context }) => {
     await network(context);
     await open(page);
-    await page.getByLabel('Tipo del ataque cargado').selectOption('poison');
+    await pick(page, ['Tipo del ataque cargado', 'Veneno']);
     await expect(page.locator('.filters')).toContainText('No es una lista completa');
     await expect(page.locator('.filters')).toContainText('Tampoco filtra por el tipo del defensor');
-    await expect(page.getByLabel('Tipo del ataque cargado').locator('option:checked')).toHaveText('Ataque Veneno');
+    await expect(page.getByRole('group', { name: 'Filtros activos' })).toHaveText('Ataque Veneno');
     const used = await page.locator('.rank-card .metrics div:last-child dd').allTextContents();
     expect(used.length).toBeGreaterThan(0);
     expect(new Set(used)).toEqual(new Set(['Veneno']));
@@ -79,11 +79,10 @@ test.describe('atacantes de gimnasio', () => {
     await open(page);
     await page.getByRole('button', { name: /Tier S\+/ }).click();
     await expect(page.locator('.tier-group')).toHaveCount(1);
-    await page.getByLabel('Megas').selectOption('only');
-    await page.getByLabel('Legendarios').selectOption('only');
+    await pick(page, ['Megas', 'Solo megas'], ['Legendarios', 'Solo legendarios']);
     await expect(page.locator('.rank-card').filter({ hasText: 'Mega-Mewtwo' })).toHaveCount(2);
     for (const name of await page.locator('.rank-card .pokemon-name').allTextContents()) expect(name).toMatch(/Mega-|Primigenio/);
-    await page.getByLabel('Megas').selectOption('without');
+    await pick(page, ['Megas', 'Sin megas']);
     await expect(page.locator('.rank-card', { hasText: 'Mega-' })).toHaveCount(0);
     await page.getByLabel('Buscar Pokémon').fill('zzz');
     await expect(page.locator('.empty')).toContainText('Ningún Pokémon');
@@ -154,7 +153,7 @@ test.describe('defensores de gimnasio', () => {
   test('filtrar por tipo conserva el puesto', async ({ page, context }) => {
     await network(context);
     await open(page, 'gimnasios/defensores');
-    await page.getByLabel('Tipo del Pokémon').selectOption('water');
+    await pick(page, ['Tipo del Pokémon', 'Agua']);
     await expect(page.locator('.rank-card').first()).toContainText('Puesto 4');
     await expect(page.locator('.rank-card').first()).toContainText('Dondozo');
   });

@@ -55,6 +55,19 @@ export const saved = (page: Page, ...prefixes: string[]) =>
     )
     .toEqual([]);
 
+/** Elige en la hoja de filtros, que se abre desde la fila fija. */
+export async function pick(page: Page, ...choices: [group: string, option: string][]) {
+  await page.getByRole('button', { name: /^(Filtros|Clima y filtros)/ }).click();
+  const sheet = page.getByRole('dialog');
+  for (const [group, option] of choices) {
+    const button = sheet.getByRole('group', { name: group, exact: true }).getByRole('button', { name: option, exact: true });
+    await button.click();
+    await expect(button).toHaveAttribute('aria-pressed', 'true');
+  }
+  await sheet.getByRole('button', { name: 'Ver resultados' }).click();
+  await expect(sheet).toHaveCount(0);
+}
+
 export const ALL_SOURCES = [
   'pvp', 'raids', 'events', 'translations', 'pokebattler', 'sprites', 'gyms', 'rocket', 'rocketContrast', 'rocketAttackers',
   'season', 'raidTypes',

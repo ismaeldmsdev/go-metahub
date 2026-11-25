@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { NOW } from '../fixtures';
-import { network, saved } from './network';
+import { network, pick, saved } from './network';
 
 const CRESSELIA = 'raids/defenders/CRESSELIA/';
 const DAY = 86_400_000;
@@ -59,9 +59,9 @@ test.describe('counters de un jefe', () => {
     await page.getByRole('button', { name: /^Normales/ }).click();
     await expect(cards.first()).toContainText('Puesto 4');
     expect(net.count(CRESSELIA)).toBe(1);
-    await page.getByLabel('Clima').selectOption('FOG');
+    await pick(page, ['Clima', 'Niebla']);
     await expect.poll(() => net.count('weatherCondition=FOG')).toBe(1);
-    await page.getByLabel('Clima').selectOption('NO_WEATHER');
+    await pick(page, ['Clima', 'Sin clima favorable']);
     await page.waitForTimeout(200);
     expect(net.count(CRESSELIA)).toBe(2);
   });

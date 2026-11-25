@@ -1,14 +1,16 @@
 import { useMemo, useState } from 'preact/hooks';
 import type { RaidAttacker, RaidAttackersData } from '../data/models';
-import { GYM_GROUPS, gymMove, PRESENCES, type Presence } from '../domain/gyms';
+import { gymMove } from '../domain/gyms';
 import { moveName, pvpLabel, typeName, TYPES } from '../domain/names';
 import { attackersOfType, countByType, goHubTypeUrl, type RaidFilters } from '../domain/raidTypes';
 import { typeRankingUrl } from '../domain/raids';
 import { spriteId } from '../domain/sprites';
-import { External, Move, MoveLegend, Placeholder, PokemonName, SourceStatus, TypeTag } from './common';
-import { Attribution, GROUP_LABELS, PRESENCE_NAMES, Search, tierClass } from './GymsView';
+import { External, Move, MoveLegend, Placeholder, SourceStatus } from './common';
+import { Back, Pin } from './frame';
+import { Attribution, presenceGroups, Search, tierClass } from './GymsView';
 import type { Sources } from './hooks';
 import { PokemonImage } from './PokemonImage';
+import { RankCard } from './RankCard';
 
 const PAGE = 30;
 
@@ -24,8 +26,10 @@ function AttackerCard({ attacker, sources }: { attacker: RaidAttacker; sources: 
   const tr = sources.translations.data;
   const label = pvpLabel(attacker, tr);
   return (
-    <li class={`card rank-card t-${attacker.types[0] ?? ''}`}>
-      <div class="rank-figure">
+    <RankCard
+      label={label}
+      types={attacker.types}
+      figure={
         <PokemonImage
           id={spriteId(attacker, sources.sprites.data)}
           dex={attacker.dex}
@@ -33,38 +37,25 @@ function AttackerCard({ attacker, sources }: { attacker: RaidAttacker; sources: 
           shadow={label.shadow}
           pending={sources.sprites.health.level === 'loading'}
         />
-      </div>
-      <div class="rank-body">
-        <PokemonName label={label} />
-        <div class="rank-meta">
-          <span class={attacker.tier === 'E' ? 'tier tier-D' : tierClass(attacker.tier)}>
-            <span class="sr-only">Tier </span>
-            {attacker.tier}
-          </span>
-          {attacker.types.map((type) => (
-            <TypeTag key={type} type={type} />
-          ))}
-        </div>
-        <ul class="moves">
+      }
+      tier={
+        <span class={attacker.tier === 'E' ? 'tier tier-D' : tierClass(attacker.tier)}>
+          <span class="sr-only">Tier </span>
+          {attacker.tier}
+        </span>
+      }
+      moves={
+        <>
           <Move fast name={moveName(gymMove(attacker.fast, attacker.fastType), tr)} />
           <Move fast={false} name={moveName(gymMove(attacker.charged, attacker.chargedType), tr)} />
-        </ul>
-        <dl class="metrics">
-          <div>
-            <dt>Percentil</dt>
-            <dd>{decimal(attacker.percentile, 1)}</dd>
-          </div>
-          <div>
-            <dt>DPS*</dt>
-            <dd>{decimal(attacker.dps, 0)}</dd>
-          </div>
-          <div>
-            <dt>TDO*</dt>
-            <dd>{decimal(attacker.tdo / 1e6, 0)} M</dd>
-          </div>
-        </dl>
-      </div>
-    </li>
+        </>
+      }
+      value={{ text: decimal(attacker.percentile, 1), label: 'Percentil' }}
+      metrics={[
+        ['DPS*', decimal(attacker.dps, 0)],
+        ['TDO*', `${decimal(attacker.tdo / 1e6, 0)} M`],
+      ]}
+    />
   );
 }
 
@@ -127,12 +118,16 @@ const Warning = ({ type }: { type?: string }) => (
   </section>
 );
 
+const TypeBack = ({ type }: { type: string }) => (
+  <Back href="#incursiones/tipos" label="Todos los tipos" title={`Ataque de tipo ${typeName(type)}`} heading />
+);
+
 function TypeList({ data, type, sources }: { data: RaidAttackersData; type: string; sources: Sources }) {
   const [filters, setFilters] = useState(remembered);
   const [shown, setShown] = useState(PAGE);
   const tr = sources.translations.data;
   const change = (part: Partial<RaidFilters>) => {
-    remembered = { ...filters, ...part };
+    remembered = { ...remembered, ...part };
     setFilters(remembered);
     setShown(PAGE);
   };
@@ -141,35 +136,20 @@ function TypeList({ data, type, sources }: { data: RaidAttackersData; type: stri
   const filtered = JSON.stringify(filters) !== JSON.stringify(NO_FILTERS);
   return (
     <>
-      <h2>
-        Ataque de tipo <TypeTag type={type} />
-      </h2>
+      <Pin search={filters.search} groups={presenceGroups(filters, change)}>
+        <TypeBack type={type} />
+      </Pin>
       <Warning type={type} />
       <p class="note">
         Listas completas: <External href={typeRankingUrl(type)}>Pokébattler</External> y{' '}
         <External href={goHubTypeUrl(type)}>GO Hub</External> (en inglés).
       </p>
       <Attribution data={data} />
-      <div class="filters">
-        <div class="filter-row filter-search">
-          <Search value={filters.search} onChange={(search) => change({ search })} />
-        </div>
-        <div class="filter-row filter-groups filter-three">
-          {GYM_GROUPS.map((group) => (
-            <select
-              key={group}
-              aria-label={GROUP_LABELS[group]}
-              value={filters[group]}
-              onChange={(e) => change({ [group]: e.currentTarget.value as Presence })}
-            >
-              {PRESENCES.map((id) => (
-                <option key={id} value={id}>
-                  {PRESENCE_NAMES[group][id]}
-                </option>
-              ))}
-            </select>
-          ))}
-        </div>
+      <div class="filter-row">
+        <Search value={filters.search} onChange={(search) => change({ search })} />
+      </div>
+      <div class="meta">
+        <SourceStatus source={sources.raidTypes} />
         <p class="result-count" role="status">
           {list.length} Pokémon
           {filtered && (
@@ -203,12 +183,12 @@ export function RaidTypesView({ sources, type }: { sources: Sources; type: strin
   const { raidTypes } = sources;
   return (
     <>
-      {type && (
-        <a class="link back" href="#incursiones/tipos">
-          Todos los tipos
-        </a>
+      {type && !raidTypes.data && (
+        <Pin>
+          <TypeBack type={type} />
+        </Pin>
       )}
-      <SourceStatus source={raidTypes} />
+      {!(type && raidTypes.data) && <SourceStatus source={raidTypes} />}
       {!raidTypes.data ? (
         <Placeholder source={raidTypes} />
       ) : type ? (

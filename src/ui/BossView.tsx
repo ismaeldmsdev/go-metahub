@@ -10,14 +10,16 @@ import {
   type CounterVariant,
   type RankedCounter,
 } from '../domain/counters';
-import { moveName, pvpLabel, weatherName } from '../domain/names';
+import { bossLabel, moveName, pvpLabel, weatherName } from '../domain/names';
 import { countersLink } from '../domain/raids';
 import { spriteId } from '../domain/sprites';
 import { BossSummary } from './BossSummary';
 import { formatAge, hasKnownCheck } from '../domain/freshness';
-import { External, Loading, Move, MoveLegend, Placeholder, PokemonName, Rank, SourceStatus, TypeTag } from './common';
+import { External, Loading, Move, MoveLegend, Placeholder, SourceStatus } from './common';
+import { Back, Pin } from './frame';
 import { useCounters, type Sources } from './hooks';
 import { PokemonImage } from './PokemonImage';
+import { RankCard } from './RankCard';
 
 const VARIANT_NAMES: Record<CounterVariant, string> = {
   all: 'Todos',
@@ -42,8 +44,12 @@ export function CounterCard({ counter, sources, species, sprite = species, chip 
   const tr = sources.translations.data;
   const label = pvpLabel(species, tr);
   return (
-    <li class={`card rank-card t-${species.types[0] ?? ''}`}>
-      <div class="rank-figure">
+    <RankCard
+      label={label}
+      types={species.types}
+      rank={counter.rank}
+      chip={chip}
+      figure={
         <PokemonImage
           id={spriteId(sprite, sources.sprites.data)}
           dex={species.dex}
@@ -51,37 +57,20 @@ export function CounterCard({ counter, sources, species, sprite = species, chip 
           shadow={label.shadow}
           pending={sources.sprites.health.level === 'loading'}
         />
-        <Rank value={counter.rank} />
-      </div>
-      <div class="rank-body">
-        <PokemonName label={label} />
-        <div class="rank-meta">
-          {chip}
-          {species.types.map((type) => (
-            <TypeTag key={type} type={type} />
-          ))}
-        </div>
-        <ul class="moves">
+      }
+      moves={
+        <>
           <Move fast name={moveName(counterMove(counter.fast), tr)} />
           {/* En combates Max, a veces lo mejor es no usar el cargado. */}
           {counter.charged !== 'MOVE_NONE' && <Move fast={false} name={moveName(counterMove(counter.charged), tr)} />}
-        </ul>
-        <dl class="metrics">
-          <div>
-            <dt>Estimator</dt>
-            <dd>{number(counter.estimator, 2)}</dd>
-          </div>
-          <div>
-            <dt>eDPS</dt>
-            <dd>{counter.edps === null ? '–' : number(counter.edps, 1)}</dd>
-          </div>
-          <div>
-            <dt>TDO</dt>
-            <dd>{counter.tdo === null ? '–' : number(counter.tdo, 0)}</dd>
-          </div>
-        </dl>
-      </div>
-    </li>
+        </>
+      }
+      value={{ text: number(counter.estimator, 2), label: 'Estimator' }}
+      metrics={[
+        ['eDPS', counter.edps === null ? '–' : number(counter.edps, 1)],
+        ['TDO', counter.tdo === null ? '–' : number(counter.tdo, 0)],
+      ]}
+    />
   );
 }
 
@@ -123,6 +112,9 @@ interface CountersProps {
 
 interface PanelProps<V extends string> extends CountersProps {
   title?: string;
+  back: ComponentChildren;
+  /** El jefe, antes de sus counters. */
+  subject: ComponentChildren;
   /** El primero es el de partida. */
   variants: readonly V[];
   names: Record<V, string>;
@@ -132,7 +124,7 @@ interface PanelProps<V extends string> extends CountersProps {
 }
 
 export function CountersPanel<V extends string>(props: PanelProps<V>) {
-  const { target, url, now, variants, names, filter, card, explanation, title = 'Mejores counters' } = props;
+  const { target, url, now, variants, names, filter, card, explanation, title = 'Mejores counters', back, subject } = props;
   const [weather, setWeather] = useState<Weather>('NO_WEATHER');
   const [variant, setVariant] = useState<V>(variants[0]!);
   const counters = useCounters({ ...target, weather });
@@ -142,21 +134,28 @@ export function CountersPanel<V extends string>(props: PanelProps<V>) {
   const healthy = list && counters.health.level === 'ok';
   return (
     <>
-      <div class="counters-head">
-        <h2>{title}</h2>
-        <select aria-label="Clima" value={weather} onChange={(e) => setWeather(e.currentTarget.value as Weather)}>
-          {WEATHERS.map((id) => (
-            <option key={id} value={id}>
-              {id === 'NO_WEATHER' ? 'Sin clima favorable' : weatherName(id)}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div
-        class={variants.length === 3 ? 'tier-filter variant-filter variant-three' : 'tier-filter variant-filter'}
-        role="group"
-        aria-label="Variante"
+      <Pin
+        title="Clima y filtros"
+        groups={[
+          {
+            label: 'Clima',
+            value: weather,
+            onChange: (id) => setWeather(id as Weather),
+            options: WEATHERS.map((id) => ({ value: id, name: id === 'NO_WEATHER' ? 'Sin clima favorable' : weatherName(id) })),
+          },
+          {
+            label: 'Variante',
+            value: variant,
+            onChange: (id) => setVariant(id as V),
+            options: variants.map((id) => ({ value: id, name: names[id], count: list ? filter(list, id).length : null })),
+          },
+        ]}
       >
+        {back}
+      </Pin>
+      {subject}
+      <h2>{title}</h2>
+      <div class="tier-filter variant-filter" role="group" aria-label="Variante" style={{ '--n': variants.length }}>
         {variants.map((id) => (
           <button key={id} type="button" aria-pressed={variant === id} onClick={() => setVariant(id)}>
             {names[id]}
@@ -164,7 +163,7 @@ export function CountersPanel<V extends string>(props: PanelProps<V>) {
           </button>
         ))}
       </div>
-      {!healthy && <SourceStatus source={counters} />}
+            {!healthy && <SourceStatus source={counters} />}
       {!list ? (
         <Placeholder source={counters} />
       ) : (
@@ -190,7 +189,7 @@ export function CountersPanel<V extends string>(props: PanelProps<V>) {
   );
 }
 
-function Counters(props: CountersProps) {
+function Counters(props: CountersProps & { back: ComponentChildren; subject: ComponentChildren }) {
   const { sources } = props;
   return (
     <CountersPanel
@@ -213,17 +212,22 @@ function Counters(props: CountersProps) {
 
 export function BossView({ boss, sources, now }: { boss: RaidBoss; sources: Sources; now: number }) {
   const link = countersLink(boss, sources.pokebattler.data?.raids);
+  const back = (
+    <Back href="#incursiones" label="Todos los jefes" title={bossLabel(boss, sources.translations.data).name} />
+  );
+  const subject = (
+    <article class={`card boss boss-detail t-${boss.types[0] ?? ''}`}>
+      <BossSummary boss={boss} sources={sources} now={now} detail />
+    </article>
+  );
+  if (link.target) {
+    return <Counters target={link.target} url={link.url} sources={sources} now={now} back={back} subject={subject} />;
+  }
   return (
     <>
-      <a class="link back" href="#incursiones">
-        Todos los jefes
-      </a>
-      <article class={`card boss t-${boss.types[0] ?? ''}`}>
-        <BossSummary boss={boss} sources={sources} now={now} detail />
-      </article>
-      {link.target ? (
-        <Counters target={link.target} url={link.url} sources={sources} now={now} />
-      ) : sources.pokebattler.health.level === 'loading' ? (
+      <Pin>{back}</Pin>
+      {subject}
+      {sources.pokebattler.health.level === 'loading' ? (
         <Loading />
       ) : (
         <div class="empty">

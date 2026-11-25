@@ -47,8 +47,10 @@ export function Move({ name, fast, elite = false }: { name: string; fast: boolea
     <li class={fast ? 'move move-fast' : 'move'}>
       <MoveIcon fast={fast} />
       <span class="sr-only">{fast ? 'Ataque rápido: ' : 'Ataque cargado: '}</span>
-      {name}
-      {elite && <abbr title="Movimiento especial: puede requerir una MT élite o un evento">★</abbr>}
+      <span class="move-name">
+        {name}
+        {elite && <abbr title="Movimiento especial: puede requerir una MT élite o un evento"> ★</abbr>}
+      </span>
     </li>
   );
 }

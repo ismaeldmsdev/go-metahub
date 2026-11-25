@@ -49,8 +49,11 @@ function hasIssue(tab: Tab, sources: Sources): boolean {
 export function App({ storageOk }: { storageOk: boolean }) {
   const { tab, detail } = useRoute();
   const sources = useSources();
+  // Un color por modalidad; los combates Max tienen el suyo dentro de Incursiones.
+  const theme = tab === 'incursiones' && detail?.startsWith('max') ? 'max' : tab;
   return (
-    <div class="app">
+    <div class={`app th-${theme}`}>
+      <div class="statusbar" aria-hidden="true" />
       <div class="topbar">
         <header class="header">
           <img class="brand" src="./logo-small.webp" alt="" width="48" height="48" />

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { NOW, routes } from '../fixtures';
-import { ALL_SOURCES, network, saved } from './network';
+import { ALL_SOURCES, network, pick, saved } from './network';
 
 const HOUR = 3_600_000;
 
@@ -64,7 +64,7 @@ test.describe('secciones', () => {
     await search.fill('ninetales alola');
     await expect(cards.first()).toContainText('Ninetales de Alola');
     const all = await cards.count();
-    await page.getByLabel('Variante').selectOption('shadow');
+    await pick(page, ['Variante', 'Oscuros']);
     await expect(cards).toHaveCount(1);
     await expect(cards.first()).toContainText('Oscuro');
     expect(all).toBeGreaterThan(1);

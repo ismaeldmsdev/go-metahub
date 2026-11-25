@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { fixtures, NOW } from '../fixtures';
-import { network, saved } from './network';
+import { network, pick, saved } from './network';
 
 const DAY = 86_400_000;
 const MEGA = 'rankings/mega/overall/rankings-1500.json';
@@ -43,7 +43,7 @@ test.describe('ligas Mega y copas', () => {
     await expect(page.locator('.tier')).toHaveCount(0);
     await expect(page.getByRole('region', { name: 'Restricciones' })).toContainText('Se permiten megaevoluciones');
     expect(net.count(MEGA)).toBe(1);
-    await page.getByLabel('Variante').selectOption('mega');
+    await pick(page, ['Variante', 'Megas']);
     await expect(cards.nth(1)).toContainText('Mega-Malamar');
     await expect(cards.nth(1)).toContainText('Puesto 31');
     await page.getByRole('searchbox').fill('zzzz');
@@ -150,7 +150,7 @@ test.describe('incursiones por tipo', () => {
     await expect(page.locator('.attribution').getByRole('link', { name: 'CC BY 4.0' })).toBeVisible();
     await page.getByText('Cómo leer estos datos').click();
     await expect(page.getByText('una sola combinación por Pokémon')).toBeVisible();
-    await page.getByLabel('Megas').selectOption('only');
+    await pick(page, ['Megas', 'Solo megas']);
     await expect(page.locator('.rank-card').first()).toContainText('Mega-');
     await page.getByRole('button', { name: 'Quitar filtros' }).click();
     await page.getByRole('link', { name: 'Todos los tipos' }).click();
@@ -243,15 +243,15 @@ test.describe('combates Max', () => {
     await expect(page.getByText('Datos teóricos, no un ranking')).toBeVisible();
     const cards = page.locator('.rank-card');
     await expect(cards).toHaveCount(10);
-    await page.getByLabel('Orden').selectOption('hp');
+    await pick(page, ['Orden', 'Por PS base']);
     await expect(cards.first()).toContainText('Blissey');
     for (const text of ['129', '83.824', '496']) await expect(cards.first()).toContainText(text);
     await expect(page.locator('.rank, .tier')).toHaveCount(0);
-    await page.getByLabel('Clase').selectOption('gigamax');
+    await pick(page, ['Clase', 'Gigamax']);
     await expect(cards).toHaveCount(2);
     await expect(cards.first()).toContainText('Gigamax propio');
     await page.getByRole('button', { name: 'Quitar filtros' }).click();
-    await page.getByLabel('Tipo del ataque Max').selectOption('dragon');
+    await pick(page, ['Tipo del ataque Max', 'Dragón']);
     await expect(page.getByText('Los Gigamax tienen su propio ataque')).toBeVisible();
   });
 

@@ -4,6 +4,7 @@ import { bossSlug, groupRaids } from '../domain/raids';
 import { BossSummary } from './BossSummary';
 import { BossView } from './BossView';
 import { Placeholder, SourceStatus } from './common';
+import { Back, Pin } from './frame';
 import { useNow, type Sources } from './hooks';
 import { MaxView } from './MaxView';
 import { RaidTypesView } from './RaidTypesView';
@@ -16,13 +17,15 @@ const MODES = [
 
 function Modes({ mode }: { mode: (typeof MODES)[number]['id'] }) {
   return (
-    <div class="segmented" role="group" aria-label="Incursiones">
-      {MODES.map(({ id, name, hash }) => (
-        <button key={id} type="button" aria-pressed={mode === id} onClick={() => (location.hash = hash)}>
-          {name}
-        </button>
-      ))}
-    </div>
+    <Pin>
+      <div class="segmented" role="group" aria-label="Incursiones">
+        {MODES.map(({ id, name, hash }) => (
+          <button key={id} type="button" aria-pressed={mode === id} onClick={() => (location.hash = hash)}>
+            {name}
+          </button>
+        ))}
+      </div>
+    </Pin>
   );
 }
 
@@ -96,13 +99,21 @@ export function RaidsView({ sources, slug }: { sources: Sources; slug: string | 
   opened = slug;
   const boss = raids.data?.find((candidate) => bossSlug(candidate) === slug);
   if (boss) return <BossView key={slug} boss={boss} sources={sources} now={now} />;
-  if (!raids.data) return <Placeholder source={raids} />;
   return (
-    <div class="empty">
-      <p>Este jefe ya no figura en las incursiones actuales.</p>
-      <a class="link" href="#incursiones">
-        Ver los jefes actuales
-      </a>
-    </div>
+    <>
+      <Pin>
+        <Back href="#incursiones" label="Todos los jefes" title="Jefe" />
+      </Pin>
+      {!raids.data ? (
+        <Placeholder source={raids} />
+      ) : (
+        <div class="empty">
+          <p>Este jefe ya no figura en las incursiones actuales.</p>
+          <a class="link" href="#incursiones">
+            Ver los jefes actuales
+          </a>
+        </div>
+      )}
+    </>
   );
 }

@@ -2,9 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import type { RocketAttacker, RocketAttackersData, RocketPokemon, RocketTrainer, Species } from '../data/models';
 import { formatAge, formatDate, hasKnownCheck } from '../domain/freshness';
 import {
-  GYM_GROUPS,
   gymMove,
-  PRESENCES,
   type AttackerFilters,
   type GymGroup,
   type GymTier,
@@ -38,9 +36,11 @@ import {
 } from '../domain/rocket';
 import { spriteId } from '../domain/sprites';
 import { External, Move, MoveLegend, multiplier, Placeholder, PokemonName, SourceStatus, TypeTag, Weaknesses } from './common';
-import { Attribution, GROUP_LABELS, PRESENCE_NAMES, Search, tierClass, TypeSelect } from './GymsView';
+import { Back, Head, Pin } from './frame';
+import { Attribution, presenceGroups, Search, tierClass, TierCells, tierGroup, typeGroup } from './GymsView';
 import { useNow, type Sources } from './hooks';
 import { PokemonImage } from './PokemonImage';
+import { RankCard } from './RankCard';
 
 const PAGE = 30;
 /** Sugerencias visibles de cada tipo antes de pedir más. */
@@ -206,13 +206,19 @@ function TrainerTitle({ trainer, sources }: { trainer: RocketTrainer; sources: S
   );
 }
 
-const slotNames = (trainer: RocketTrainer, slot: number, sources: Sources): string =>
-  trainer.slots[slot]!.options
-    .map((p) => {
-      const tr = sources.translations.data;
-      return pvpLabel(rivalSpecies(p, sources.pvp.data?.species, tr), tr).name;
-    })
-    .join(', ');
+const slotNames = (trainer: RocketTrainer, slot: number, sources: Sources): string[] =>
+  trainer.slots[slot]!.options.map((p) => {
+    const tr = sources.translations.data;
+    return pvpLabel(rivalSpecies(p, sources.pvp.data?.species, tr), tr).name;
+  });
+
+/** Con algún puesto fijo, los que tienen alternativas se llevan más ancho. */
+const lineupColumns = ({ slots }: RocketTrainer) => {
+  const fixed = slots.some(({ options }) => options.length === 1);
+  return { '--columns': slots.map(({ options }) => `minmax(0, ${fixed && options.length > 1 ? 1.75 : 1}fr)`).join(' ') };
+};
+
+const lineupClass = ({ slots }: RocketTrainer) => (slots.some(({ options }) => options.length === 1) ? 'lineup lineup-side' : 'lineup');
 
 interface TrainerCardProps {
   trainer: RocketTrainer;
@@ -225,14 +231,22 @@ function TrainerCard({ trainer, comparison, sources }: TrainerCardProps) {
   return (
     <li id={`rocket-${trainer.key}`} class={`card boss trainer t-${trainer.type ?? ''}`}>
       <div class="boss-body">
-        <TrainerTitle trainer={trainer} sources={sources} />
+        <div class="trainer-head">
+          <TrainerTitle trainer={trainer} sources={sources} />
+          <a class="link boss-open" href={href(trainer)} aria-label={`Ver debilidades: ${fullName(trainer, sources)}`}>
+            Debilidades
+          </a>
+        </div>
         {phrase && <p class="phrase">«{phrase}»</p>}
         {comparison?.differences.has(trainer.key) && <p class="validity warn">Las fuentes no coinciden</p>}
         {isBoss(trainer) ? (
-          <div class="lineup">
+          <div class={lineupClass(trainer)} style={lineupColumns(trainer)}>
             {trainer.slots.map(({ options }, i) => (
-              <div key={i}>
-                <span class="slot-name">{SLOT_NAMES[i]}</span>
+              <div key={i} class={options.length > 1 ? 'lineup-many' : undefined}>
+                <span class="slot-number">
+                  <span class="sr-only">{SLOT_NAMES[i]}</span>
+                  <span aria-hidden="true">{i + 1}</span>
+                </span>
                 <ul class="lineup-options">
                   {options.map((rival) => (
                     <li key={`${rival.dex}${rival.form}`} class="rival rival-small">
@@ -247,15 +261,22 @@ function TrainerCard({ trainer, comparison, sources }: TrainerCardProps) {
           <dl class="slots">
             {trainer.slots.map((_, i) => (
               <div key={i}>
-                <dt>{SLOT_NAMES[i]}</dt>
-                <dd>{slotNames(trainer, i, sources)}</dd>
+                <dt>
+                  <span class="sr-only">{SLOT_NAMES[i]}</span>
+                  <span aria-hidden="true">{i + 1}</span>
+                </dt>
+                <dd>
+                  {slotNames(trainer, i, sources).map((name, j) => (
+                    <span key={name}>
+                      {j > 0 && <span class="sr-only">, </span>}
+                      {name}
+                    </span>
+                  ))}
+                </dd>
               </div>
             ))}
           </dl>
         )}
-        <a class="link boss-open" href={href(trainer)} aria-label={`Ver debilidades: ${fullName(trainer, sources)}`}>
-          Ver debilidades
-        </a>
       </div>
     </li>
   );
@@ -263,16 +284,16 @@ function TrainerCard({ trainer, comparison, sources }: TrainerCardProps) {
 
 function GeneralLink() {
   return (
-    <section class="card boss">
+    <section class="card boss boss-link">
       <div class="boss-body">
         <h2>Mejores atacantes generales</h2>
         <p class="fine">
           Los tiers y puntuaciones de doctorpokegogo para el Team GO Rocket. No dependen de a quién te enfrentes.
         </p>
-        <a class="link boss-open" href="#rocket/atacantes">
-          Ver atacantes generales
-        </a>
       </div>
+      <a class="link boss-open" href="#rocket/atacantes">
+        Ver<span class="sr-only"> atacantes generales</span>
+      </a>
     </section>
   );
 }
@@ -296,17 +317,41 @@ function TrainerList({ sources, grunts, now }: { sources: Sources; grunts: boole
     rememberedSearch = value;
     setSearch(value);
   };
+  const modes = (
+    <div class="segmented segmented-2" role="group" aria-label="Entrenadores">
+      <button type="button" aria-pressed={!grunts} onClick={() => (location.hash = 'rocket')}>
+        Líderes y Giovanni
+      </button>
+      <button type="button" aria-pressed={grunts} onClick={() => (location.hash = 'rocket/reclutas')}>
+        Reclutas
+      </button>
+    </div>
+  );
   return (
     <>
-      <div class="segmented segmented-2" role="group" aria-label="Entrenadores">
-        <button type="button" aria-pressed={!grunts} onClick={() => (location.hash = 'rocket')}>
-          Líderes y Giovanni
-        </button>
-        <button type="button" aria-pressed={grunts} onClick={() => (location.hash = 'rocket/reclutas')}>
-          Reclutas
-        </button>
+      {grunts ? (
+        <>
+          <Head>{modes}</Head>
+          <Pin search={search}>
+            <Search value={search} onChange={change} label="Frase, tipo o Pokémon" />
+          </Pin>
+        </>
+      ) : (
+        <Pin>{modes}</Pin>
+      )}
+      <div class="meta">
+        <SourceStatus source={rocket} />
+        {grunts && rocket.data && (
+          <p class="result-count" role="status">
+            {trainers.length} {trainers.length === 1 ? 'recluta' : 'reclutas'}
+            {search.trim() !== '' && (
+              <button class="text-button" type="button" onClick={() => change('')}>
+                Quitar búsqueda
+              </button>
+            )}
+          </p>
+        )}
       </div>
-      <SourceStatus source={rocket} />
       {!rocket.data ? (
         <Placeholder source={rocket} />
       ) : (
@@ -314,21 +359,6 @@ function TrainerList({ sources, grunts, now }: { sources: Sources; grunts: boole
           <Mismatches comparison={comparison} sources={sources} now={now} />
           <Agreement comparison={comparison} sources={sources} now={now} />
           {!tr && <p class="note">Las traducciones aún no están disponibles. Se muestran los nombres originales.</p>}
-          {grunts && (
-            <div class="filters">
-              <div class="filter-row filter-search">
-                <Search value={search} onChange={change} label="Frase, tipo o Pokémon" />
-              </div>
-              <p class="result-count" role="status">
-                {trainers.length} {trainers.length === 1 ? 'recluta' : 'reclutas'}
-                {search.trim() !== '' && (
-                  <button class="text-button" type="button" onClick={() => change('')}>
-                    Quitar búsqueda
-                  </button>
-                )}
-              </p>
-            </div>
-          )}
           {grunts && hasPhrases && (
             <p class="note">
               Frases del juego en español, a través de{' '}
@@ -368,8 +398,10 @@ function AttackerCard({ attacker, sources, suggestion, tied = 1 }: AttackerCardP
   const tr = sources.translations.data;
   const label = pvpLabel(attacker, tr);
   return (
-    <li class={`card rank-card t-${attacker.types[0] ?? ''}`}>
-      <div class="rank-figure">
+    <RankCard
+      label={label}
+      types={attacker.types}
+      figure={
         <PokemonImage
           id={spriteId(attacker, sources.sprites.data)}
           dex={attacker.dex}
@@ -377,84 +409,35 @@ function AttackerCard({ attacker, sources, suggestion, tied = 1 }: AttackerCardP
           shadow={label.shadow}
           pending={sources.sprites.health.level === 'loading'}
         />
-      </div>
-      <div class="rank-body">
-        <PokemonName label={label} />
-        <div class="rank-meta">
-          {!suggestion && (
-            <span class={tierClass(attacker.tier)}>
-              <span class="sr-only">Tier general </span>
-              {attacker.tier}
-            </span>
-          )}
-          {attacker.types.map((type) => (
-            <TypeTag key={type} type={type} />
-          ))}
-        </div>
-        <ul class="moves">
+      }
+      tier={
+        !suggestion && (
+          <span class={tierClass(attacker.tier)}>
+            <span class="sr-only">Tier general </span>
+            {attacker.tier}
+          </span>
+        )
+      }
+      moves={
+        <>
           <Move fast name={moveName(gymMove(attacker.fast, attacker.fastType), tr)} />
           <Move fast={false} name={moveName(gymMove(attacker.charged, attacker.chargedType), tr)} />
-        </ul>
-        {suggestion ? (
-          <dl class="metrics">
-            <div>
-              <dt>Tipo cargado</dt>
-              <dd>{multiplier(suggestion.charged)}</dd>
-            </div>
-            <div>
-              <dt>Tipo rápido</dt>
-              <dd>{multiplier(suggestion.fast)}</dd>
-            </div>
-            <div>
-              <dt>Punt. general</dt>
-              <dd>
-                {attacker.tier} · {attacker.score}
-              </dd>
-            </div>
-          </dl>
-        ) : (
-          <dl class="metrics">
-            <div>
-              <dt>Puntuación general</dt>
-              <dd>
-                {attacker.score}
-                {tied > 1 && <small class="tied">Empatan {tied}</small>}
-              </dd>
-            </div>
-            <div>
-              <dt>Ataca con</dt>
-              <dd>{typeName(attacker.chargedType)}</dd>
-            </div>
-          </dl>
-        )}
-      </div>
-    </li>
-  );
-}
-
-interface GroupSelectsProps {
-  value: Record<GymGroup, Presence>;
-  onChange: (part: Partial<Record<GymGroup, Presence>>) => void;
-}
-
-function GroupSelects({ value, onChange }: GroupSelectsProps) {
-  return (
-    <>
-      {GYM_GROUPS.map((group) => (
-        <select
-          key={group}
-          aria-label={GROUP_LABELS[group]}
-          value={value[group]}
-          onChange={(e) => onChange({ [group]: e.currentTarget.value as Presence })}
-        >
-          {PRESENCES.map((id) => (
-            <option key={id} value={id}>
-              {PRESENCE_NAMES[group][id]}
-            </option>
-          ))}
-        </select>
-      ))}
-    </>
+        </>
+      }
+      value={
+        suggestion
+          ? { text: multiplier(suggestion.charged), label: 'Tipo cargado' }
+          : { text: attacker.score, label: 'Punt. general', title: 'Puntuación general', note: tied > 1 && `Empatan ${tied}` }
+      }
+      metrics={
+        suggestion
+          ? [
+              ['Tipo rápido', multiplier(suggestion.fast)],
+              ['Punt. general', `${attacker.tier} · ${attacker.score}`],
+            ]
+          : [['Ataca con', typeName(attacker.chargedType)]]
+      }
+    />
   );
 }
 
@@ -495,17 +478,17 @@ const GeneralFallback = ({ children }: { children: string }) => (
   </div>
 );
 
-function Suggestions({ rival, sources }: { rival: Species; sources: Sources }) {
+type Groups = Record<GymGroup, Presence>;
+
+function Suggestions({ rival, sources, filters }: { rival: Species; sources: Sources; filters: Groups }) {
   const { rocketAttackers } = sources;
   const tr = sources.translations.data;
-  const [filters, setFilters] = useState(rememberedGroups);
   const [expanded, setExpanded] = useState(false);
   const data = rocketAttackers.data;
   const all = useMemo(() => (data ? suggestionsFor(rival.types, data.pokemon, tr) : []), [data, rival, tr]);
   const groups = filterSuggestions(all, filters);
   const visible = expanded ? groups : featuredSuggestions(groups);
   const hidden = countSuggestions(groups) - countSuggestions(visible);
-  const filtered = GYM_GROUPS.some((group) => filters[group] !== 'with');
   const name = pvpLabel(rival, tr).name;
   if (!data) {
     return rocketAttackers.health.level === 'loading' ? (
@@ -540,18 +523,6 @@ function Suggestions({ rival, sources }: { rival: Species; sources: Sources }) {
       </div>
       {rocketAttackers.health.level !== 'ok' && <SourceStatus source={rocketAttackers} />}
       <Attribution data={data} />
-      <details class="method" open={filtered}>
-        <summary>Filtrar megas, oscuros y legendarios</summary>
-        <div class="filter-row filter-groups filter-three">
-          <GroupSelects
-            value={filters}
-            onChange={(part) => {
-              rememberedGroups = { ...filters, ...part };
-              setFilters(rememberedGroups);
-            }}
-          />
-        </div>
-      </details>
       {groups.length === 0 && <p class="empty">Ninguna opción coincide con los filtros.</p>}
       {visible.map((group) => (
         <SuggestedType
@@ -602,19 +573,12 @@ function Suggestions({ rival, sources }: { rival: Species; sources: Sources }) {
 
 const rivalKey = (rival: RocketPokemon): string => `${rival.dex}:${rival.form ?? ''}`;
 
-function RivalPanel({ rival, sources }: { rival: RocketPokemon; sources: Sources }) {
+function RivalPanel({ rival, sources, filters }: { rival: RocketPokemon; sources: Sources; filters: Groups }) {
   const species = speciesOf(rival, sources);
   const label = pvpLabel(species, sources.translations.data);
   return (
     <>
-      <article class={`card boss t-${species.types[0] ?? ''}`}>
-        <PokemonImage
-          id={spriteId(species, sources.sprites.data)}
-          dex={species.dex}
-          type={species.types[0]}
-          shadow
-          pending={sources.sprites.health.level === 'loading'}
-        />
+      <article class={`card boss boss-detail t-${species.types[0] ?? ''}`}>
         <div class="boss-body">
           <h2 class="plain">
             <span class="sr-only">Debilidades de </span>
@@ -632,8 +596,17 @@ function RivalPanel({ rival, sources }: { rival: RocketPokemon; sources: Sources
             </p>
           )}
         </div>
+        <div class="boss-side">
+          <PokemonImage
+            id={spriteId(species, sources.sprites.data)}
+            dex={species.dex}
+            type={species.types[0]}
+            shadow
+            pending={sources.sprites.health.level === 'loading'}
+          />
+        </div>
       </article>
-      <Suggestions key={rivalKey(rival)} rival={species} sources={sources} />
+      <Suggestions key={rivalKey(rival)} rival={species} sources={sources} filters={filters} />
     </>
   );
 }
@@ -668,6 +641,7 @@ function TrainerDetail({ trainer, sources, now }: { trainer: RocketTrainer; sour
   const tr = sources.translations.data;
   const all = trainer.slots.flatMap((slot) => slot.options);
   const [selected, setSelected] = useState(rememberedRival.get(trainer.key) ?? rivalKey(all[0]!));
+  const [filters, setFilters] = useState(rememberedGroups);
   const panel = useRef<HTMLDivElement>(null);
   const comparison = useComparison(sources);
   const differences = comparison?.differences.get(trainer.key);
@@ -683,9 +657,18 @@ function TrainerDetail({ trainer, sources, now }: { trainer: RocketTrainer; sour
   };
   return (
     <>
-      <a class="link back" href={isBoss(trainer) ? '#rocket' : '#rocket/reclutas'}>
-        {isBoss(trainer) ? 'Líderes y Giovanni' : 'Todos los reclutas'}
-      </a>
+      <Pin
+        groups={presenceGroups(filters, (part) => {
+          rememberedGroups = { ...rememberedGroups, ...part };
+          setFilters(rememberedGroups);
+        })}
+      >
+        <Back
+          href={isBoss(trainer) ? '#rocket' : '#rocket/reclutas'}
+          label={isBoss(trainer) ? 'Líderes y Giovanni' : 'Todos los reclutas'}
+          title={fullName(trainer, sources)}
+        />
+      </Pin>
       <article class={`card trainer t-${trainer.type ?? ''}`}>
         <TrainerTitle trainer={trainer} sources={sources} />
         <Phrases phrases={phrases} />
@@ -715,35 +698,38 @@ function TrainerDetail({ trainer, sources, now }: { trainer: RocketTrainer; sour
         <p class="validity warn">LeekDuck no lista ahora mismo a este entrenador: puede no estar activo.</p>
       )}
       <section class="card rocket-slots" aria-label="Alineaciones posibles">
-        {trainer.slots.map(({ options, reward }, i) => (
-          <div key={i} role="group" aria-label={`${SLOT_NAMES[i]} en combatir`}>
-            <p class="slot-name">
-              {SLOT_NAMES[i]}
-              {options.length > 1 && ` · uno de ${options.length}`}
-              {reward && ' · se puede capturar'}
-            </p>
-            <div class="rivals">
-              {options.map((option) => (
-                <button
-                  key={rivalKey(option)}
-                  type="button"
-                  class="rival"
-                  aria-pressed={rivalKey(option) === rivalKey(rival)}
-                  onClick={() => select(option)}
-                >
-                  <Rival rival={option} sources={sources} />
-                </button>
-              ))}
+        <div class={lineupClass(trainer)} style={lineupColumns(trainer)}>
+          {trainer.slots.map(({ options, reward }, i) => (
+            <div key={i} role="group" aria-label={`${SLOT_NAMES[i]} en combatir`} class={options.length > 1 ? 'lineup-many' : undefined}>
+              <span class="slot-number" aria-hidden="true">{i + 1}</span>
+              <div class="lineup-options">
+                {options.map((option) => (
+                  <button
+                    key={rivalKey(option)}
+                    type="button"
+                    class="rival rival-small"
+                    aria-pressed={rivalKey(option) === rivalKey(rival)}
+                    onClick={() => select(option)}
+                  >
+                    <Rival rival={option} sources={sources} />
+                  </button>
+                ))}
+              </div>
+              {(options.length > 1 || reward) && (
+                <p class="slot-name">
+                  {[options.length > 1 && `uno de ${options.length}`, reward && 'se puede capturar'].filter(Boolean).join(' · ')}
+                </p>
+              )}
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
         <p class="fine">
           Todos son oscuros. Toca uno para ver sus debilidades. Las fuentes no dan la probabilidad de cada alternativa ni sus
           ataques.
         </p>
       </section>
       <div ref={panel} class="rival-panel" role="region" aria-label="Pokémon elegido">
-        <RivalPanel rival={rival} sources={sources} />
+        <RivalPanel rival={rival} sources={sources} filters={filters} />
       </div>
       <Agreement comparison={comparison} sources={sources} now={now} />
     </>
@@ -819,21 +805,30 @@ function GeneralAttackers({ sources }: { sources: Sources }) {
   const tr = sources.translations.data;
   const data = rocketAttackers.data;
   const change = (part: Partial<AttackerFilters>) => {
-    rememberedAttackers = { ...filters, ...part };
+    rememberedAttackers = { ...rememberedAttackers, ...part };
     setFilters(rememberedAttackers);
   };
   const all = useMemo(() => data?.pokemon ?? [], [data]);
   const counts = useMemo(() => [...countRocketTiers(all)], [all]);
+  const tiers = counts.map(([tier]) => tier);
+  const tierCounts = Object.fromEntries(counts) as Record<GymTier, number>;
   const ties = useMemo(() => countScores(all), [all]);
   const groups = useMemo(() => filterRocketAttackers(all, filters, tr), [all, filters, tr]);
   const total = groups.reduce((sum, group) => sum + group.entries.length, 0);
   const key = JSON.stringify(filters);
   return (
     <>
-      <a class="link back" href="#rocket">
-        Team GO Rocket
-      </a>
-      <SourceStatus source={rocketAttackers} />
+      <Pin
+        search={filters.search}
+        groups={[
+          tierGroup(tiers, tierCounts, filters.tier, (tier) => change({ tier })),
+          ...presenceGroups(filters, change),
+          typeGroup('Tipo del ataque cargado', 'Todo ataque', 'Ataque ', filters.type, (type) => change({ type })),
+        ]}
+      >
+        <Back href="#rocket" label="Team GO Rocket" title="Atacantes generales" />
+      </Pin>
+      {!data && <SourceStatus source={rocketAttackers} />}
       {!data ? (
         <Placeholder source={rocketAttackers} />
       ) : (
@@ -851,41 +846,21 @@ function GeneralAttackers({ sources }: { sources: Sources }) {
             <Attribution data={data} />
           </section>
           <div class="filters">
-            <div class="tier-filter rocket-tiers" role="group" aria-label="Tier">
-              <button type="button" aria-pressed={filters.tier === 'all'} onClick={() => change({ tier: 'all' })}>
-                Todos
-              </button>
-              {counts.map(([tier, count]: [GymTier, number]) => (
-                <button key={tier} type="button" aria-pressed={filters.tier === tier} onClick={() => change({ tier })}>
-                  <span class={tierClass(tier)}>
-                    <span class="sr-only">Tier </span>
-                    {tier}
-                  </span>
-                  <small>{count}</small>
-                </button>
-              ))}
-            </div>
+            <TierCells tiers={tiers} counts={tierCounts} value={filters.tier} onChange={(tier) => change({ tier })} />
             <div class="filter-row filter-search">
               <Search value={filters.search} onChange={(search) => change({ search })} />
             </div>
-            <div class="filter-row filter-groups">
-              <TypeSelect
-                label="Tipo del ataque cargado"
-                all="Todo ataque"
-                prefix="Ataque "
-                value={filters.type}
-                onChange={(type) => change({ type })}
-              />
-              <GroupSelects value={filters} onChange={change} />
+            <div class="meta">
+              <SourceStatus source={rocketAttackers} />
+              <p class="result-count" role="status">
+                {total} Pokémon
+                {key !== JSON.stringify(NO_FILTERS) && (
+                  <button class="text-button" type="button" onClick={() => change(NO_FILTERS)}>
+                    Quitar filtros
+                  </button>
+                )}
+              </p>
             </div>
-            <p class="result-count" role="status">
-              {total} Pokémon
-              {key !== JSON.stringify(NO_FILTERS) && (
-                <button class="text-button" type="button" onClick={() => change(NO_FILTERS)}>
-                  Quitar filtros
-                </button>
-              )}
-            </p>
           </div>
           <GeneralMethod data={data} />
           {groups.length === 0 ? (
@@ -910,13 +885,21 @@ export function RocketView({ sources, section }: { sources: Sources; section: st
   opened = section;
   const trainer = rocket.data?.find((candidate) => candidate.key === section);
   if (trainer) return <TrainerDetail key={section} trainer={trainer} sources={sources} now={now} />;
-  if (!rocket.data) return <Placeholder source={rocket} />;
   return (
-    <div class="empty">
-      <p>Este entrenador ya no figura en las alineaciones actuales.</p>
-      <a class="link" href="#rocket">
-        Ver los entrenadores actuales
-      </a>
-    </div>
+    <>
+      <Pin>
+        <Back href="#rocket" label="Team GO Rocket" title="Entrenador" />
+      </Pin>
+      {!rocket.data ? (
+        <Placeholder source={rocket} />
+      ) : (
+        <div class="empty">
+          <p>Este entrenador ya no figura en las alineaciones actuales.</p>
+          <a class="link" href="#rocket">
+            Ver los entrenadores actuales
+          </a>
+        </div>
+      )}
+    </>
   );
 }
