@@ -231,8 +231,11 @@ test.describe('diseño adaptable', () => {
       await page.setViewportSize({ width, height: 800 });
       await network(context);
       await page.goto('/#gimnasios');
-      for (const size of ['16px', '20px', '22px']) {
-        await page.evaluate((value) => (document.documentElement.style.fontSize = value), size);
+      for (const [size, font] of ['16px', '20px', '22px'].flatMap((s) => [[s, ''], [s, 'Verdana, "DejaVu Sans", sans-serif']] as const)) {
+        await page.evaluate(([value, family]) => {
+          document.documentElement.style.fontSize = value;
+          document.body.style.fontFamily = family;
+        }, [size, font] as const);
         const metrics = page.locator('.metrics');
         await expect(metrics.first()).toBeVisible();
         const overlaps = await metrics.evaluateAll((list) =>

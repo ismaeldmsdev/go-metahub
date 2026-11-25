@@ -1449,7 +1449,8 @@ input::placeholder {
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Dos columnas; con la letra ampliada, una debajo de otra en vez de solaparse. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 4.4rem), 1fr));
   gap: 2px 10px;
   margin-top: auto;
   padding-top: 5px;
@@ -1461,6 +1462,7 @@ input::placeholder {
 }
 
 .metrics dt {
+  overflow-wrap: anywhere;
   color: var(--muted);
   font-size: 0.75rem;
   line-height: 1.25;
