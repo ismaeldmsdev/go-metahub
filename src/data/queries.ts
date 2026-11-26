@@ -1,8 +1,9 @@
 import { QueryClient, queryOptions, type Query } from '@tanstack/preact-query';
+import { periodSpan } from '../domain/availability';
 import { raidBoundaries } from '../domain/events';
 import { MINUTE, RETRY_AFTER_ERROR, TTL, type CountersTarget, type FormatTarget, type QueryId } from './config';
 import { SourceError } from './errors';
-import type { CountersData, FormatData, GameEvent, Snapshot } from './models';
+import type { CountersData, FormatData, GameEvent, RaidPeriod, RaidSchedule, Snapshot } from './models';
 import { loadCounters, loadFormat, SOURCES, type SourceData } from './sources';
 
 type AnyQuery = Query<any, any, any, any>;
@@ -13,19 +14,25 @@ export function lifetime(
   updatedAt: number,
   snapshot: Pick<Snapshot<unknown>, 'viaFallback'> | undefined,
   events?: GameEvent[],
+  periods?: RaidPeriod[],
 ): number {
   // Una copia del espejo puede ser antigua: se busca pronto la original.
   if (snapshot?.viaFallback) return RETRY_AFTER_ERROR;
   const ttl = TTL[id];
-  if (id !== 'raids' || !events) return ttl;
-  // Si empieza o termina una rotación anunciada, las incursiones caducan en ese momento.
-  const next = raidBoundaries(events).find((at) => at > updatedAt);
+  if (id !== 'raids' && id !== 'raidSchedule') return ttl;
+  // Si empieza o termina una rotación anunciada o un periodo del calendario, caducan en ese momento.
+  const periodMarks = (periods ?? []).flatMap((p) => {
+    const s = periodSpan(p);
+    return s ? [s.start, s.end] : [];
+  });
+  const next = [...raidBoundaries(events ?? []), ...periodMarks].sort((a, b) => a - b).find((at) => at > updatedAt);
   return next === undefined ? ttl : Math.min(ttl, next - updatedAt);
 }
 
 function queryLifetime(client: QueryClient, id: QueryId, query: AnyQuery): number {
   const events = client.getQueryData<Snapshot<GameEvent[]>>(['events'])?.data;
-  return lifetime(id, query.state.dataUpdatedAt, query.state.data, events);
+  const periods = client.getQueryData<Snapshot<RaidSchedule>>(['raidSchedule'])?.data.periods;
+  return lifetime(id, query.state.dataUpdatedAt, query.state.data, events, periods);
 }
 
 /** Al volver a primer plano no se insiste si acaba de fallar. */

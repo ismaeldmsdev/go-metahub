@@ -199,3 +199,74 @@ export function Placeholder({ source }: { source: Source<unknown> }) {
     </div>
   );
 }
+
+const SOURCE_NAMES: Partial<Record<string, string>> = {
+  raids: 'Lista de jefes',
+  raidSchedule: 'Calendario',
+  events: 'Eventos',
+  pokebattler: 'Pokébattler',
+  counters: 'Counters',
+  pvp: 'PvPoke',
+  gyms: 'Gimnasios',
+  rocket: 'Rocket',
+  rocketAttackers: 'Atacantes',
+  rocketContrast: 'LeekDuck',
+  season: 'Temporada',
+};
+
+/** Avisos que afectan a la fiabilidad, con el nombre de su fuente delante. */
+export function sourceAlerts(sources: Source<unknown>[]): string[] {
+  const alerts: string[] = [];
+  for (const source of sources) {
+    if (source.health.level !== 'warning' && source.health.level !== 'error') continue;
+    for (const message of source.health.messages) alerts.push(`${SOURCE_NAMES[source.id] ?? source.id}: ${message}`);
+  }
+  return alerts;
+}
+
+/**
+ * Un solo acceso a lo técnico: fuentes, fechas, método y botón de actualizar. El rótulo nombra la fuente (atribución
+ * siempre visible). Si algo afecta a la fiabilidad, su aviso breve sustituye al rótulo, se ve siempre y los avisos
+ * relacionados se agrupan en esa línea.
+ */
+export function InfoLine({ label, alerts = [], children }: { label: ComponentChildren; alerts?: string[]; children: ComponentChildren }) {
+  return (
+    <details class={alerts.length > 0 ? 'hm-info is-alert' : 'hm-info'}>
+      <summary>
+        <span class="hm-info-i" aria-hidden="true">
+          {alerts.length > 0 ? '!' : 'i'}
+        </span>
+        <span class="hm-info-text">
+          {alerts.length > 0 ? alerts[0] : label}
+          {alerts.length > 1 && <small> y {alerts.length - 1} aviso{alerts.length > 2 ? 's' : ''} más</small>}
+        </span>
+        <span class="sr-only">: más información</span>
+      </summary>
+      <div class="hm-info-body">
+        {alerts.length > 1 && (
+          <ul class="hm-info-alerts">
+            {alerts.map((alert) => (
+              <li key={alert}>{alert}</li>
+            ))}
+          </ul>
+        )}
+        {children}
+      </div>
+    </details>
+  );
+}
+
+/** Una limitación importante en una línea; el porqué, al desplegarla. */
+export function Caveat({ summary, children }: { summary: ComponentChildren; children: ComponentChildren }) {
+  return (
+    <details class="caveat">
+      <summary>
+        <span class="caveat-i" aria-hidden="true">
+          !
+        </span>
+        <span>{summary}</span>
+      </summary>
+      <div class="caveat-body">{children}</div>
+    </details>
+  );
+}

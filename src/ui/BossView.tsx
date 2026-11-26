@@ -11,14 +11,16 @@ import {
   type RankedCounter,
 } from '../domain/counters';
 import { bossLabel, moveName, pvpLabel, weatherName } from '../domain/names';
+import { statusOf, type BossStatus } from '../domain/availability';
 import { countersLink } from '../domain/raids';
 import { spriteId } from '../domain/sprites';
 import { BossSummary } from './BossSummary';
 import { formatAge, hasKnownCheck } from '../domain/freshness';
-import { External, Loading, Move, MoveLegend, Placeholder, SourceStatus } from './common';
+import { External, InfoLine, Loading, Move, MoveLegend, Placeholder, PokemonName, Rank, sourceAlerts, SourceStatus } from './common';
 import { Back, Pin } from './frame';
 import { useCounters, type Sources } from './hooks';
 import { PokemonImage } from './PokemonImage';
+import { buildBoard } from './RaidBoard';
 import { RankCard } from './RankCard';
 
 const VARIANT_NAMES: Record<CounterVariant, string> = {
@@ -121,17 +123,20 @@ interface PanelProps<V extends string> extends CountersProps {
   filter: (list: Counter[], variant: V) => RankedCounter[];
   card: (counter: RankedCounter) => ComponentChildren;
   explanation: ComponentChildren | ((megaLevel: number | null) => ComponentChildren);
+  /** Si se da, los seis primeros van en fichas compactas y la lista completa con sus cifras queda plegada. */
+  tile?: (counter: RankedCounter) => ComponentChildren;
 }
 
+/** Un equipo de incursión. */
+const TEAM = 6;
+
 export function CountersPanel<V extends string>(props: PanelProps<V>) {
-  const { target, url, now, variants, names, filter, card, explanation, title = 'Mejores counters', back, subject } = props;
+  const { target, url, now, variants, names, filter, card, explanation, title = 'Mejores counters', back, subject, tile } = props;
   const [weather, setWeather] = useState<Weather>('NO_WEATHER');
   const [variant, setVariant] = useState<V>(variants[0]!);
   const counters = useCounters({ ...target, weather });
   const list = counters.data?.list;
   const shown = list ? filter(list, variant) : [];
-  // Sin avisos, el estado va después de la lista: lo primero son los counters.
-  const healthy = list && counters.health.level === 'ok';
   return (
     <>
       <Pin
@@ -154,7 +159,8 @@ export function CountersPanel<V extends string>(props: PanelProps<V>) {
         {back}
       </Pin>
       {subject}
-      <h2>{title}</h2>
+      <h2 class="hm-bar">{title}</h2>
+      {/* Los filtros más usados, a un toque; el clima y lo demás, en «Clima y filtros». */}
       <div class="tier-filter variant-filter" role="group" aria-label="Variante" style={{ '--n': variants.length }}>
         {variants.map((id) => (
           <button key={id} type="button" aria-pressed={variant === id} onClick={() => setVariant(id)}>
@@ -163,63 +169,89 @@ export function CountersPanel<V extends string>(props: PanelProps<V>) {
           </button>
         ))}
       </div>
-            {!healthy && <SourceStatus source={counters} />}
       {!list ? (
         <Placeholder source={counters} />
       ) : (
         <>
-          <p class="note">
-            Datos de <External href={url}>Pokébattler</External>
-            {hasKnownCheck(counters.checkedAt) && `, consultados hace ${formatAge(now - counters.checkedAt)}`}. Orden por
-            Estimator: menos es mejor.
-          </p>
           {shown.length === 0 ? (
             <p class="empty">Ninguno de los {list.length} mejores es de este grupo.</p>
+          ) : tile ? (
+            <>
+              <ol class="top-counters">{shown.slice(0, TEAM).map(tile)}</ol>
+              <details class="rb-all">
+                <summary>Ver {shown.length > TEAM ? `los ${shown.length}` : 'todos'} con sus cifras</summary>
+                <p class="note">Orden por Estimator: menos es mejor.</p>
+                <ol class="ranking">{shown.map(card)}</ol>
+              </details>
+            </>
           ) : (
-            <ol class="ranking">
-              {shown.map(card)}
-            </ol>
+            <ol class="ranking">{shown.map(card)}</ol>
           )}
-          <MoveLegend />
-          {typeof explanation === 'function' ? explanation(counters.data!.megaLevel) : explanation}
-          {healthy && <SourceStatus source={counters} />}
         </>
       )}
+      {/* Lo técnico, en un solo desplegable; la atribución a Pokébattler queda siempre a la vista en su rótulo. */}
+      <InfoLine label="Counters de Pokébattler" alerts={sourceAlerts([counters])}>
+        <p class="note">
+          Datos de <External href={url}>Pokébattler</External>
+          {hasKnownCheck(counters.checkedAt) && `, consultados hace ${formatAge(now - counters.checkedAt)}`}.
+        </p>
+        <MoveLegend />
+        {list && (typeof explanation === 'function' ? explanation(counters.data!.megaLevel) : explanation)}
+        <SourceStatus source={counters} />
+      </InfoLine>
     </>
   );
 }
 
-function Counters(props: CountersProps & { back: ComponentChildren; subject: ComponentChildren }) {
+/** Ficha compacta de los seis primeros: ilustración, nombre y movimientos. Las cifras, en la lista completa. */
+function CounterTile({ counter, sources, species }: { counter: RankedCounter; sources: Sources; species: Species }) {
+  const tr = sources.translations.data;
+  const label = pvpLabel(species, tr);
+  return (
+    <li class={`tc t-${species.types[0] ?? ''}`}>
+      <div class="tc-art">
+        <Rank value={counter.rank} />
+        <PokemonImage
+          id={spriteId(species, sources.sprites.data)}
+          dex={species.dex}
+          type={species.types[0]}
+          shadow={label.shadow}
+          pending={sources.sprites.health.level === 'loading'}
+        />
+      </div>
+      <PokemonName label={label} />
+      <ul class="moves">
+        <Move fast name={moveName(counterMove(counter.fast), tr)} />
+        {counter.charged !== 'MOVE_NONE' && <Move fast={false} name={moveName(counterMove(counter.charged), tr)} />}
+      </ul>
+    </li>
+  );
+}
+
+export function Counters(props: CountersProps & { back: ComponentChildren; subject: ComponentChildren }) {
   const { sources } = props;
+  const species = (counter: RankedCounter) =>
+    counterSpecies(counter.id, sources.pvp.data?.species, sources.translations.data);
   return (
     <CountersPanel
       {...props}
+      title="Qué Pokémon llevar"
       variants={COUNTER_VARIANTS}
       names={VARIANT_NAMES}
       filter={filterCounters}
-      card={(counter) => (
-        <CounterCard
-          key={counter.id}
-          counter={counter}
-          sources={sources}
-          species={counterSpecies(counter.id, sources.pvp.data?.species, sources.translations.data)}
-        />
-      )}
+      card={(counter) => <CounterCard key={counter.id} counter={counter} sources={sources} species={species(counter)} />}
+      tile={(counter) => <CounterTile key={counter.id} counter={counter} sources={sources} species={species(counter)} />}
       explanation={(megaLevel) => <Explanation megaLevel={megaLevel} />}
     />
   );
 }
 
 export function BossView({ boss, sources, now }: { boss: RaidBoss; sources: Sources; now: number }) {
+  const board = buildBoard(sources, now);
+  const status: BossStatus = board ? statusOf(boss, board) : { kind: 'listed' };
   const link = countersLink(boss, sources.pokebattler.data?.raids);
-  const back = (
-    <Back href="#incursiones" label="Todos los jefes" title={bossLabel(boss, sources.translations.data).name} />
-  );
-  const subject = (
-    <article class={`card boss boss-detail t-${boss.types[0] ?? ''}`}>
-      <BossSummary boss={boss} sources={sources} now={now} detail />
-    </article>
-  );
+  const back = <Back href="#incursiones" label="Todos los jefes" title={bossLabel(boss, sources.translations.data).name} />;
+  const subject = <BossSummary boss={boss} sources={sources} status={status} />;
   if (link.target) {
     return <Counters target={link.target} url={link.url} sources={sources} now={now} back={back} subject={subject} />;
   }

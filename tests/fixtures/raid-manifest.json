@@ -1,0 +1,232 @@
+{
+  "generated_at": "2026-11-26T08:01:29Z",
+  "server_timezone": "UTC",
+  "regular_raids": [
+    {
+      "slug": "cresselia-darkrai-mega-banette-november-2026",
+      "title": "Cresselia, Darkrai, and Mega Banette in Raids",
+      "description": "Alolan Meowth, Misdreavus, Galarian Yamask, and Sandygast in 1-star raids; Alolan Marowak, Liepard, and Golurk in 3-star raids; Cresselia and Darkrai in 5-star raids; Mega Banette in Mega raids",
+      "start_date": "2026-11-16 06:00:00 -0800",
+      "end_date": "2026-11-24 10:00:00 -0800",
+      "start_timestamp": 1794837600,
+      "end_timestamp": 1795543200,
+      "local_time": true,
+      "type": "regular",
+      "tags": [],
+      "thumbnail": "https://cdn.leekduck.com/assets/img/pokemon_icons/pm488.icon.png",
+      "file_name": "2026-11-16-cresselia-darkrai-mega-banette-november-2026",
+      "data_path": "2026/2026-11-November/2026-11-16-cresselia-darkrai-mega-banette-november-2026"
+    },
+    {
+      "slug": "twilight-wishes-2026-cresselia-darkrai",
+      "title": "Twilight Wishes (Cresselia and Darkrai)",
+      "description": "Sun Crown and Moon Crown Pikachu in 1-star raids; Day Scarf Espeon and Night Scarf Umbreon in 3-star raids; Cresselia, Darkrai in 5-star raids; Mega Beedrill, Mega Houndoom, Mega Sableye, and Mega Manectric in Mega raids",
+      "start_date": "2026-11-24 10:00:00 -0800",
+      "end_date": "2026-11-25 06:00:00 -0800",
+      "start_timestamp": 1795543200,
+      "end_timestamp": 1795615200,
+      "local_time": true,
+      "type": "regular",
+      "tags": [
+        "Event"
+      ],
+      "thumbnail": "https://cdn.leekduck.com/assets/img/pokemon_icons/pm196.fGOFEST_2024_SSCARF.icon.png",
+      "file_name": "2026-11-24-twilight-wishes-2026-cresselia-darkrai",
+      "data_path": "2026/2026-11-November/2026-11-24-twilight-wishes-2026-cresselia-darkrai"
+    },
+    {
+      "slug": "twilight-wishes-2026-deoxys",
+      "title": "Twilight Wishes (Deoxys)",
+      "description": "Sun Crown and Moon Crown Pikachu in 1-star raids; Day Scarf Espeon and Night Scarf Umbreon in 3-star raids; Deoxys (Normal), Deoxys (Defense), Deoxys (Attack), Deoxys (Speed) in 5-star raids; Mega Beedrill, Mega Houndoom, Mega Sableye, and Mega Manectric in Mega raids",
+      "start_date": "2026-11-25 06:00:00 -0800",
+      "end_date": "2026-11-30 20:00:00 -0800",
+      "start_timestamp": 1795615200,
+      "end_timestamp": 1796097600,
+      "local_time": true,
+      "type": "regular",
+      "tags": [
+        "Event"
+      ],
+      "thumbnail": "https://cdn.leekduck.com/assets/img/pokemon_icons/pm197.fGOFEST_2024_MSCARF.icon.png",
+      "file_name": "2026-11-25-twilight-wishes-2026-deoxys",
+      "data_path": "2026/2026-11-November/2026-11-25-twilight-wishes-2026-deoxys"
+    },
+    {
+      "slug": "clefable-super-mega-raid-day-2026",
+      "title": "Clefable Super Mega Raid Day",
+      "description": "Mega Clefable in Super Mega Raids",
+      "start_date": "2026-11-28 14:00:00 -0800",
+      "end_date": "2026-11-28 17:00:00 -0800",
+      "start_timestamp": 1795903200,
+      "end_timestamp": 1795914000,
+      "local_time": true,
+      "type": "regular",
+      "tags": [
+        "Raid Day"
+      ],
+      "thumbnail": "https://cdn.leekduck.com/assets/img/pokemon_icons/pm36.fMEGA.icon.png",
+      "file_name": "2026-11-28-clefable-super-mega-raid-day-2026",
+      "data_path": "2026/2026-11-November/2026-11-28-clefable-super-mega-raid-day-2026"
+    },
+    {
+      "slug": "tropical-paradise-2026",
+      "title": "Tropical Paradise 2026",
+      "description": "Alolan Diglett, Frillish, and Sandygast in 1-star raids; Pyukumuku in 3-star raids",
+      "start_date": "2026-12-01 10:00:00 -0800",
+      "end_date": "2026-12-02 06:00:00 -0800",
+      "start_timestamp": 1796148000,
+      "end_timestamp": 1796220000,
+      "local_time": true,
+      "type": "regular",
+      "tags": [
+        "Event"
+      ],
+      "thumbnail": "https://cdn.leekduck.com/assets/img/pokemon_icons/pm771.icon.png",
+      "file_name": "2026-12-01-tropical-paradise-2026",
+      "data_path": "2026/2026-12-December/2026-12-01-tropical-paradise-2026"
+    },
+    {
+      "slug": "tropical-paradise-2026-regidrago",
+      "title": "Tropical Paradise 2026 (Regidrago)",
+      "description": "Alolan Diglett, Frillish, and Sandygast in 1-star raids; Pyukumuku in 3-star raids; Regidrago in 5-star raids; Mega Slowbro in Mega raids",
+      "start_date": "2026-12-02 06:00:00 -0800",
+      "end_date": "2026-12-07 20:00:00 -0800",
+      "start_timestamp": 1796220000,
+      "end_timestamp": 1796702400,
+      "local_time": true,
+      "type": "regular",
+      "tags": [
+        "Event"
+      ],
+      "thumbnail": "https://cdn.leekduck.com/assets/img/pokemon_icons/pm771.icon.png",
+      "file_name": "2026-12-02-tropical-paradise-2026-regidrago",
+      "data_path": "2026/2026-12-December/2026-12-02-tropical-paradise-2026-regidrago"
+    },
+    {
+      "slug": "pokemon-champions-celebration-event-2026-regidrago",
+      "title": "Pokémon Champions Celebration Event 2026 (Regidrago)",
+      "description": "Bagon, Litten, and Frigibax in 1-star raids; Raichu, Garchomp, and Rillaboom in 3-star raids; Regidrago in 5-star raids; Mega Slowbro in Mega raids",
+      "start_date": "2026-12-08 10:00:00 -0800",
+      "end_date": "2026-12-09 06:00:00 -0800",
+      "start_timestamp": 1796752800,
+      "end_timestamp": 1796824800,
+      "local_time": true,
+      "type": "regular",
+      "tags": [
+        "Event"
+      ],
+      "thumbnail": "https://cdn.leekduck.com/assets/img/pokemon_icons/pm812.icon.png",
+      "file_name": "2026-12-08-pokemon-champions-celebration-event-2026-regidrago",
+      "data_path": "2026/2026-12-December/2026-12-08-pokemon-champions-celebration-event-2026-regidrago"
+    },
+    {
+      "slug": "pokemon-champions-celebration-event-2026-legendaries",
+      "title": "Pokémon Champions Celebration Event 2026 (Legendary Rotation)",
+      "description": "Bagon, Litten, and Frigibax in 1-star raids; Raichu, Garchomp, and Rillaboom in 3-star raids; Latias, Latios, Heatran, Cobalion, Terrakion, Virizion, Regieleki, and Regidrago in 5-star raids; Mega Gengar in Mega raids",
+      "start_date": "2026-12-09 06:00:00 -0800",
+      "end_date": "2026-12-14 20:00:00 -0800",
+      "start_timestamp": 1796824800,
+      "end_timestamp": 1797307200,
+      "local_time": true,
+      "type": "regular",
+      "tags": [
+        "Event"
+      ],
+      "thumbnail": "https://cdn.leekduck.com/assets/img/pokemon_icons/pm812.icon.png",
+      "file_name": "2026-12-09-pokemon-champions-celebration-event-2026-legendaries",
+      "data_path": "2026/2026-12-December/2026-12-09-pokemon-champions-celebration-event-2026-legendaries"
+    },
+    {
+      "slug": "legendary-rotation-mega-gengar-december-2026",
+      "title": "Legendary Rotation and Mega Gengar in Raids",
+      "description": "Latias, Latios, Heatran, Cobalion, Terrakion, Virizion, Regieleki, and Regidrago in 5-star raids; Mega Gengar in Mega raids",
+      "start_date": "2026-12-14 20:00:00 -0800",
+      "end_date": "2026-12-15 22:00:00 -0800",
+      "start_timestamp": 1797307200,
+      "end_timestamp": 1797400800,
+      "local_time": true,
+      "type": "regular",
+      "tags": [],
+      "thumbnail": "https://cdn.leekduck.com/assets/img/pokemon_icons/pm380.icon.png",
+      "file_name": "2026-12-14-legendary-rotation-mega-gengar-december-2026",
+      "data_path": "2026/2026-12-December/2026-12-14-legendary-rotation-mega-gengar-december-2026"
+    },
+    {
+      "slug": "ho-oh-mega-skarmory-december-2026",
+      "title": "Ho-Oh and Mega Skarmory in Raids",
+      "description": "Ho-Oh in 5-star raids; Mega Skarmory in Mega raids",
+      "start_date": "2026-12-16 06:00:00 -0800",
+      "end_date": "2026-12-22 22:00:00 -0800",
+      "start_timestamp": 1797429600,
+      "end_timestamp": 1798005600,
+      "local_time": true,
+      "type": "regular",
+      "tags": [],
+      "thumbnail": "https://cdn.leekduck.com/assets/img/pokemon_icons/pm250.icon.png",
+      "file_name": "2026-12-16-ho-oh-mega-skarmory-december-2026",
+      "data_path": "2026/2026-12-December/2026-12-16-ho-oh-mega-skarmory-december-2026"
+    },
+    {
+      "slug": "lugia-mega-glalie-december-2026",
+      "title": "Lugia and Mega Glalie in Raids",
+      "description": "Lugia in 5-star raids; Mega Glalie in Mega raids",
+      "start_date": "2026-12-23 06:00:00 -0800",
+      "end_date": "2026-12-29 22:00:00 -0800",
+      "start_timestamp": 1798034400,
+      "end_timestamp": 1798610400,
+      "local_time": true,
+      "type": "regular",
+      "tags": [],
+      "thumbnail": "https://cdn.leekduck.com/assets/img/pokemon_icons/pm249.icon.png",
+      "file_name": "2026-12-23-lugia-mega-glalie-december-2026",
+      "data_path": "2026/2026-12-December/2026-12-23-lugia-mega-glalie-december-2026"
+    },
+    {
+      "slug": "therian-formes-mega-falinks-december-2026",
+      "title": "Tornadus, Thundurus, and Landorus (Therian Formes) and Mega Falinks in Raids",
+      "description": "Tornadus (Therian Forme), Thundurus (Therian Forme), and Landorus (Therian Forme) in 5-star raids; Mega Falinks in Mega raids",
+      "start_date": "2026-12-30 06:00:00 -0800",
+      "end_date": "2027-01-05 22:00:00 -0800",
+      "start_timestamp": 1798639200,
+      "end_timestamp": 1799215200,
+      "local_time": true,
+      "type": "regular",
+      "tags": [],
+      "thumbnail": "https://cdn.leekduck.com/assets/img/pokemon_icons/pm645.fTHERIAN.icon.png",
+      "file_name": "2026-12-30-therian-formes-mega-falinks-december-2026",
+      "data_path": "2026/2026-12-December/2026-12-30-therian-formes-mega-falinks-december-2026"
+    }
+  ],
+  "shadow_raids": [
+    {
+      "slug": "shadow-tornadus-incarnate-november-december-2026",
+      "title": "Shadow Tornadus (Incarnate Forme) November–December 2026",
+      "description": "Shadow Larvitar, Shadow Mudkip, Shadow Makuhita, and Shadow Cranidos in 1-star Shadow Raids; Shadow Poliwhirl, Shadow Piloswine, and Shadow Prinplup in 3-star Shadow Raids; Shadow Tornadus (Incarnate Forme) in 5-star Shadow Raids",
+      "start_date": "2026-11-16 06:00:00 -0800",
+      "end_date": "2026-12-01 20:00:00 -0800",
+      "start_timestamp": 1794837600,
+      "end_timestamp": 1796184000,
+      "local_time": true,
+      "type": "shadow",
+      "tags": [],
+      "thumbnail": "https://cdn.leekduck.com/assets/img/pokemon_icons/pm641.fINCARNATE.icon.png",
+      "file_name": "2026-11-16-shadow-tornadus-incarnate-november-december-2026",
+      "data_path": "2026/2026-11-November/2026-11-16-shadow-tornadus-incarnate-november-december-2026"
+    },
+    {
+      "slug": "shadow-dialga-december-2026-january-2027",
+      "title": "Shadow Dialga December 2026–January 2027",
+      "description": "Shadow Dialga in 5-star Shadow Raids",
+      "start_date": "2026-12-02 06:00:00 -0800",
+      "end_date": "2027-01-05 22:00:00 -0800",
+      "start_timestamp": 1796220000,
+      "end_timestamp": 1799215200,
+      "local_time": true,
+      "type": "shadow",
+      "tags": [],
+      "thumbnail": "https://cdn.leekduck.com/assets/img/pokemon_icons/pm483.icon.png",
+      "file_name": "2026-12-02-shadow-dialga-december-2026-january-2027",
+      "data_path": "2026/2026-12-December/2026-12-02-shadow-dialga-december-2026-january-2027"
+    }
+  ]
+}

@@ -1,67 +1,28 @@
 import type { RaidBoss } from '../data/models';
-import { formatDate } from '../domain/freshness';
+import type { BossStatus } from '../domain/availability';
 import { bossLabel, weatherName } from '../domain/names';
-import { bossSlug, raidValidity, type Validity } from '../domain/raids';
-import { Picture, PokemonName, TypeTag, Weaknesses } from './common';
+import { Picture } from './common';
 import type { Sources } from './hooks';
+import { StatusNote } from './RaidBoard';
+import { BossHero } from './RaidStyles';
 
-function ValidityNote({ validity }: { validity: Validity }) {
-  switch (validity.kind) {
-    case 'announced':
-      return <p class="validity ok">Rotación anunciada hasta el {formatDate(validity.end)}</p>;
-    case 'upcoming':
-      return <p class="validity warn">Anunciado a partir del {formatDate(validity.start)}. Puede no estar activo.</p>;
-    case 'expired':
-      return <p class="validity warn">Su rotación terminó el {formatDate(validity.end)}. Probablemente ya no esté.</p>;
-    case 'unknown':
-      return <p class="validity">Vigencia sin confirmar</p>;
-  }
-}
-
-interface BossProps {
-  boss: RaidBoss;
-  sources: Sources;
-  now: number;
-  /** Con los counters a la vista se sustituyen los PC por las debilidades. */
-  detail?: boolean;
-}
-
-export function BossSummary({ boss, sources, now, detail = false }: BossProps) {
+/** Ficha de un jefe de la lista de LeekDuck. */
+export function BossSummary({ boss, sources, status }: { boss: RaidBoss; sources: Sources; status: BossStatus }) {
+  const weather = boss.weather.length > 0 ? boss.weather.map(weatherName).join(' o ') : 'clima favorable';
   return (
-    <>
-      <div class="boss-body">
-        <PokemonName label={bossLabel(boss, sources.translations.data)} />
-        <div class="types">
-          {boss.types.map((type) => (
-            <TypeTag key={type} type={type} />
-          ))}
-          {boss.shiny && <span class="chip chip-shiny">✦ Variocolor posible</span>}
-        </div>
-        {detail && <Weaknesses types={boss.types} />}
-        {!detail && (
-          <dl class="cp">
-            <div>
-              <dt>PC</dt>
-              <dd>{boss.cp ? `${boss.cp.min}–${boss.cp.max}` : 'no indicado'}</dd>
-            </div>
-            {boss.boostedCp && (
-              <div>
-                <dt>Con {boss.weather.length > 0 ? boss.weather.map(weatherName).join(' o ') : 'clima favorable'}</dt>
-                <dd>{`${boss.boostedCp.min}–${boss.boostedCp.max}`}</dd>
-              </div>
-            )}
-          </dl>
-        )}
-        <ValidityNote validity={raidValidity(boss, sources.events.data, now)} />
-      </div>
-      <div class="boss-side">
-        <Picture src={boss.image} className="boss-image" />
-        {!detail && (
-          <a class="link boss-open" href={`#incursiones/${bossSlug(boss)}`}>
-            <span class="sr-only">Ver mejores </span>Counters
-          </a>
-        )}
-      </div>
-    </>
+    <BossHero
+      label={bossLabel(boss, sources.translations.data)}
+      types={boss.types}
+      tier={boss.tier}
+      shadow={boss.shadow}
+      shiny={boss.shiny}
+      figure={<Picture src={boss.image} className="rb-hero-img" />}
+      status={<StatusNote status={status} />}
+      cp={{
+        normal: boss.cp ? `${boss.cp.min}–${boss.cp.max}` : 'no indicado',
+        boosted: boss.boostedCp ? `${boss.boostedCp.min}–${boss.boostedCp.max}` : null,
+        weather: `Con ${weather}`,
+      }}
+    />
   );
 }

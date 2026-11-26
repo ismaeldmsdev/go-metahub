@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { GameEvent, RaidBoss } from '../../src/data/models';
+import type { RaidBoss } from '../../src/data/models';
 import { parseGamemaster, toEvents, toPokebattlerBosses, toRaids, toRanking, toTranslations, usedMoves } from '../../src/data/transform';
 import { bossLabel, moveName, pvpLabel } from '../../src/domain/names';
-import { countersLink, groupRaids, raidValidity } from '../../src/domain/raids';
-import { fixtures, NOW } from '../fixtures';
+import { countersLink, groupRaids, rotationIncludes } from '../../src/domain/raids';
+import { fixtures } from '../fixtures';
 
 const tr = toTranslations(fixtures.en(), fixtures.es());
 const raids = toRaids(fixtures.raids()).data;
@@ -77,29 +77,20 @@ describe('incursiones por nivel', () => {
   });
 });
 
-describe('vigencia de las rotaciones', () => {
-  it('solo la respalda un evento que nombra al jefe', () => {
-    expect(raidValidity(boss('Cresselia'), events, NOW)).toMatchObject({ kind: 'announced', end: Date.parse('2026-11-24T21:00:00Z') });
-    expect(raidValidity(boss('Mega Banette'), events, NOW).kind).toBe('announced');
-    expect(raidValidity(boss('Shadow Tornadus (Incarnate)'), events, NOW).kind).toBe('announced');
-    expect(raidValidity(boss('Liepard'), events, NOW)).toEqual({ kind: 'unknown' });
-    expect(raidValidity(boss('Shadow Larvitar'), events, NOW)).toEqual({ kind: 'unknown' });
-  });
+describe('rotaciones que nombran a un jefe', () => {
+  const rotation = (id: string) => events.find((e) => e.id === id)!;
+  const cresselia = rotation('cresselia-darkrai-in-5-star-raid-battles-november-2026');
+  const tornadus = rotation('shadow-tornadus-incarnate-forme-in-shadow-raids-november-16-2026');
 
-  it('avisa si la rotación anunciada ya terminó o aún no ha empezado', () => {
-    expect(raidValidity(boss('Cresselia'), events, Date.parse('2026-11-25T00:00:00Z')).kind).toBe('expired');
-    expect(raidValidity(fake('Deoxys (Attack)'), events, NOW).kind).toBe('upcoming');
+  it('solo cuenta el jefe exacto que nombra el evento', () => {
+    expect(rotationIncludes(cresselia, boss('Cresselia'))).toBe(true);
+    expect(rotationIncludes(tornadus, boss('Shadow Tornadus (Incarnate)'))).toBe(true);
+    expect(rotationIncludes(cresselia, boss('Liepard'))).toBe(false);
   });
 
   it('no confunde un jefe normal con su versión oscura', () => {
-    expect(raidValidity(fake('Shadow Cresselia'), events, NOW).kind).toBe('unknown');
-    expect(raidValidity(fake('Tornadus (Incarnate)'), events, NOW).kind).toBe('unknown');
-  });
-
-  it('sin eventos o con rotación sin fechas, queda sin confirmar', () => {
-    expect(raidValidity(boss('Cresselia'), undefined, NOW).kind).toBe('unknown');
-    const undated: GameEvent[] = events.map((e) => ({ ...e, start: null, end: null }));
-    expect(raidValidity(boss('Cresselia'), undated, NOW).kind).toBe('unknown');
+    expect(rotationIncludes(cresselia, fake('Shadow Cresselia'))).toBe(false);
+    expect(rotationIncludes(tornadus, fake('Tornadus (Incarnate)'))).toBe(false);
   });
 });
 

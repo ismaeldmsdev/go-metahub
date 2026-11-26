@@ -5,7 +5,7 @@ import { moveName, pvpLabel } from '../domain/names';
 import { spriteId, type SpriteIndex } from '../domain/sprites';
 import { countTiers, filterPvp, type PvpFilters, type TierGroup } from '../domain/pvp';
 import { tierOf, TIER_MIN, TIERS, VARIANTS, type Tier, type Variant } from '../domain/tiers';
-import { External, Move, MoveLegend, Placeholder, SourceStatus } from './common';
+import { External, InfoLine, Move, MoveLegend, Placeholder, sourceAlerts, SourceStatus } from './common';
 import { Head, Pin } from './frame';
 import { Search, TierCells, tierGroup } from './GymsView';
 import type { Sources } from './hooks';
@@ -169,7 +169,12 @@ function LeaguesView({ sources, initial }: { sources: Sources; initial: League |
         <Search value={search} onChange={(value) => change({ search: value })} />
       </Pin>
       <div class="meta">
-        <SourceStatus source={pvp} />
+        <InfoLine label="Rankings de PvPoke" alerts={sourceAlerts([pvp])}>
+          <p>
+            Puesto, puntuación y movimientos de <External href="https://pvpoke.com">PvPoke</External>, sin recalcular.
+          </p>
+          <SourceStatus source={pvp} />
+        </InfoLine>
         {counts && (
           <p class="result-count" role="status">
             {total} Pokémon
@@ -195,10 +200,7 @@ function LeaguesView({ sources, initial }: { sources: Sources; initial: League |
           <TierCells tiers={TIERS} counts={counts} value={tier} onChange={(id) => change({ tier: id })} />
           <details class="method">
             <summary>Cómo se forman los tiers</summary>
-            <p>
-              Son categorías propias de esta aplicación, no oficiales de <External href="https://pvpoke.com">PvPoke</External>.
-              El puesto, la puntuación y los movimientos son los originales de PvPoke, sin recalcular.
-            </p>
+            <p>Son categorías propias de esta aplicación, no oficiales de PvPoke.</p>
             <ul>
               {TIERS.map((id) => (
                 <li key={id}>

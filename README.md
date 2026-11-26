@@ -11,8 +11,9 @@ el móvil, que se mantiene al día consultando fuentes de la comunidad.
 
 - **PvP:** clasificaciones completas de Liga Super, Ultra y Máster, con tiers, movimientos, buscador y filtros; rankings
   propios de las ligas Mega y de las copas, con calendario y restricciones.
-- **Incursiones:** jefes listados actualmente, PC, tipos, vigencia conocida y debilidades. Al abrir un jefe, sus mejores
-  counters con movimientos, Estimator, eDPS y TDO. Atacantes por cada uno de los 18 tipos.
+- **Incursiones:** qué hay **ahora** (con su fecha de fin), lo **próximo** y lo anunciado sin confirmar; PC, tipos y
+  debilidades. Al abrir un jefe, sus mejores counters con movimientos, Estimator, eDPS y TDO. Atacantes por cada uno de los
+  18 tipos.
 - **Combates Max:** jefes con fecha anunciada, catálogo sin fecha, counters por jefe, fichas con estadísticas base y enlaces
   por papel.
 - **Gimnasios:** atacantes con el tier, el percentil y los movimientos que publica doctorpokegogo, con filtros; y
@@ -51,6 +52,23 @@ C desde 70. El puesto, la puntuación y los movimientos son los de PvPoke, sin r
   ataque: **no es un ranking completo**. Sin puestos; por el percentil de la fuente. Se enlaza a listas externas completas.
 - `npm run incursiones` genera [`public/data/incursiones.json`](public/data/incursiones.json) (unos 50 KB comprimido), en la
   misma tarea diaria que los de Rocket.
+
+## Qué incursiones hay ahora
+
+- Se cruzan la lista de jefes de LeekDuck (vía ScrapedDuck, sin fechas), su [calendario de incursiones](https://leekduck.com/raids/manifest.json)
+  con hora local y los jefes del periodo en curso, y las rotaciones de cada jefe con el resumen de su página.
+- **Ahora** solo incluye lo que respalda una rotación o el periodo en curso, con su fecha de fin. Lo que solo está en la
+  lista queda como «sin fecha de fin».
+- Si el anuncio dice expresamente «every weekend», solo se muestra disponible el sábado y el domingo (hora peninsular).
+  No se suponen otras condiciones; si el texto limita los días de otra forma, se avisa sin confirmar.
+- Lo que una rotación anuncia y no está en la lista va aparte, «Anunciado, sin confirmar», con el motivo. Si la lista es
+  anterior a un cambio del calendario, lo que ya nada respalda pasa a «Puede que ya no estén».
+- Sin calendario, nada que dependa de una rotación se confirma. Con la lista sin comprobar más de 12 horas, se conserva
+  sin darla por confirmada.
+- Las páginas de LeekDuck se leen desde el dispositivo (admiten CORS): como máximo 4 periodos y 12 eventos cada 6 horas o
+  en cada cambio de periodo. Sus fechas sustituyen a las de ScrapedDuck cuando este las pierde.
+- Los disfraces (por ejemplo, «Pikachu con corona de sol») llevan su nombre oficial en español solo si está en la tabla de
+  [`names.ts`](src/domain/names.ts), tomada del anuncio oficial; si no, se muestra el original.
 
 ## Combates Max
 
@@ -100,6 +118,7 @@ C desde 70. El puesto, la puntuación y los movimientos son los de PvPoke, sin r
 |---|---|---|
 | Clasificaciones PvP, copas y estadísticas base | [PvPoke](https://github.com/pvpoke/pvpoke) | MIT, © 2019 pvpoke |
 | Incursiones, eventos y calendario PvP | [LeekDuck](https://leekduck.com), a través de [ScrapedDuck](https://github.com/bigfoott/ScrapedDuck) | Sin anuncios ni pago, con atribución |
+| Calendario de incursiones y páginas de eventos | [LeekDuck](https://leekduck.com/raid-bosses/), leído desde el dispositivo | Sin anuncios ni pago, con atribución |
 | Counters de incursiones y Max, catálogo Max | [Pokébattler](https://www.pokebattler.com/developers) | API pública: con atribución, caché y uso ocasional |
 | Gimnasios e incursiones por tipo | [doctorpokegogo.com](https://doctorpokegogo.com/) | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); datos transformados y resumidos por GO MetaHub |
 | Alineaciones de Rocket | [WatWowMap/event-info](https://github.com/WatWowMap/event-info) | [MIT](https://github.com/WatWowMap/event-info/blob/main/LICENSE), © 2022 WatWowMap |

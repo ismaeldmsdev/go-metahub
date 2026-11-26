@@ -70,5 +70,5 @@ export async function pick(page: Page, ...choices: [group: string, option: strin
 
 export const ALL_SOURCES = [
   'pvp', 'raids', 'events', 'translations', 'pokebattler', 'sprites', 'gyms', 'rocket', 'rocketContrast', 'rocketAttackers',
-  'season', 'raidTypes',
+  'season', 'raidTypes', 'raidSchedule',
 ];

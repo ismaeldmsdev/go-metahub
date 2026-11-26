@@ -70,6 +70,12 @@ const INFO: Record<SourceId, { title: string; credit: string; url: string; note:
     url: 'https://doctorpokegogo.com/',
     note: 'Evaluación general, CC BY 4.0. Resumen transformado por GO MetaHub; los originales se publican de forma irregular.',
   },
+  raidSchedule: {
+    title: 'Calendario de incursiones',
+    credit: 'LeekDuck',
+    url: 'https://leekduck.com/raid-bosses/',
+    note: 'Periodos con hora local, los jefes del periodo en curso y el resumen y las fechas de cada rotación cercana. Sirve para confirmar qué hay ahora: sin él, nada se da por confirmado.',
+  },
   pokebattler: {
     title: 'Counters y catálogo Max',
     credit: 'Pokébattler',
@@ -82,6 +88,7 @@ const ORDER: SourceId[] = [
   'pvp',
   'season',
   'raids',
+  'raidSchedule',
   'raidTypes',
   'gyms',
   'events',

@@ -45,9 +45,11 @@ test.describe('atacantes de gimnasio', () => {
   test('S+ y los empates no parecen un puesto', async ({ page, context }) => {
     await network(context);
     await open(page);
-    const explain = page.getByRole('region', { name: 'Cómo elegir' });
+    // La limitación, en una línea a la vista; el ejemplo, al desplegarla.
+    const explain = page.locator('.caveat', { hasText: 'S+ no es el mejor contra todo' });
     await expect(explain).toBeInViewport({ ratio: 1 });
-    for (const text of ['S+ no significa el mejor contra cualquiera', 'depende del tipo', 'No hay un único ganador']) {
+    await explain.locator('summary').click();
+    for (const text of ['depende del defensor', 'contra Blissey', 'No hay un único ganador']) {
       await expect(explain).toContainText(text);
     }
     const tie = page.getByRole('region', { name: 'Empate en el percentil 99,6' });
@@ -63,7 +65,7 @@ test.describe('atacantes de gimnasio', () => {
     await network(context);
     await open(page);
     await pick(page, ['Tipo del ataque cargado', 'Veneno']);
-    await expect(page.locator('.filters')).toContainText('No es una lista completa');
+    await expect(page.locator('.filters .caveat summary')).toContainText('Lista incompleta para el tipo Veneno');
     await expect(page.locator('.filters')).toContainText('Tampoco filtra por el tipo del defensor');
     await expect(page.getByRole('group', { name: 'Filtros activos' })).toHaveText('Ataque Veneno');
     const used = await page.locator('.rank-card .metrics div:last-child dd').allTextContents();
@@ -122,8 +124,9 @@ test.describe('defensores de gimnasio', () => {
   test('explica el cálculo a la vista y no muestra tiers ni movimientos', async ({ page, context }) => {
     await network(context);
     await open(page, 'gimnasios/defensores');
-    const explain = page.getByRole('region', { name: 'Cómo se calcula' });
+    const explain = page.locator('.caveat', { hasText: 'no una simulación' });
     await expect(explain).toBeInViewport({ ratio: 1 });
+    await explain.locator('summary').click();
     for (const text of ['defensa base × aguante base', 'no una simulación', 'movimientos', 'motivación', 'enfrentamientos']) {
       await expect(explain).toContainText(text);
     }
@@ -172,7 +175,7 @@ test('con los datos que se van a publicar, funcionan Gimnasios y las demás secc
   await expect(page.locator('.attribution')).toContainText('CC BY 4.0');
   await page.getByRole('button', { name: 'Defensores' }).click();
   await expect(page.locator('.result-count')).toHaveText(total((p) => p.bulk !== null));
-  for (const [tab, item] of [['PvP', '.rank-card'], ['Incursiones', '.boss'], ['Eventos', '.event'], ['Fuentes', '.source']] as const) {
+  for (const [tab, item] of [['PvP', '.rank-card'], ['Incursiones', '.rb-boss'], ['Eventos', '.event'], ['Fuentes', '.source']] as const) {
     await page.getByRole(tab === 'Fuentes' ? 'banner' : 'navigation').getByRole('link', { name: tab }).click();
     await expect(page.locator(item).first()).toBeVisible();
   }

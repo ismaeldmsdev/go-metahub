@@ -85,6 +85,22 @@ const featured = z.object({
   canBeShiny: z.boolean().optional(),
 });
 
+/** Calendario de incursiones de LeekDuck. Fechas «2026-11-25 06:00:00 -0800»: con local_time, el desfase no cuenta. */
+export const manifestPeriod = z.object({
+  slug: z.string().regex(/^[a-z0-9-]+$/),
+  title: z.string().min(1),
+  start_date: z.string().regex(/^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d(?: [+-]\d{4})?$/),
+  end_date: z.string().regex(/^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d(?: [+-]\d{4})?$/),
+  local_time: z.boolean(),
+  tags: z.array(z.string()).catch([]),
+});
+
+export const raidManifest = z.object({
+  generated_at: z.iso.datetime(),
+  regular_raids: z.array(z.unknown()),
+  shadow_raids: z.array(z.unknown()),
+});
+
 export const rawEvent = z.object({
   eventID: z.string().min(1),
   name: z.string().min(1),

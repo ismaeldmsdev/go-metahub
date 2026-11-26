@@ -35,6 +35,14 @@ export function formatAge(ms: number): string {
 export const formatDate = (ms: number): string =>
   DateTime.fromMillis(ms, { zone: ZONE, locale: 'es' }).toFormat("d LLL yyyy, HH:mm");
 
+/** «lun 30 nov, 20:00»: para fechas cercanas, en hora peninsular. */
+export const formatShort = (ms: number): string =>
+  DateTime.fromMillis(ms, { zone: ZONE, locale: 'es' }).toFormat("ccc d LLL, HH:mm");
+
+/** «sáb 28 nov». */
+export const formatDay = (ms: number): string =>
+  DateTime.fromMillis(ms, { zone: ZONE, locale: 'es' }).toFormat("ccc d LLL");
+
 /** checkedAt = 1 significa que la fecha guardada no era creíble. */
 export const hasKnownCheck = (checkedAt: number): boolean => checkedAt > HOUR;
 

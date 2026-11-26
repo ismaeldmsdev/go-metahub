@@ -1,20 +1,30 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
+import { NOW } from '../fixtures';
 import { network, pick } from './network';
 
 const LISTS = ['pvp', 'pvp/mega', 'gimnasios', 'gimnasios/defensores', 'incursiones/cresselia', 'incursiones/tipo-ghost', 'incursiones/max-pokemon', 'rocket/atacantes'];
 
+const clocked = new WeakSet<Page>();
 const open = async (page: Page, hash: string, item = '.rank-card') => {
+  // A la fecha de los datos: lo que se ve en Incursiones depende de la hora.
+  if (!clocked.has(page)) await page.clock.install({ time: NOW });
+  clocked.add(page);
   await page.goto(`/#${hash}`);
+  // En la ficha de un jefe de incursión, la lista completa está plegada bajo los seis primeros: se despliega.
+  if (/^incursiones\/[a-z]+$/.test(hash) && hash !== 'incursiones/tipos' && hash !== 'incursiones/max') {
+    await expect(page.locator('.top-counters > li').first()).toBeVisible();
+    await page.locator('details.rb-all').evaluate((d) => ((d as HTMLDetailsElement).open = true));
+  }
   await expect(page.locator(item).first()).toBeVisible();
 };
 
 test.describe('cabecera al desplazarse', () => {
   for (const [hash, item] of [
     ['pvp', '.rank-card'],
-    ['incursiones', '.boss'],
-    ['incursiones/cresselia', '.rank-card'],
+    ['incursiones', '.rb-boss'],
+    ['incursiones/cresselia', '.tc'],
     ['rocket/reclutas', '.trainer'],
     ['gimnasios', '.rank-card'],
   ] as const) {

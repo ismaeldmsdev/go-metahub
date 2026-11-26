@@ -2598,3 +2598,1662 @@ article.trainer,
     transition: none !important;
   }
 }
+
+/* ---- Incursiones: disponibilidad (Ahora, Próximamente) ---- */
+.group-shadow h3 {
+  color: var(--shadow-tint);
+}
+
+.main .section-title {
+  margin-top: 10px;
+  font-size: 1.3rem;
+}
+
+.next-change {
+  justify-self: start;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.upcoming {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.upcoming-image {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.upcoming-title {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+a.upcoming-title {
+  color: inherit;
+}
+
+.upcoming-doubt {
+  border-style: dashed;
+}
+
+.doubt summary,
+.gone > summary,
+.method summary {
+  cursor: pointer;
+}
+
+.doubt p,
+.method p {
+  margin-top: 6px;
+}
+
+.gone > summary {
+  font-weight: 700;
+  font-size: 1.02rem;
+}
+
+.gone > .grid {
+  margin-top: 9px;
+}
+
+.method {
+  margin-top: 8px;
+}
+
+/* ==========================================================================
+   Lenguaje visual B+A: Pokémon HOME (fondos menta y turquesa, cajas, placas, selección naranja)
+   con elementos de Pokémon GO (plataforma circular y retratos de equipo).
+   ========================================================================== */
+
+/* Pestañas de la sección */
+.rb-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3px;
+  margin-top: 4px;
+  padding: 4px;
+  border-radius: 16px;
+  background: var(--raised);
+}
+
+.rb-tabs a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0 6px;
+  min-height: 42px;
+  padding: 2px 4px;
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: min(0.9rem, 3.8vw);
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  text-decoration: none;
+}
+
+.rb-tabs a[aria-current] {
+  background: var(--card);
+  box-shadow: 0 2px 0 rgb(0 0 0 / 6%);
+  color: var(--text);
+}
+
+.rb-tabs small {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--muted) 16%, transparent);
+  font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.rb-tabs a[aria-current] small {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.rb-when {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.rb-flag {
+  justify-self: start;
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.rb-flag-ok {
+  background: color-mix(in srgb, var(--ok) 14%, var(--card));
+  color: var(--ok);
+}
+
+/* Los seis mejores */
+.top-counters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 156px), 1fr));
+  gap: 10px;
+}
+
+.tc {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  min-width: 0;
+  padding: 0 11px 11px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: 0 2px 0 rgb(0 0 0 / 6%);
+}
+
+.tc-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 96px;
+  margin: 0 -11px 2px;
+  background:
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--t, var(--muted)) 10%, var(--stage)) 0 36%, transparent 37%),
+    linear-gradient(180deg, color-mix(in srgb, var(--t, var(--muted)) 24%, var(--card)), color-mix(in srgb, var(--t, var(--muted)) 8%, var(--card)));
+}
+
+.tc-art .pk {
+  width: 84px;
+  height: 84px;
+}
+
+.tc-art .rank {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  z-index: 1;
+  min-width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--card);
+  font-size: 0.86rem;
+}
+
+.tc-art .rank-1,
+.tc-art .rank-2,
+.tc-art .rank-3 {
+  background: linear-gradient(140deg, #ffe9a8, #f7b21c);
+}
+
+.tc-art .rank-2 {
+  background: linear-gradient(140deg, #f2f5fb, #b3bccf);
+}
+
+.tc-art .rank-3 {
+  background: linear-gradient(140deg, #f3cda6, #c98850);
+}
+
+.tc .pokemon-name {
+  font-size: 0.95rem;
+}
+
+.tc .pokemon-name small {
+  flex-basis: 100%;
+  font-size: 0.78rem;
+}
+
+.tc .move {
+  font-size: 0.8rem;
+}
+
+.rb-all {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+}
+
+.rb-all > summary {
+  padding: 12px 14px;
+  color: var(--accent);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.rb-all[open] {
+  display: grid;
+  gap: 8px;
+  padding: 0 8px 8px;
+}
+
+.rb-all[open] > summary {
+  margin-inline: -8px;
+}
+
+.rb-tabs a {
+  min-height: 46px;
+}
+
+/* Movimientos: 14 px o más, como en el resto de la aplicación. */
+.tc .move {
+  font-size: 0.88rem;
+}
+
+/* Huevo de incursión, dibujado: el color dice el nivel, como en el juego. */
+.egg {
+  --egg: #9aa3bf;
+  display: inline-block;
+  flex: none;
+  width: 14px;
+  height: 18px;
+  border-radius: 50% 50% 50% 50% / 58% 58% 42% 42%;
+  background: radial-gradient(circle at 34% 28%, rgb(255 255 255 / 80%) 0 16%, transparent 19%), var(--egg);
+  box-shadow: inset 0 -3px 0 rgb(0 0 0 / 16%), 0 1px 2px rgb(0 0 0 / 25%);
+  vertical-align: -3px;
+}
+
+.egg-s1,
+.egg-s2 { --egg: linear-gradient(160deg, #ffa3c4, #f2558f); }
+
+.egg-s3,
+.egg-s4 { --egg: linear-gradient(160deg, #ffe17a, #f4b400); }
+
+.egg-s5,
+.egg-s6 { --egg: linear-gradient(160deg, #8f96c8, #474d80); }
+
+.egg-mega { --egg: linear-gradient(160deg, #ffb070, #e9452b); }
+
+.egg-elite { --egg: linear-gradient(160deg, #c995ff, #7b3cc6); }
+
+.egg-shadow { --egg: linear-gradient(160deg, #a66cff, #3b1670); box-shadow: inset 0 -3px 0 rgb(0 0 0 / 25%), 0 0 0 2px rgb(166 108 255 / 35%); }
+
+/* ---------------- B · Pokémon HOME ---------------- */
+.app {
+  --hm-bg1: #cdf3c4;
+  --hm-bg2: #a6e8df;
+  --hm-panel: #eefaf5;
+  --hm-surface: #ffffff;
+  --hm-teal: #20a39e;
+  --hm-teal-ink: #137b77;
+  --hm-orange: #f2961c;
+  --hm-ink: #33403f;
+  --hm-muted: #6b7d7b;
+  --hm-line: #bfe6dd;
+  --hm-stripes: repeating-linear-gradient(135deg, rgb(255 255 255 / 22%) 0 2px, transparent 2px 16px);
+  --bg: var(--hm-panel);
+  --card: var(--hm-surface);
+  --raised: var(--hm-panel);
+  --line: var(--hm-line);
+  --text: var(--hm-ink);
+  --muted: var(--hm-muted);
+  --accent: var(--hm-teal-ink);
+  --accent-soft: #dcf4ef;
+  background: var(--hm-stripes), linear-gradient(180deg, var(--hm-bg1), var(--hm-bg2) 70%);
+  background-attachment: fixed;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* HOME no tiene modo oscuro: interpretación nocturna con los mismos verdes azulados. */
+  .app {
+    --hm-bg1: #0e2a2b;
+    --hm-bg2: #0f2233;
+    --hm-panel: #163538;
+    --hm-surface: #1c4246;
+    --hm-teal: #26aaa2;
+    --hm-teal-ink: #6ad9cf;
+    --hm-ink: #e6f6f3;
+    --hm-muted: #9ec3be;
+    --hm-line: #2a5a5c;
+    --hm-stripes: repeating-linear-gradient(135deg, rgb(255 255 255 / 3%) 0 2px, transparent 2px 16px);
+    --accent-soft: #1d4a4c;
+  }
+}
+
+html { background: #ffffff; }
+
+@media (prefers-color-scheme: dark) {
+  html { background: #183c40; }
+}
+
+/* Cabecera blanca con el título a la izquierda, como en HOME. */
+.app .statusbar,
+.app .header {
+  background: #fff;
+  color: var(--hm-ink);
+  box-shadow: 0 2px 0 rgb(0 0 0 / 5%);
+}
+
+.app h1 {
+  color: var(--hm-ink);
+  font-weight: 700;
+}
+
+.app .brand-name {
+  color: var(--hm-orange);
+  font-weight: 700;
+}
+
+@media (prefers-color-scheme: dark) {
+  .app .statusbar,
+  .app .header {
+    background: #183c40;
+  }
+}
+
+.app .pin {
+  background: var(--hm-stripes), var(--hm-bg1);
+  color: var(--hm-ink);
+}
+
+.app .pin::after,
+.app .header::after {
+  display: none;
+}
+
+.app .sources-link,
+.app .back,
+.app .filter-button {
+  border: 2px solid var(--hm-teal);
+  background: var(--hm-surface);
+  color: var(--hm-teal-ink);
+}
+
+.app .segmented {
+  gap: 6px;
+  background: none;
+}
+
+.app .segmented button {
+  border-radius: 999px;
+  background: var(--hm-surface);
+  box-shadow: 0 2px 0 rgb(0 0 0 / 8%);
+  color: var(--hm-ink);
+  font-weight: 600;
+}
+
+/* La selección, en naranja, como el cursor de HOME. */
+.app .segmented [aria-pressed='true'],
+.app .rb-tabs a[aria-current],
+.app .tier-filter [aria-pressed='true'] {
+  background: var(--hm-orange);
+  box-shadow: 0 2px 0 rgb(150 80 0 / 25%);
+  color: #fff;
+}
+
+.app .nav {
+  border-top: 0;
+  background: #fff;
+  box-shadow: 0 -2px 0 rgb(0 0 0 / 5%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .app .nav { background: #183c40; }
+}
+
+.app .nav a[aria-current] {
+  color: var(--hm-orange);
+}
+
+.app .nav a[aria-current] .nav-icon {
+  background: var(--hm-orange);
+  box-shadow: none;
+}
+
+.app .rb-tabs {
+  padding: 5px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 60%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .app .rb-tabs { background: rgb(255 255 255 / 6%); }
+}
+
+.app .rb-tabs a {
+  border-radius: 999px;
+  color: var(--hm-ink);
+  font-weight: 600;
+}
+
+.app .rb-tabs a[aria-current] small {
+  background: rgb(255 255 255 / 30%);
+  color: #fff;
+}
+
+.hm-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Placas de dato: etiqueta verde azulada y valor en blanco, como «Pokémon registrados». */
+.hm-timer {
+  display: inline-flex;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--hm-surface);
+  box-shadow: 0 2px 0 rgb(0 0 0 / 6%);
+  color: var(--hm-ink);
+  font-size: 0.84rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.hm-timer span {
+  padding: 4px 10px 4px 14px;
+  background: var(--hm-teal);
+  color: #fff;
+}
+
+.hm-timer {
+  padding-right: 12px;
+  gap: 8px;
+  align-items: center;
+}
+
+.hm-doubt-link {
+  padding: 4px 14px;
+  border: 2px solid var(--hm-orange);
+  border-radius: 999px;
+  background: var(--hm-surface);
+  color: #a35a00;
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .hm-doubt-link { color: #ffc070; }
+}
+
+/* Cada nivel, una caja: panel claro con barra de título. */
+.hm-sec {
+  overflow: hidden;
+  margin-top: 6px;
+  border: 2px solid var(--hm-teal);
+  border-radius: 18px;
+  background: var(--hm-panel);
+}
+
+.hm-head {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  padding: 7px 12px 8px;
+  background: var(--hm-teal);
+  color: #fff;
+  text-align: center;
+}
+
+.hm-sec.is-shadow {
+  border-color: #7046b8;
+}
+
+.hm-sec.is-shadow .hm-head {
+  background: #7046b8;
+}
+
+.hm-head:has(.is-muted) {
+  background: var(--hm-orange);
+}
+
+.hm-sec:has(.hm-head .is-muted) {
+  border-color: var(--hm-orange);
+}
+
+.main .hm-head h2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.hm-head .count {
+  padding: 0 7px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 25%);
+  color: #fff;
+  font-size: 0.78rem;
+}
+
+.hm-until {
+  color: rgb(255 255 255 / 92%);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* La caja: Pokémon sobre huecos redondos, sin tarjetas. */
+.hm-box {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 100px), 1fr));
+  gap: 6px 4px;
+  padding: 12px 8px 14px;
+}
+
+.hm-cell > a,
+.hm-cell > div {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 2px;
+  padding: 4px 2px 6px;
+  border-radius: 16px;
+  color: var(--hm-ink);
+  text-align: center;
+  text-decoration: none;
+}
+
+.hm-cell > a:hover,
+.hm-cell > a:focus-visible {
+  outline: 3px solid var(--hm-orange);
+  outline-offset: -2px;
+}
+
+.hm-slot {
+  display: grid;
+  place-items: center;
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 255 255 / 95%) 0 52%, rgb(255 255 255 / 0%) 72%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .hm-slot { background: radial-gradient(circle, rgb(255 255 255 / 12%) 0 52%, rgb(255 255 255 / 0%) 72%); }
+}
+
+.hm-cell.is-shadow .hm-slot {
+  background: radial-gradient(circle, rgb(140 90 220 / 35%) 0 52%, rgb(140 90 220 / 0%) 72%);
+}
+
+.hm-img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.hm-name .pokemon-name {
+  justify-content: center;
+  font-size: 0.84rem;
+  font-weight: 650;
+  line-height: 1.15;
+}
+
+.hm-name .pokemon-name small {
+  flex-basis: 100%;
+  font-size: 0.74rem;
+}
+
+.app .rb-when {
+  font-size: 0.74rem;
+}
+
+.app .rb-flag {
+  background: #fff0d8;
+  color: #8a4b00;
+  font-size: 0.72rem;
+}
+
+.app .rb-flag-ok {
+  background: #dcf4ef;
+  color: var(--hm-teal-ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  .app .rb-flag { background: #3d2e12; color: #ffc070; }
+
+  .app .rb-flag-ok { background: #163f3c; }
+}
+
+/* Próximamente: filas blancas redondeadas, como la lista «Por número». */
+.hm-cards {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+}
+
+.hm-card {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 7px 16px 7px 7px;
+  border-radius: 999px;
+  background: var(--hm-surface);
+  box-shadow: 0 2px 0 rgb(0 0 0 / 6%);
+}
+
+.hm-card:has(details[open]),
+.hm-card:has(.fine) {
+  border-radius: 24px;
+}
+
+.hm-avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--hm-panel);
+}
+
+.hm-avatar.is-shadow {
+  background: rgb(140 90 220 / 25%);
+}
+
+.hm-avatar-img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
+
+.hm-question {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--hm-orange);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.hm-card-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.hm-card-title {
+  color: var(--hm-ink);
+  font-size: 0.98rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.hm-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--hm-teal-ink);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.hm-card .doubt summary {
+  color: #a35a00;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+@media (prefers-color-scheme: dark) {
+  .hm-card .doubt summary { color: #ffc070; }
+}
+
+/* Ficha estilo Pokédex: fondo rayado, cabecera con número y nombre, placas de tipo y de datos. */
+.hm-dex {
+  overflow: hidden;
+  border: 2px solid #fff;
+  border-radius: 22px;
+  background:
+    var(--hm-stripes),
+    linear-gradient(160deg, color-mix(in srgb, var(--t, #9cc) 26%, #f6f3ff), color-mix(in srgb, var(--t, #9cc) 8%, #fff));
+  box-shadow: 0 6px 18px -10px rgb(0 60 60 / 40%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .hm-dex {
+    border-color: #2a5a5c;
+    background:
+      var(--hm-stripes),
+      linear-gradient(160deg, color-mix(in srgb, var(--t, #9cc) 35%, #163538), #163538);
+  }
+}
+
+.hm-dex.is-shadow {
+  background: var(--hm-stripes), linear-gradient(160deg, #d9c6ff, #f3eeff);
+}
+
+@media (prefers-color-scheme: dark) {
+  .hm-dex.is-shadow { background: var(--hm-stripes), linear-gradient(160deg, #3b2370, #1f1840); }
+}
+
+.hm-dex-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px;
+  background: rgb(255 255 255 / 88%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .hm-dex-head { background: rgb(0 0 0 / 22%); }
+}
+
+.hm-dex-no {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  color: var(--hm-muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.hm-dex-head .pokemon-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.hm-dex-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 230px;
+}
+
+.hm-dex-stage .rb-hero-img,
+.hm-dex-stage .pk {
+  width: 196px;
+  height: 196px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 6px rgb(0 0 0 / 16%));
+}
+
+.hm-dex-types {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  gap: 4px;
+}
+
+/* Placa de tipo: oscura, con su color a la izquierda y el nombre en mayúsculas. */
+.hm-type,
+.hm-weak .weakness {
+  min-width: 96px;
+  padding: 3px 10px 3px 26px;
+  border-radius: 4px;
+  background: #3c3f44;
+  box-shadow: inset 18px 0 0 var(--t);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.hm-dex-shiny {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 85%);
+  color: #9a6400;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.hm-dex-data {
+  display: grid;
+  gap: 6px;
+  padding: 0 14px 12px;
+}
+
+.hm-dex-data > div {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--hm-surface);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 6%);
+}
+
+.hm-dex-data dt {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  background: var(--hm-teal);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.hm-dex-data dd {
+  padding: 6px 12px;
+  color: var(--hm-ink);
+  font-size: 0.92rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.hm-dex-data .validity {
+  font-size: 0.84rem;
+}
+
+.hm-dex-when dd {
+  text-align: left;
+}
+
+.hm-weak {
+  gap: 6px;
+  padding: 0 14px 16px;
+}
+
+.hm-weak .weak-title {
+  color: var(--hm-ink);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.hm-weak ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.hm-weak .weakness {
+  display: inline-flex;
+  gap: 6px;
+  min-width: 0;
+  font-size: 0.74rem;
+}
+
+.hm-weak .weakness .type {
+  padding: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+}
+
+.hm-weak .is-double {
+  background: #1f2125;
+  outline: 2px solid var(--hm-orange);
+}
+
+.app .main > h2 {
+  justify-content: center;
+  padding: 7px 14px;
+  border-radius: 14px;
+  background: var(--hm-teal);
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.app .tier-filter {
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 60%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .app .tier-filter { background: rgb(255 255 255 / 6%); }
+}
+
+.app .tier-filter button {
+  border-radius: 999px;
+}
+
+.app .tier-filter [aria-pressed='true'] small {
+  color: #fff;
+}
+
+/* Los seis mejores, en una caja como las de HOME. */
+.app .top-counters {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 4px;
+  padding: 12px 8px;
+  border: 2px solid var(--hm-teal);
+  border-radius: 18px;
+  background: var(--hm-panel);
+}
+
+.app .tc {
+  justify-items: center;
+  padding: 0 2px 4px;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  text-align: center;
+}
+
+.app .tc-art {
+  width: 92px;
+  height: 92px;
+  margin: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 255 255 / 95%) 0 52%, rgb(255 255 255 / 0%) 72%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .app .tc-art { background: radial-gradient(circle, rgb(255 255 255 / 12%) 0 52%, rgb(255 255 255 / 0%) 72%); }
+}
+
+.app .tc-art .pk {
+  width: 80px;
+  height: 80px;
+}
+
+.app .tc-art .rank {
+  top: 0;
+  left: 0;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--hm-teal);
+  color: #fff;
+  font-size: 0.78rem;
+}
+
+.app .tc .pokemon-name {
+  justify-content: center;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.app .tc .moves {
+  justify-items: center;
+}
+
+.app .rb-all {
+  border: 0;
+  background: none;
+}
+
+.app .rb-all > summary {
+  justify-content: center;
+  border: 2px solid var(--hm-teal);
+  border-radius: 999px;
+  background: var(--hm-surface);
+  color: var(--hm-teal-ink);
+  font-weight: 700;
+}
+
+.app .rb-all[open] > summary {
+  margin: 0 0 6px;
+}
+
+.app .status,
+.app .method,
+.app .explain {
+  border-radius: 14px;
+}
+
+/* ---------------- Incursiones ---------------- */
+.hm-head.hm-head-doubt {
+  background: var(--hm-orange);
+}
+
+.hm-sec:has(.hm-head-doubt) {
+  border-color: var(--hm-orange);
+}
+
+/* Una sola línea para lo técnico; si hay un aviso de fiabilidad, ocupa su lugar y se ve siempre. */
+.hm-info {
+  border-radius: 16px;
+  background: rgb(255 255 255 / 70%);
+  font-size: 0.86rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .hm-info { background: rgb(255 255 255 / 6%); }
+}
+
+.hm-info > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 4px 14px 4px 8px;
+  color: var(--hm-muted);
+  font-weight: 600;
+}
+
+.hm-info-i {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--hm-teal);
+  color: #fff;
+  font: italic 800 0.82rem/1 Georgia, serif;
+}
+
+.hm-info-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.hm-info.is-alert {
+  background: #fff0d6;
+  box-shadow: inset 0 0 0 2px var(--hm-orange);
+}
+
+.hm-info.is-alert > summary {
+  color: #7a4300;
+}
+
+.hm-info.is-alert .hm-info-i {
+  background: var(--hm-orange);
+  font-style: normal;
+  font-family: inherit;
+}
+
+@media (prefers-color-scheme: dark) {
+  .hm-info.is-alert { background: #3d2e12; }
+
+  .hm-info.is-alert > summary { color: #ffc070; }
+}
+
+.hm-info-body {
+  display: grid;
+  gap: 10px;
+  padding: 2px 14px 14px;
+}
+
+.hm-info-body p {
+  margin: 0;
+}
+
+.hm-info-alerts {
+  display: grid;
+  gap: 4px;
+  padding-left: 18px;
+  list-style: disc;
+}
+
+/* Lista: dos por fila, con el Pokémon grande, su tipo y sus debilidades en etiquetas de color. */
+.app .hm-box {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+  gap: 10px 6px;
+}
+
+.app .hm-slot {
+  width: 104px;
+  height: 104px;
+  background:
+    radial-gradient(ellipse 38% 11% at 50% 86%, rgb(32 163 158 / 35%), transparent 75%),
+    radial-gradient(circle at 50% 46%, rgb(255 255 255 / 95%) 0 48%, rgb(255 255 255 / 0%) 70%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .app .hm-slot {
+    background:
+      radial-gradient(ellipse 38% 11% at 50% 86%, rgb(80 220 210 / 30%), transparent 75%),
+      radial-gradient(circle at 50% 46%, rgb(255 255 255 / 12%) 0 48%, rgb(255 255 255 / 0%) 70%);
+  }
+}
+
+.app .hm-img {
+  width: 96px;
+  height: 96px;
+  filter: drop-shadow(0 5px 4px rgb(0 0 0 / 16%));
+}
+
+.app .hm-name .pokemon-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.hm-mini {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+}
+
+.hm-mini-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+}
+
+.hm-chip {
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: var(--t);
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.hm-chip-weak {
+  background: #3c3f44;
+  box-shadow: inset 4px 0 0 var(--t);
+  padding-left: 9px;
+}
+
+.hm-chip-weak.is-double {
+  outline: 2px solid var(--hm-orange);
+}
+
+.hm-mini-label {
+  color: var(--hm-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.hm-mini-more {
+  color: var(--hm-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+/* Ficha: el jefe sobre una plataforma circular, como en GO. */
+.app .hm-dex-stage {
+  height: 262px;
+  padding-bottom: 22px;
+  place-items: end center;
+  background: radial-gradient(ellipse 34% 8.5% at 50% 88%, rgb(255 255 255 / 95%) 0 58%, rgb(32 163 158 / 60%) 61% 70%, transparent 73%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .app .hm-dex-stage {
+    background: radial-gradient(ellipse 34% 8.5% at 50% 88%, rgb(255 255 255 / 22%) 0 58%, rgb(80 220 210 / 70%) 61% 70%, transparent 73%);
+  }
+}
+
+.app .hm-dex-stage .rb-hero-img,
+.app .hm-dex-stage .pk {
+  width: 218px;
+  height: 218px;
+}
+
+/* Counters: retratos redondos con aro blanco, como al elegir equipo en GO. */
+.app .top-counters {
+  gap: 14px 6px;
+  padding: 16px 8px 14px;
+}
+
+.app .tc-art {
+  width: 94px;
+  height: 94px;
+  border: 4px solid #fff;
+  background: radial-gradient(circle at 50% 40%, #fff 0 40%, color-mix(in srgb, var(--t, #9cc) 28%, #fff) 80%);
+  box-shadow: 0 4px 10px rgb(0 60 60 / 22%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .app .tc-art {
+    border-color: #2a5a5c;
+    background: radial-gradient(circle at 50% 40%, #24504f 0 40%, color-mix(in srgb, var(--t, #9cc) 40%, #1c4246) 80%);
+  }
+}
+
+.app .tc-art .pk {
+  width: 76px;
+  height: 76px;
+}
+
+.app .tc-art .rank {
+  top: -6px;
+  left: -6px;
+  min-width: 26px;
+  height: 26px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--hm-orange);
+}
+
+.app .main > .hm-info,
+.app .main > details.hm-info {
+  margin-top: 2px;
+}
+
+/* Ficha más compacta: los counters asoman en la primera pantalla. */
+.app .hm-dex-stage {
+  height: 214px;
+  padding-bottom: 16px;
+}
+
+.app .hm-dex-stage .rb-hero-img,
+.app .hm-dex-stage .pk {
+  width: 180px;
+  height: 180px;
+}
+
+.app .hm-dex-data {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.app .hm-dex-data > div {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.app .hm-dex-data > .hm-dex-when {
+  grid-column: 1 / -1;
+  grid-template-columns: 108px minmax(0, 1fr);
+}
+
+.app .hm-dex-data dt {
+  font-size: 0.74rem;
+}
+
+.app .hm-dex-data dd {
+  padding-inline: 8px;
+  font-size: 0.86rem;
+}
+
+.app .hm-dex-data dd {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+.app .hm-dex-when dd {
+  justify-content: flex-start;
+  white-space: normal;
+}
+
+.app .tc .move {
+  justify-content: center;
+}
+
+.app .tc .move-name {
+  text-align: left;
+}
+
+/* Filtro de variante de counters: una fila compacta, a un toque. */
+.variant-filter button {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0 5px;
+  min-height: 44px;
+}
+
+/* ==========================================================================
+   El mismo lenguaje en toda la aplicación, con un color de fondo por sección
+   (como los menús de HOME) para que cada modalidad se reconozca.
+   ========================================================================== */
+.app.th-incursiones { --sec: #20a39e; }
+.app.th-pvp { --hm-bg1: #d8e9ff; --hm-bg2: #c6d3fb; --sec: #3567c8; }
+.app.th-max { --hm-bg1: #ffdcec; --hm-bg2: #e6d6ff; --sec: #a83a86; }
+.app.th-gimnasios { --hm-bg1: #cdf2ee; --hm-bg2: #a8ddee; --sec: #17809a; }
+.app.th-eventos { --hm-bg1: #e6f7c6; --hm-bg2: #c3edd2; --sec: #348a45; }
+.app.th-rocket { --hm-bg1: #ffe1d8; --hm-bg2: #f2d2e3; --sec: #b23a36; }
+.app.th-fuentes { --hm-bg1: #e7e1fa; --hm-bg2: #d3e3f6; --sec: #6150b5; }
+
+@media (prefers-color-scheme: dark) {
+  .app.th-incursiones { --sec: #23998f; }
+  .app.th-pvp { --hm-bg1: #11203d; --hm-bg2: #161a3a; --sec: #3d6fd1; }
+  .app.th-max { --hm-bg1: #2c1328; --hm-bg2: #22173a; --sec: #a8478c; }
+  .app.th-gimnasios { --hm-bg1: #0e2a2e; --hm-bg2: #0f2236; --sec: #1f8aa3; }
+  .app.th-eventos { --hm-bg1: #15291a; --hm-bg2: #0f2a26; --sec: #3a8f4a; }
+  .app.th-rocket { --hm-bg1: #2e1618; --hm-bg2: #2a1626; --sec: #b0443f; }
+  .app.th-fuentes { --hm-bg1: #1c1838; --hm-bg2: #14213a; --sec: #6656be; }
+}
+
+.hm-head,
+.app .main > h2.hm-bar {
+  background: var(--sec, var(--hm-teal));
+}
+
+.hm-sec {
+  border-color: var(--sec, var(--hm-teal));
+}
+
+/* El logo, intacto: un marco del mismo azul de su fondo, sin recortarlo. */
+.app .brand {
+  padding: 4px;
+  border-radius: 0;
+  background: #00055d;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 18%);
+}
+
+/* Fila fija y cabeceras de sección, claras en todas las modalidades. */
+.app .head {
+  background: var(--hm-stripes), var(--hm-bg1);
+  color: var(--hm-ink);
+}
+
+.app .leagues button {
+  background: var(--hm-surface);
+  box-shadow: 0 2px 0 rgb(0 0 0 / 8%);
+  color: var(--hm-ink);
+}
+
+.app .leagues [aria-pressed='true'] {
+  background: var(--hm-orange);
+  box-shadow: 0 2px 0 rgb(150 80 0 / 25%);
+  color: #fff;
+}
+
+.app .pin input[type='search'] {
+  border: 2px solid transparent;
+  background-color: var(--hm-surface);
+}
+
+/* Estado de la fuente: una línea discreta. Los avisos conservan su color y su texto. */
+.app .status-ok details,
+.app .status-loading details {
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 55%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .app .status-ok details,
+  .app .status-loading details { background: rgb(255 255 255 / 6%); }
+}
+
+.app .status details[open] {
+  border-radius: 16px;
+}
+
+/* Metodología: un rótulo con ⓘ, desplegable. */
+.app details.method {
+  border-radius: 16px;
+  background: rgb(255 255 255 / 55%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .app details.method { background: rgb(255 255 255 / 6%); }
+}
+
+.app details.method > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 4px 14px 4px 8px;
+}
+
+.app details.method > summary::before {
+  content: 'i';
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--hm-teal);
+  color: #fff;
+  font: italic 800 0.82rem/1 Georgia, serif;
+}
+
+.app details.method[open] {
+  padding: 0 14px 14px;
+}
+
+.app details.method[open] > summary {
+  margin-inline: -14px;
+}
+
+/* Limitación importante: una línea ámbar; el porqué, al desplegar. */
+.caveat {
+  border-radius: 16px;
+  background: #fff1d9;
+  color: #6b3c00;
+  font-size: 0.88rem;
+}
+
+.caveat > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 4px 14px 4px 8px;
+  font-weight: 700;
+}
+
+.caveat-i {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--hm-orange);
+  color: #fff;
+  font-weight: 900;
+}
+
+.caveat-body {
+  display: grid;
+  gap: 6px;
+  padding: 0 14px 12px 46px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .caveat { background: #3a2c12; color: #ffd08a; }
+}
+
+.app .note.attribution {
+  font-size: 0.78rem;
+}
+
+/* Tarjetas: blancas y redondeadas, sin bordes de tabla. */
+.app .card {
+  border: 0;
+  border-radius: 20px;
+  background: var(--hm-surface);
+  box-shadow: 0 2px 0 rgb(0 0 0 / 6%);
+}
+
+.app .boss {
+  background: var(--hm-surface);
+}
+
+/* Clasificaciones: filas blancas como la lista «Por número» de HOME, con el Pokémon sobre su plataforma. */
+.app .rank-card {
+  border-radius: 22px;
+  background: var(--hm-surface);
+}
+
+.app .rank-figure .pk {
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse 40% 10% at 50% 90%, color-mix(in srgb, var(--sec, var(--hm-teal)) 35%, transparent), transparent 75%),
+    radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--t, #9cc) 16%, var(--hm-panel)) 0 50%, transparent 70%);
+}
+
+.app .rank-figure .pk.pk-shadow {
+  background:
+    radial-gradient(ellipse 40% 10% at 50% 90%, rgb(122 52 214 / 45%), transparent 75%),
+    radial-gradient(circle at 50% 46%, rgb(122 52 214 / 35%) 0 50%, transparent 70%);
+}
+
+.app .score b {
+  color: var(--sec, var(--hm-teal-ink));
+}
+
+@media (prefers-color-scheme: dark) {
+  .app .score b { color: color-mix(in srgb, var(--sec, var(--hm-teal)) 45%, #fff); }
+}
+
+/* Encabezados de tier: barra de título del color de la sección. */
+.app .main .tier-group > h2,
+.app .main .group.tier-group > h2 {
+  padding: 6px 12px 6px 6px;
+  border-radius: 14px;
+  background: var(--sec, var(--hm-teal));
+  color: #fff;
+}
+
+.app .main .tier-group > h2 small,
+.app .main .tier-group > h2 .count {
+  color: rgb(255 255 255 / 85%);
+}
+
+/* Títulos de grupo: rótulo claro con el color de la sección a la izquierda. */
+.app .main .group > h2 {
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 60%);
+  box-shadow: inset 5px 0 0 var(--sec, var(--hm-teal));
+}
+
+@media (prefers-color-scheme: dark) {
+  .app .main .group > h2 { background: rgb(255 255 255 / 6%); }
+}
+
+/* Eventos: imagen protagonista y fechas en placas. */
+.app .event {
+  overflow: hidden;
+  padding: 0;
+  border-radius: 22px;
+}
+
+.app .event-type {
+  justify-self: start;
+  padding: 1px 10px;
+  border-radius: 999px;
+  background: var(--sec, var(--hm-teal));
+  color: #fff;
+  font-size: 0.76rem;
+}
+
+.app .event .dates div {
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--hm-panel);
+}
+
+.app .event .dates dt {
+  padding: 4px 10px;
+  background: var(--sec, var(--hm-teal));
+  color: #fff;
+  font-weight: 700;
+}
+
+.app .event .dates dd {
+  padding: 4px 10px;
+}
+
+.event-global {
+  justify-self: start;
+}
+
+/* La barra de tier va después de la regla general de títulos de grupo. */
+.app .main .tier-group > h2 {
+  background: var(--sec, var(--hm-teal));
+  box-shadow: none;
+  color: #fff;
+}
+
+.app .event .dates div {
+  grid-template-columns: 72px minmax(0, 1fr);
+}
+
+/* Ilustraciones de las fichas de jefe (Max, Rocket): sobre su plataforma circular. */
+.app .boss-side .pk,
+.app .boss-side .boss-image {
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse 40% 10% at 50% 90%, color-mix(in srgb, var(--sec, var(--hm-teal)) 35%, transparent), transparent 75%),
+    radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--t, #9cc) 16%, var(--hm-panel)) 0 50%, transparent 70%);
+}
+
+/* La línea ⓘ comparte fila con el recuento: se encoge y parte el texto antes que desbordar. */
+.meta > .hm-info {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.hm-info-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Ficha del jefe: la ilustración sigue siendo protagonista, pero el primer counter entra en la primera pantalla. */
+.app .hm-dex-stage {
+  height: 178px;
+  padding-bottom: 12px;
+}
+
+.app .hm-dex-stage .rb-hero-img,
+.app .hm-dex-stage .pk {
+  width: 150px;
+  height: 150px;
+}
+
+.app .hm-dex-head {
+  padding-block: 6px;
+}
+
+.app .hm-dex-data {
+  gap: 4px;
+  padding-bottom: 8px;
+}
+
+.app .hm-dex-data dt,
+.app .hm-dex-data dd {
+  padding-block: 4px;
+}
+
+.app .hm-weak {
+  padding-bottom: 12px;
+}
+
+.app .hm-weak .weakness {
+  padding-block: 2px;
+}
+
+.app .main > h2.hm-bar {
+  padding-block: 5px;
+}
+
+/* Con letra grande o pantalla estrecha, los seis counters pasan a dos columnas antes que cortar un movimiento. */
+.app .top-counters {
+  grid-template-columns: repeat(auto-fit, minmax(max(104px, 7.2rem), 1fr));
+}
+
+.app .tc .move-name {
+  hyphens: auto;
+}
+
+/* El estado de la fuente comparte fila con el recuento: se encoge y parte el texto. */
+.meta > .status {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.app .status summary {
+  white-space: normal;
+}
+
+/* Si no caben juntos, el estado de la fuente y el recuento van en dos filas. */
+.app .meta {
+  flex-wrap: wrap;
+}
+
+/* Los títulos de primer nivel, con el color de su sección. */
+.app .main > h2 {
+  background: var(--sec, var(--hm-teal));
+}

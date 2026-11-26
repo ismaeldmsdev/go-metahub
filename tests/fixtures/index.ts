@@ -5,6 +5,8 @@
  * (CC BY 4.0), recortadas. Las frases son inventadas: las del juego no se copian al repositorio.
  * Las de copas e incursiones por tipo son del 25 de noviembre: PvPoke (MIT) y doctorpokegogo.com (CC BY 4.0), recortadas.
  * Las de Pokébattler son sintéticas: sus datos reales no deben subirse al repositorio sin su permiso.
+ * Las del calendario de incursiones son de LeekDuck, del 26 de noviembre de 2026: el calendario completo, la lista y los
+ * eventos de ScrapedDuck de ese día, y recortes de sus páginas de eventos y periodos con solo lo que lee la aplicación.
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -52,7 +54,33 @@ export const fixtures = {
   rocketAttackers: () => load('rocket-attackers'),
   rocketRaw: () => load('rocket-raw'),
   commit: (date: string) => [{ commit: { committer: { date } } }],
+  /** Calendario, lista y eventos del 26 de noviembre de 2026, para probar la disponibilidad con fechas simuladas. */
+  manifest: () => load('raid-manifest'),
+  raids1126: () => load('raids-1126'),
+  events1126: () => load('events-1126'),
+  /** «evento-{id}» o «periodo-{slug}». */
+  leekduck: (name: string): string => readFileSync(resolve('tests/fixtures/leekduck', `${name}.html`), 'utf8'),
 };
+
+/** Páginas de LeekDuck guardadas, por la parte final de su dirección. */
+const LEEKDUCK_PAGES = [
+  'evento-cresselia-darkrai-in-5-star-raid-battles-november-2026',
+  'evento-mega-banette-in-mega-raids-november-2026',
+  'evento-shadow-tornadus-incarnate-forme-in-shadow-raids-november-16-2026',
+  'evento-deoxys-normal-defense-attack-speed-formes-in-5-star-raid-battles-november-2026',
+  'evento-mega-metagross-in-mega-raids-november-2026',
+  'periodo-cresselia-darkrai-mega-banette-november-2026',
+  'periodo-shadow-tornadus-incarnate-november-december-2026',
+];
+
+const leekduckRoutes = () =>
+  Object.fromEntries(
+    LEEKDUCK_PAGES.map((name) => {
+      const [kind, ...rest] = name.split('-');
+      const path = kind === 'evento' ? `leekduck.com/events/${rest.join('-')}` : `leekduck.com/raids/${rest.join('-')}`;
+      return [path, fixtures.leekduck(name)];
+    }),
+  );
 
 /** Respuestas por fragmento de URL para simular la red completa. */
 export const routes = (): Record<string, unknown> => ({
@@ -79,4 +107,6 @@ export const routes = (): Record<string, unknown> => ({
   'fight.pokebattler.com/raids': fixtures.pokebattler(),
   'repos/pvpoke/pvpoke/commits': fixtures.commit('2026-11-20T16:56:34Z'),
   'repos/bigfoott/ScrapedDuck/commits': fixtures.commit('2026-11-23T03:13:23Z'),
+  'leekduck.com/raids/manifest.json': fixtures.manifest(),
+  ...leekduckRoutes(),
 });

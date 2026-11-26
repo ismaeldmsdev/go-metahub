@@ -2,7 +2,8 @@ import type { z } from 'zod';
 import type { SpriteIndex } from '../domain/sprites';
 import { eventStatus } from '../domain/events';
 import { TYPES } from '../domain/names';
-import { leekDuckUrl, normalize, plainText } from '../domain/text';
+import { defaultFormAlias } from '../domain/raids';
+import { dexFromImage, leekDuckUrl, normalize, plainText } from '../domain/text';
 import { tierOf } from '../domain/tiers';
 import type { CountersTarget } from './config';
 import { SourceError } from './errors';
@@ -12,11 +13,13 @@ import type {
   Counter,
   CountersData,
   CpRange,
+  EventPage,
   Featured,
   FormatFilter,
   GameEvent,
   GymData,
   MaxBoss,
+  PeriodBoss,
   PokebattlerBosses,
   PokebattlerData,
   PvpEntry,
@@ -24,6 +27,7 @@ import type {
   PvpMove,
   RaidAttackersData,
   RaidBoss,
+  RaidPeriod,
   RocketAttackersData,
   RocketSlot,
   RocketTrainer,
@@ -37,6 +41,7 @@ import {
   gamemaster,
   gyms,
   locale,
+  manifestPeriod,
   parseList,
   parseWith,
   pokebattler,
@@ -45,6 +50,7 @@ import {
   pvpFormat,
   raidAttackers,
   raidBoss,
+  raidManifest,
   rankingEntry,
   rawEvent,
   rocketAttackers,
@@ -189,11 +195,6 @@ export function toSeason(raw: unknown, previous: SeasonWeek[], now: number): Sea
 const validRange = (range: CpRange): CpRange | null =>
   range.min > 0 && range.max >= range.min ? { min: range.min, max: range.max } : null;
 
-const dexFromImage = (url: string): number | null => {
-  const match = /\/(?:pm|pokemon_icon_)0*(\d+)[._]/.exec(url);
-  return match ? Number(match[1]) : null;
-};
-
 export function toRaids(raw: unknown): { data: RaidBoss[]; discarded: number } {
   const { items, discarded } = parseList(raidBoss, raw, 'incursiones');
   const data = items.map((boss): RaidBoss => {
@@ -217,6 +218,77 @@ export function toRaids(raw: unknown): { data: RaidBoss[]; discarded: number } {
 
 const toFeatured = (list: { name: string; image?: string | undefined }[]): Featured[] =>
   list.map((p) => ({ name: plainText(p.name), image: leekDuckUrl(p.image) }));
+
+/** «2026-11-25 06:00:00 -0800» pasa a «2026-11-25T06:00:00», hora local del jugador como en los eventos. */
+const localTime = (value: string): string => value.slice(0, 19).replace(' ', 'T');
+
+/** Calendario de incursiones de LeekDuck. Los jefes de cada periodo se leen aparte (parsePeriodBosses). */
+export function toRaidManifest(raw: unknown): { generatedAt: number; periods: RaidPeriod[]; discarded: number } {
+  const what = 'el calendario de incursiones de LeekDuck';
+  const data = parseWith(raidManifest, raw, what);
+  const periods: RaidPeriod[] = [];
+  let discarded = 0;
+  const lists = [
+    ['regular', data.regular_raids],
+    ['shadow', data.shadow_raids],
+  ] as const;
+  for (const [kind, list] of lists) {
+    for (const entry of list) {
+      const parsed = manifestPeriod.safeParse(entry);
+      // Sin hora local, el desfase sería el del servidor de LeekDuck y no el del jugador: no se usa.
+      const start = parsed.success ? localTime(parsed.data.start_date) : '';
+      const end = parsed.success ? localTime(parsed.data.end_date) : '';
+      if (!parsed.success || !parsed.data.local_time || !(start < end)) {
+        discarded++;
+        continue;
+      }
+      const { slug, title, tags } = parsed.data;
+      periods.push({ slug, title: plainText(title), kind, start, end, tags: tags.map(plainText), bosses: null });
+    }
+  }
+  if (periods.length === 0) throw new SourceError('empty', `La fuente ha devuelto ${what} vacío`);
+  return { generatedAt: Date.parse(data.generated_at), periods, discarded };
+}
+
+/**
+ * Jefes de un periodo (leekduck.com/raids/{slug}): el mismo marcado que su lista de jefes actual.
+ * Solo se leen el nivel, la imagen y el nombre; si no aparece ninguno, la página ha cambiado.
+ */
+export function parsePeriodBosses(html: string): PeriodBoss[] {
+  const bosses: PeriodBoss[] = [];
+  let tier = '';
+  let image: string | null = null;
+  const tokens = /tier-label">([^<]+)<|class="boss-img[^"]*"[^>]*>\s*<img[^>]*?\ssrc="([^"]+)"|class="name[^"]*">([^<]+)</g;
+  for (const [, label, src, name] of html.matchAll(tokens)) {
+    if (label) tier = plainText(label);
+    else if (src) image = leekDuckUrl(src);
+    else if (name && tier) {
+      bosses.push({ name: plainText(name), tier, image });
+      image = null;
+    }
+  }
+  if (bosses.length === 0) throw new SourceError('format', 'La estructura de los jefes del periodo ha cambiado');
+  return bosses;
+}
+
+const LOCAL_DATE = '(\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d(?::\\d\\d)?)';
+
+/**
+ * Página de un evento de LeekDuck: el resumen (donde dice, por ejemplo, «every weekend») y las fechas
+ * del bloque de horario, solo si declara hora local. Sirve cuando ScrapedDuck pierde las fechas.
+ */
+export function parseEventPage(html: string): EventPage {
+  const body = /<div class="event-description">([\s\S]*?)<\/div>/.exec(html)?.[1];
+  const meta = /<meta name="description" content="([^"]*)"/.exec(html)?.[1];
+  const description = plainText(body ?? meta ?? '') || null;
+  const local = /<section[^>]*class="event-schedule[^"]*"[^>]*data-local-time="true"/.test(html);
+  const date = (kind: string) =>
+    local ? (new RegExp(`data-kind="${kind}" data-(?:start|end)="${LOCAL_DATE}"`).exec(html)?.[1] ?? null) : null;
+  if (!description && !/class="event-schedule/.test(html)) {
+    throw new SourceError('format', 'La estructura de la página del evento ha cambiado');
+  }
+  return { description, start: date('start'), end: date('end') };
+}
 
 export function toEvents(raw: unknown): { data: GameEvent[]; discarded: number } {
   const { items, discarded } = parseList(rawEvent, raw, 'eventos');
@@ -329,7 +401,9 @@ export function toCounters(raw: unknown, { id, tier }: Pick<CountersTarget, 'id'
   const what = 'los counters de Pokébattler';
   const data = parseWith(counters, raw, what);
   const boss = data.attackers[0]!;
-  if (boss.pokemonId !== id || data.filterValue !== id || boss.boss !== tier) {
+  // Ver defaultFormAlias: «DEOXYS» es la respuesta correcta a «DEOXYS_NORMAL_FORM», no a «DEOXYS_ATTACK_FORM».
+  const sameBoss = boss.pokemonId === id || boss.pokemonId === defaultFormAlias(id);
+  if (!sameBoss || data.filterValue !== id || boss.boss !== tier) {
     throw new SourceError('format', 'Pokébattler ha respondido con otro jefe');
   }
   const { defenders } = boss.randomMove;

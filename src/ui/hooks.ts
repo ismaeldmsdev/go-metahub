@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient, type QueryClient, type UseQueryResult } from '@tanstack/preact-query';
 import { useEffect, useState } from 'preact/hooks';
 import { MIN_COUNTERS_INTERVAL, MIN_MANUAL_INTERVAL, TTL, type CountersTarget, type FormatTarget, type QueryId } from '../data/config';
-import type { CountersData, FormatData, GameEvent, Snapshot } from '../data/models';
+import type { CountersData, FormatData, GameEvent, RaidSchedule, Snapshot } from '../data/models';
 import { countersQuery, formatQuery, lifetime, sourceQuery } from '../data/queries';
 import type { SourceData } from '../data/sources';
 import { assess, type Health } from '../domain/freshness';
@@ -44,6 +44,7 @@ function describe<T>(
   interval: number,
 ): Source<T> {
   const events = client.getQueryData<Snapshot<GameEvent[]>>(['events'])?.data;
+  const periods = client.getQueryData<Snapshot<RaidSchedule>>(['raidSchedule'])?.data.periods;
   const health = assess(
     id,
     {
@@ -51,7 +52,7 @@ function describe<T>(
       checkedAt: query.dataUpdatedAt,
       failedAt: query.errorUpdatedAt,
       error: query.error ?? query.failureReason,
-      lifetime: query.data ? lifetime(id, query.dataUpdatedAt, query.data, events) : TTL[id],
+      lifetime: query.data ? lifetime(id, query.dataUpdatedAt, query.data, events, periods) : TTL[id],
       fetching: query.isFetching,
     },
     now,
@@ -107,6 +108,7 @@ export function useSources(): Sources {
     rocketAttackers: useSource('rocketAttackers'),
     season: useSource('season'),
     raidTypes: useSource('raidTypes'),
+    raidSchedule: useSource('raidSchedule'),
   };
 }
 

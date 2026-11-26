@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { NOW } from '../fixtures';
 import { network, saved } from './network';
 
 const BASE = 'http://localhost:4184/go-metahub/';
@@ -45,12 +46,14 @@ test.describe('en una subcarpeta, como en GitHub Pages', () => {
 
   test('abre sin conexión y conserva las secciones', async ({ page, context }) => {
     const net = await network(context);
+    // A la fecha de los datos: la disponibilidad de las incursiones depende de la hora.
+    await page.clock.install({ time: NOW });
     await page.goto(`${BASE}#incursiones`);
-    await expect(page.locator('.boss')).toHaveCount(18);
+    await expect(page.locator('.rb-boss')).toHaveCount(17);
     await page.evaluate(() => navigator.serviceWorker.ready.then(() => undefined));
     await page.reload();
-    await expect(page.locator('.boss')).toHaveCount(18);
-    await saved(page, 'raids', 'events');
+    await expect(page.locator('.rb-boss')).toHaveCount(17);
+    await saved(page, 'raids', 'events', 'raidSchedule');
     for (const key of Object.keys(net.table)) net.table[key] = 'fail';
     await context.setOffline(true);
     await page.goto(`${BASE}#eventos`);

@@ -5,7 +5,7 @@ import { moveName, pvpLabel, typeName, TYPES } from '../domain/names';
 import { attackersOfType, countByType, goHubTypeUrl, type RaidFilters } from '../domain/raidTypes';
 import { typeRankingUrl } from '../domain/raids';
 import { spriteId } from '../domain/sprites';
-import { External, Move, MoveLegend, Placeholder, SourceStatus } from './common';
+import { Caveat, External, Move, MoveLegend, Placeholder, SourceStatus } from './common';
 import { Back, Pin } from './frame';
 import { Attribution, presenceGroups, Search, tierClass } from './GymsView';
 import type { Sources } from './hooks';
@@ -110,12 +110,12 @@ function TypeGrid({ data }: { data: RaidAttackersData }) {
 }
 
 const Warning = ({ type }: { type?: string }) => (
-  <section class="card explain" aria-label="Qué se muestra">
+  <Caveat summary="No es un ranking completo">
     <p>
-      <strong>No es un ranking completo.</strong> Son Pokémon cuyo mejor conjunto registrado ataca con{' '}
-      {type ? `el tipo ${typeName(type)}` : 'ese tipo'}. Faltan los que lo usan como segunda opción.
+      Son Pokémon cuyo mejor conjunto registrado ataca con {type ? `el tipo ${typeName(type)}` : 'ese tipo'}. Faltan los
+      que lo usan como segunda opción.
     </p>
-  </section>
+  </Caveat>
 );
 
 const TypeBack = ({ type }: { type: string }) => (

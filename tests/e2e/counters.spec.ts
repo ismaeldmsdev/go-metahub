@@ -16,13 +16,21 @@ test.describe('counters de un jefe', () => {
     page.on('pageerror', (e) => errors.push(e.message));
     const net = await network(context);
     await open(page, 'incursiones');
-    await expect(page.locator('.boss')).toHaveCount(18);
+    await expect(page.locator('.rb-boss')).toHaveCount(17);
     // Nada se pide hasta abrir un jefe.
     expect(net.count('raids/defenders')).toBe(0);
-    const boss = page.locator('.boss', { hasText: 'Cresselia' });
+    const boss = page.locator('.rb-boss', { hasText: 'Cresselia' });
     // Toda la ficha es pulsable, no solo el texto del enlace.
     await boss.click({ position: { x: 40, y: 40 } });
     await expect(page).toHaveURL(/#incursiones\/cresselia$/);
+    // Los PC, que ya no van en la cuadrícula, siguen en la ficha.
+    await expect(page.locator('.hm-dex')).toContainText('1555–1633');
+    // Primero, los seis mejores con sus movimientos; la lista completa con sus cifras, plegada.
+    const team = page.locator('.top-counters > li');
+    await expect(team).toHaveCount(6);
+    for (const text of ['Mega-Venusaur', 'Poder Oculto (Bicho)', 'Pulso Umbrío+']) await expect(team.first()).toContainText(text);
+    await expect(team.first().locator('.pk-ready')).toBeVisible();
+    await page.getByText('Ver los 30 con sus cifras').click();
     const cards = page.locator('.rank-card');
     await expect(cards).toHaveCount(30);
     const first = cards.first();
@@ -41,9 +49,12 @@ test.describe('counters de un jefe', () => {
     await open(page);
     const weak = page.getByRole('region', { name: 'Debilidades' });
     for (const type of ['Bicho', 'Fantasma', 'Siniestro']) await expect(weak).toContainText(`${type} ×1,6`);
-    await expect(page.getByRole('link', { name: 'Pokébattler' })).toHaveAttribute('href', 'https://www.pokebattler.com/raids/CRESSELIA');
     // En un móvil, el primer counter se ve sin desplazarse.
-    await expect(page.locator('.rank-card').first().locator('.moves')).toBeInViewport({ ratio: 1 });
+    await expect(page.locator('.top-counters > li').first().locator('.moves')).toBeInViewport({ ratio: 1 });
+    // Atribución siempre a la vista en el rótulo ⓘ; el enlace y el método, al desplegarlo.
+    const info = page.locator('.hm-info', { hasText: 'Counters de Pokébattler' });
+    await info.locator('> summary').click();
+    await expect(info.getByRole('link', { name: 'Pokébattler' })).toHaveAttribute('href', 'https://www.pokebattler.com/raids/CRESSELIA');
     await page.getByText('Qué significa cada dato').click();
     await expect(page.locator('.method')).toContainText('Menos es mejor');
     await expect(page.locator('.method')).toContainText('megaevoluciones de nivel 4');
@@ -69,7 +80,7 @@ test.describe('counters de un jefe', () => {
   test('volver deja la lista en el mismo jefe', async ({ page, context }) => {
     await network(context);
     await open(page, 'incursiones');
-    const boss = page.locator('.boss', { hasText: 'Tornadus' });
+    const boss = page.locator('.rb-boss', { hasText: 'Cranidos' });
     await boss.getByRole('link').click();
     await expect(page.getByRole('link', { name: /Todos los jefes/ })).toBeVisible();
     await page.goBack();

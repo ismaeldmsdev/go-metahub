@@ -34,7 +34,7 @@ function hasIssue(tab: Tab, sources: Sources): boolean {
     case 'pvp':
       return bad(sources.pvp);
     case 'incursiones':
-      return bad(sources.raids);
+      return bad(sources.raids) || bad(sources.raidSchedule);
     case 'gimnasios':
       return bad(sources.gyms);
     case 'eventos':

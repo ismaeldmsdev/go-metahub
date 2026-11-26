@@ -216,8 +216,32 @@ export function parseBossName(name: string): ParsedBoss {
   return { base, shadow, forms };
 }
 
+/**
+ * Disfraces de incursión con su nombre oficial en español, por el código de forma de la imagen de LeekDuck
+ * («pm25.fGOFEST_2024_STIARA.icon.png»). WatWowMap no los traduce. Fuente: pokemongo.com/es/news/twilight-wishes-2026
+ * (consultada el 26-11-2026). Un disfraz que no esté aquí se muestra con el nombre original.
+ */
+const COSTUMES: Record<string, { en: string; es: string }> = {
+  '25:GOFEST_2024_STIARA': { en: 'Sun Crown Pikachu', es: 'Pikachu con corona de sol' },
+  '25:GOFEST_2024_MTIARA': { en: 'Moon Crown Pikachu', es: 'Pikachu con corona de luna' },
+  '196:GOFEST_2024_SSCARF': { en: 'Espeon wearing a sun scarf', es: 'Espeon con bufanda de sol' },
+  '197:GOFEST_2024_MSCARF': { en: 'Umbreon wearing a moon scarf', es: 'Umbreon con bufanda de luna' },
+};
+
+/** Solo si coinciden el número, el código de la imagen y el nombre inglés. */
+export function costumeName(name: string, image: string | null | undefined): string | null {
+  const code = /\/pm(\d+)\.f([A-Z0-9_]+)\.(?:s\.)?icon\.png$/.exec(image ?? '');
+  const known = code ? COSTUMES[`${code[1]}:${code[2]}`] : undefined;
+  return known && normalize(known.en) === normalize(name) ? known.es : null;
+}
+
 /** Solo traduce si la especie reconocida coincide con el número de Pokédex. */
-export function bossLabel(boss: { name: string; dex: number | null }, tr: Translations | undefined): PokemonLabel {
+export function bossLabel(
+  boss: { name: string; dex: number | null; image?: string | null },
+  tr: Translations | undefined,
+): PokemonLabel {
+  const costume = costumeName(boss.name, boss.image);
+  if (costume) return { name: costume, form: null, shadow: false, untranslated: false };
   const parsed = parseBossName(boss.name);
   const known = boss.dex === null ? undefined : tr?.pokemon[boss.dex];
   if (boss.dex === null || !known || normalize(known.en) !== normalize(parsed.base)) {

@@ -1,12 +1,14 @@
 import { useLayoutEffect } from 'preact/hooks';
 import { TYPES } from '../domain/names';
-import { bossSlug, groupRaids } from '../domain/raids';
-import { BossSummary } from './BossSummary';
+import { bossSlug } from '../domain/raids';
 import { BossView } from './BossView';
-import { Placeholder, SourceStatus } from './common';
+import { Placeholder } from './common';
 import { Back, Pin } from './frame';
 import { useNow, type Sources } from './hooks';
 import { MaxView } from './MaxView';
+import { buildBoard, RaidTabs, type BoardTab } from './RaidBoard';
+import { CatalogBossView, CatalogView } from './RaidCatalog';
+import { NowView, UpcomingView } from './RaidStyles';
 import { RaidTypesView } from './RaidTypesView';
 
 const MODES = [
@@ -32,34 +34,24 @@ function Modes({ mode }: { mode: (typeof MODES)[number]['id'] }) {
 /** Último jefe abierto, para volver al mismo punto de la lista. */
 let opened: string | null = null;
 
-function BossList({ sources, now }: { sources: Sources; now: number }) {
+function BossList({ sources, now, tab }: { sources: Sources; now: number; tab: BoardTab }) {
   const { raids } = sources;
+  const board = buildBoard(sources, now);
   useLayoutEffect(() => {
     if (opened) document.getElementById(`jefe-${opened}`)?.scrollIntoView({ block: 'center' });
     opened = null;
   }, []);
   return (
     <>
-      <SourceStatus source={raids} />
-      <p class="note">
-        Jefes que LeekDuck listaba en la última lectura. La fuente no da fechas: solo se indica un final cuando un evento
-        de rotación nombra a ese jefe.
-      </p>
-      {!raids.data ? (
+      <RaidTabs active={tab} board={board} />
+      {tab === 'catalogo' ? (
+        <CatalogView sources={sources} now={now} />
+      ) : !board ? (
         <Placeholder source={raids} />
+      ) : tab === 'proximamente' ? (
+        <UpcomingView sources={sources} now={now} board={board} />
       ) : (
-        groupRaids(raids.data).map((group) => (
-          <section key={group.key} class={group.shadow ? 'group group-shadow' : 'group'}>
-            <h2>{group.title}</h2>
-            <ul class="grid">
-              {group.bosses.map((boss) => (
-                <li key={boss.name} id={`jefe-${bossSlug(boss)}`} class={`card boss t-${boss.types[0] ?? ''}`}>
-                  <BossSummary boss={boss} sources={sources} now={now} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))
+        <NowView sources={sources} now={now} board={board} />
       )}
     </>
   );
@@ -72,10 +64,19 @@ export function RaidsView({ sources, slug }: { sources: Sources; slug: string | 
     return (
       <>
         <Modes mode="jefes" />
-        <BossList sources={sources} now={now} />
+        <BossList sources={sources} now={now} tab="ahora" />
       </>
     );
   }
+  if (slug === 'proximamente' || slug === 'catalogo') {
+    return (
+      <>
+        <Modes mode="jefes" />
+        <BossList sources={sources} now={now} tab={slug} />
+      </>
+    );
+  }
+  if (slug.startsWith('catalogo-')) return <CatalogBossView slug={slug} sources={sources} now={now} />;
   if (slug === 'tipos') {
     return (
       <>
@@ -108,7 +109,7 @@ export function RaidsView({ sources, slug }: { sources: Sources; slug: string | 
         <Placeholder source={raids} />
       ) : (
         <div class="empty">
-          <p>Este jefe ya no figura en las incursiones actuales.</p>
+          <p>Este jefe ya no figura en la lista de LeekDuck.</p>
           <a class="link" href="#incursiones">
             Ver los jefes actuales
           </a>

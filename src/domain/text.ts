@@ -40,3 +40,9 @@ export function leekDuckUrl(value: string | undefined): string | null {
     return null;
   }
 }
+
+/** Número de Pokédex de una imagen de LeekDuck («pm25.fGOFEST….icon.png», «pokemon_icon_488_00.png»). */
+export const dexFromImage = (url: string | null): number | null => {
+  const match = /\/(?:pm|pokemon_icon_)0*(\d+)[._]/.exec(url ?? '');
+  return match ? Number(match[1]) : null;
+};

@@ -23,7 +23,7 @@ import {
 } from '../domain/gyms';
 import { moveName, pvpLabel, typeName, TYPES } from '../domain/names';
 import { spriteId } from '../domain/sprites';
-import { External, Move, MoveLegend, Placeholder, SourceStatus, Weaknesses } from './common';
+import { Caveat, External, Move, MoveLegend, Placeholder, SourceStatus, Weaknesses } from './common';
 import { Head, Pin, type FilterGroup } from './frame';
 import type { Sources } from './hooks';
 import { PokemonImage } from './PokemonImage';
@@ -150,9 +150,9 @@ export function Attribution({ data }: { data: Pick<GymData, 'source'> }) {
   const { source } = data;
   return (
     <p class="note attribution">
-      Datos de <External href={source.url}>{source.name}</External>,{' '}
-      <External href={source.licenseUrl}>{source.license}</External>, transformados y resumidos por GO MetaHub. Origen:{' '}
-      {formatDate(Date.parse(source.generatedAt))}.
+      Datos: <External href={source.url}>{source.name}</External> ·{' '}
+      <External href={source.licenseUrl}>{source.license}</External> · transformados y resumidos por GO MetaHub ·{' '}
+      {formatDate(Date.parse(source.generatedAt))}
     </p>
   );
 }
@@ -345,19 +345,21 @@ function Attackers({ data, sources }: { data: GymData; sources: Sources }) {
       <div class="filters">
         <TierCells tiers={GYM_TIERS} counts={counts} value={filters.tier} onChange={(tier) => change({ tier })} />
         {filters.type !== 'all' && (
-          <p class="note">
-            Solo los que tienen como recomendado un ataque cargado de tipo {typeName(filters.type)}. No es una lista completa:
-            la fuente da una única combinación por Pokémon y faltan los que usan ese tipo con otros movimientos. Tampoco filtra
-            por el tipo del defensor.
-          </p>
+          <Caveat summary={`Lista incompleta para el tipo ${typeName(filters.type)}`}>
+            <p>
+              Solo los que tienen como recomendado un ataque cargado de tipo {typeName(filters.type)}. La fuente da una única
+              combinación por Pokémon y faltan los que usan ese tipo con otros movimientos. Tampoco filtra por el tipo del
+              defensor.
+            </p>
+          </Caveat>
         )}
       </div>
-      <section class="card explain" aria-label="Cómo elegir">
+      <Caveat summary="S+ no es el mejor contra todo: depende del defensor">
         <p>
-          <strong>S+ no significa el mejor contra cualquiera.</strong> La mejor elección depende del tipo del Pokémon que
-          defiende: contra Blissey, de tipo Normal, conviene un ataque de Lucha. No hay un único ganador.
+          La mejor elección depende del tipo del Pokémon que defiende: contra Blissey, de tipo Normal, conviene un ataque de
+          Lucha. No hay un único ganador.
         </p>
-      </section>
+      </Caveat>
       <Attribution data={data} />
       <AttackersMethod data={data} />
       {groups.length === 0 ? (
@@ -457,13 +459,12 @@ function Defenders({ data, sources }: { data: GymData; sources: Sources }) {
           )}
         </p>
       </div>
-      <section class="card explain" aria-label="Cómo se calcula">
+      <Caveat summary="Clasificación teórica, no una simulación">
         <p>
-          <strong>Resistencia = defensa base × aguante base.</strong> Es una clasificación provisional y teórica,{' '}
-          <strong>no una simulación</strong>: no tiene en cuenta movimientos, motivación, nivel, tipos ni enfrentamientos
-          concretos.
+          <strong>Resistencia = defensa base × aguante base.</strong> Es provisional: no tiene en cuenta movimientos,
+          motivación, nivel, tipos ni enfrentamientos concretos.
         </p>
-      </section>
+      </Caveat>
       <Attribution data={data} />
       <DefendersMethod data={data} />
       {list.length === 0 ? (

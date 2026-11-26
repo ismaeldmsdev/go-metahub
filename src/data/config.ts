@@ -67,6 +67,10 @@ export const ENDPOINTS = {
     `https://api.github.com/repos/pvpoke/pvpoke/commits?path=src/data/rankings/${cup}/overall&per_page=1`,
   /** Resumen propio de incursiones por tipo, como el de gimnasios. */
   raidTypes: { url: './data/incursiones.json' } as Endpoint,
+  /** Calendario de incursiones de LeekDuck, el mismo que usa su página de jefes (CORS abierto). */
+  raidSchedule: { url: 'https://leekduck.com/raids/manifest.json' } as Endpoint,
+  /** Jefes de un periodo de ese calendario. */
+  raidPeriod: (slug: string) => `https://leekduck.com/raids/${slug}`,
   pvpokeCommit:
     'https://api.github.com/repos/pvpoke/pvpoke/commits?path=src/data/rankings/all/overall&per_page=1',
   scrapedDuckCommit:
@@ -95,7 +99,8 @@ export type SourceId =
   | 'rocketContrast'
   | 'rocketAttackers'
   | 'season'
-  | 'raidTypes';
+  | 'raidTypes'
+  | 'raidSchedule';
 
 /** Los counters se piden por jefe y los formatos de PvP uno a uno, así que no son una fuente única. */
 export type QueryId = SourceId | 'counters' | 'format';
@@ -113,6 +118,7 @@ export const TTL: Record<QueryId, number> = {
   rocketAttackers: DAY,
   season: 6 * HOUR,
   raidTypes: DAY,
+  raidSchedule: 6 * HOUR,
   format: DAY,
   // Pokébattler pide guardar las respuestas y avisa de que envejecen en días.
   counters: DAY,
@@ -128,6 +134,8 @@ export const SOURCE_STALE_AFTER: Partial<Record<QueryId, number>> = {
   gyms: 45 * DAY,
   rocketAttackers: 45 * DAY,
   raidTypes: 45 * DAY,
+  // LeekDuck lo regenera varias veces al día.
+  raidSchedule: 2 * DAY,
 };
 
 /** Espera mínima tras un fallo antes de volver a consultar automáticamente. */
@@ -137,6 +145,9 @@ export const MIN_MANUAL_INTERVAL = 5 * MINUTE;
 /** Pokébattler declara una hora de caché en cada respuesta. */
 export const MIN_COUNTERS_INTERVAL = HOUR;
 export const REQUEST_TIMEOUT = 25_000;
+/** Páginas de LeekDuck que se leen como máximo en cada consulta del calendario. */
+export const MAX_PERIOD_PAGES = 4;
+export const MAX_EVENT_PAGES = 12;
 
 export const ZONE = 'Europe/Madrid';
 /** Se incrementa, por fuente, solo si cambia la forma de sus datos guardados. */
@@ -153,6 +164,7 @@ export const STORAGE_VERSION: Record<QueryId, number> = {
   rocketAttackers: 1,
   season: 1,
   raidTypes: 1,
+  raidSchedule: 1,
   format: 1,
   counters: 1,
 };

@@ -24,7 +24,7 @@ import {
 import { typeName } from '../domain/names';
 import { spriteId } from '../domain/sprites';
 import { CounterCard, CountersPanel } from './BossView';
-import { External, Loading, Placeholder, PokemonName, SourceStatus, TypeTag, Weaknesses } from './common';
+import { Caveat, External, InfoLine, Loading, Placeholder, PokemonName, sourceAlerts, SourceStatus, TypeTag, Weaknesses } from './common';
 import { Back, Pin } from './frame';
 import { Search, typeGroup } from './GymsView';
 import type { Sources } from './hooks';
@@ -118,10 +118,7 @@ function BossTile({ boss, sources }: { boss: MaxBoss; sources: Sources }) {
 const Links = () => (
   <section class="group">
     <h2>Recomendaciones por papel</h2>
-    <p class="note">
-      Cada papel Max se mide de una forma y no hay ningún ranking abierto que se pueda incluir aquí. Estas webs, en inglés, sí
-      recomiendan atacantes, defensores y curación:
-    </p>
+    <p class="note">Webs en inglés con atacantes, defensores y curación recomendados:</p>
     <ul class="link-list">
       {MAX_LINKS.map(({ name, url }) => (
         <li key={url}>
@@ -144,6 +141,14 @@ function BossList({ sources, now }: { sources: Sources; now: number }) {
   const upcoming = announced.filter((item) => item.status === 'upcoming');
   return (
     <>
+      <InfoLine label="Datos de LeekDuck y Pokébattler" alerts={sourceAlerts([events, pokebattler])}>
+        <p>
+          Las fechas son las de los eventos de LeekDuck. El catálogo es el de Pokébattler: no indica cuándo aparece cada
+          jefe. No hay ningún ranking abierto por papel Max que se pueda incluir aquí.
+        </p>
+        <SourceStatus source={events} />
+        <SourceStatus source={pokebattler} />
+      </InfoLine>
       <section class="card boss boss-link">
         <div class="boss-body">
           <h2>Pokémon compatibles con Max</h2>
@@ -154,10 +159,7 @@ function BossList({ sources, now }: { sources: Sources; now: number }) {
         </a>
       </section>
       <section class="group" aria-label="Confirmados ahora">
-        <h2>
-          Confirmados ahora <span class="chip chip-source">Con fecha de LeekDuck</span>
-        </h2>
-        {events.health.level !== 'ok' && <SourceStatus source={events} />}
+        <h2>Confirmados ahora</h2>
         {active.length > 0 ? (
           <ul class="grid">
             {active.map((item) => (
@@ -182,11 +184,9 @@ function BossList({ sources, now }: { sources: Sources; now: number }) {
         <h2>
           Catálogo <span class="chip chip-own">Sin fecha</span>
         </h2>
-        <p class="note">
-          Jefes que Pokébattler tiene en su catálogo. <strong>No indica cuándo aparecen</strong>: que estén aquí no significa
-          que sigan activos.
-        </p>
-        <SourceStatus source={pokebattler} />
+        <Caveat summary="Sin fechas: puede que no estén activos">
+          <p>Jefes que Pokébattler tiene en su catálogo. No indica cuándo aparecen.</p>
+        </Caveat>
         {!catalog ? (
           <Placeholder source={pokebattler} />
         ) : catalog.length === 0 ? (
@@ -288,12 +288,9 @@ function Boss({ boss, sources, now }: { boss: MaxBoss; sources: Sources; now: nu
           <Figure pokemon={pokemon} sources={sources} />
         </div>
       </article>
-      <div class="card explain">
-        <p>
-          <strong>No es un equipo completo.</strong> Pokébattler ordena a todos por la misma medida, sin separar atacantes,
-          defensores y curación. Para cada papel, usa sus páginas.
-        </p>
-      </div>
+      <Caveat summary="No es un equipo completo: no separa atacantes, defensores y curación">
+        <p>Pokébattler ordena a todos por la misma medida. Para cada papel, usa sus páginas.</p>
+      </Caveat>
       <RoleLinks id={boss.id} />
     </>
   );
@@ -413,15 +410,15 @@ function Cards({ sources }: { sources: Sources }) {
         <Back href="#incursiones/max" label="Combates Max" title="Compatibles con Max" />
       </Pin>
       <h2>Pokémon compatibles con Max</h2>
-      <section class="card explain" aria-label="Qué se muestra">
+      <Caveat summary="Datos teóricos, no un ranking">
         <p>
-          <strong>Datos teóricos, no un ranking.</strong> El orden es solo el de una estadística base. No tiene en cuenta
-          movimientos, tipos, nivel ni al jefe, y no dice quién es mejor atacante, tanque o apoyo.
+          El orden es solo el de una estadística base. No tiene en cuenta movimientos, tipos, nivel ni al jefe, y no dice
+          quién es mejor atacante, tanque o apoyo.
         </p>
-      </section>
-      <p class="note">
-        Lista de <External href="https://www.pokebattler.com/max">Pokébattler</External>; estadísticas y movimientos de{' '}
-        <External href="https://pvpoke.com">PvPoke</External>.
+      </Caveat>
+      <p class="note attribution">
+        Lista: <External href="https://www.pokebattler.com/max">Pokébattler</External> · estadísticas y movimientos:{' '}
+        <External href="https://pvpoke.com">PvPoke</External>
       </p>
       {!ids && <SourceStatus source={pokebattler} />}
       {!ids ? (
@@ -433,10 +430,7 @@ function Cards({ sources }: { sources: Sources }) {
               <Search value={filters.search} onChange={(search) => change({ search })} />
             </div>
             {filters.type !== 'all' && (
-              <p class="note">
-                Dinamax que pueden conocer un ataque rápido de tipo {typeName(filters.type)}. Los Gigamax tienen su propio
-                ataque y no entran en este filtro.
-              </p>
+              <p class="note">Dinamax con ataque rápido de tipo {typeName(filters.type)} (los Gigamax no entran).</p>
             )}
             <div class="meta">
               <SourceStatus source={pokebattler} />

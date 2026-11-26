@@ -1,8 +1,9 @@
 import type { DateTime } from 'luxon';
 import type { GameEvent } from '../data/models';
+import { withPageDates } from '../domain/availability';
 import { countdown, groupEvents, isGlobalTime, schedule } from '../domain/events';
 import { eventTypeName } from '../domain/names';
-import { External, Picture, Placeholder, SourceStatus } from './common';
+import { External, InfoLine, Picture, Placeholder, sourceAlerts, SourceStatus } from './common';
 import { useNow, type Sources } from './hooks';
 
 const format = (date: DateTime<true>): string => date.setLocale('es').toFormat("ccc d LLL yyyy, HH:mm");
@@ -66,7 +67,7 @@ function EventCard({ event, kind }: { event: GameEvent; kind: 'active' | 'upcomi
         {kind === 'active' && <Countdown target={end!.toMillis()} prefix="Termina en" />}
         {kind === 'upcoming' && <Countdown target={start!.toMillis()} prefix="Empieza en" />}
         {kind === 'unconfirmed' && (
-          <p class="validity warn">La fuente no da fechas completas. No se puede confirmar si está activo.</p>
+          <p class="validity warn">Sin fechas completas: no se puede confirmar si está activo</p>
         )}
         <dl class="dates">
           <div>
@@ -78,10 +79,8 @@ function EventCard({ event, kind }: { event: GameEvent; kind: 'active' | 'upcomi
             <dd>{end ? format(end) : 'no disponible'}</dd>
           </div>
         </dl>
-        {kind !== 'unconfirmed' && (
-          <p class="fine">
-            {isGlobalTime(event.start) ? 'Simultáneo en todo el mundo, en hora peninsular.' : 'Hora local de España peninsular.'}
-          </p>
+        {kind !== 'unconfirmed' && isGlobalTime(event.start) && (
+          <p class="chip chip-plain event-global">A la vez en todo el mundo · hora peninsular</p>
         )}
         <Details event={event} />
         {event.link && <External href={event.link}>Ver en LeekDuck</External>}
@@ -117,10 +116,17 @@ export function EventsView({ sources }: { sources: Sources }) {
       </>
     );
   }
-  const groups = groupEvents(events.data, now);
+  // ScrapedDuck pierde a veces las fechas; la página del evento en LeekDuck las conserva.
+  const groups = groupEvents(withPageDates(events.data, sources.raidSchedule.data?.pages), now);
   return (
     <>
-      <SourceStatus source={events} />
+      <InfoLine label="Eventos de LeekDuck · hora peninsular" alerts={sourceAlerts([events])}>
+        <p>
+          Las horas son las locales del juego en España peninsular, salvo los eventos simultáneos en todo el mundo, que lo
+          indican. Las bonificaciones se muestran con el texto original en inglés.
+        </p>
+        <SourceStatus source={events} />
+      </InfoLine>
       {groups.active.length === 0 && <p class="empty">Ahora mismo no hay eventos activos confirmados.</p>}
       <Section title="Activos" events={groups.active} kind="active" />
       <Section title="Próximos" events={groups.upcoming} kind="upcoming" />

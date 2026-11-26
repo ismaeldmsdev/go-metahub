@@ -35,7 +35,7 @@ import {
   type SuggestionGroup,
 } from '../domain/rocket';
 import { spriteId } from '../domain/sprites';
-import { External, Move, MoveLegend, multiplier, Placeholder, PokemonName, SourceStatus, TypeTag, Weaknesses } from './common';
+import { Caveat, External, InfoLine, Move, MoveLegend, multiplier, Placeholder, PokemonName, sourceAlerts, SourceStatus, TypeTag, Weaknesses } from './common';
 import { Back, Head, Pin } from './frame';
 import { Attribution, presenceGroups, Search, tierClass, TierCells, tierGroup, typeGroup } from './GymsView';
 import { useNow, type Sources } from './hooks';
@@ -340,7 +340,22 @@ function TrainerList({ sources, grunts, now }: { sources: Sources; grunts: boole
         <Pin>{modes}</Pin>
       )}
       <div class="meta">
-        <SourceStatus source={rocket} />
+        <InfoLine
+          label={comparison && agrees(comparison) ? 'Datos de WatWowMap · coinciden con LeekDuck' : 'Datos de WatWowMap'}
+          alerts={[
+            ...sourceAlerts([rocket]),
+            ...(rocket.data && !comparison ? ['Todavía no se han podido contrastar con LeekDuck'] : []),
+          ]}
+        >
+          {rocket.data && <Agreement comparison={comparison} sources={sources} now={now} />}
+          {grunts && hasPhrases && (
+            <p class="note">
+              Frases del juego en español, a través de{' '}
+              <External href="https://github.com/WatWowMap/pogo-translations">WatWowMap</External>.
+            </p>
+          )}
+          <SourceStatus source={rocket} />
+        </InfoLine>
         {grunts && rocket.data && (
           <p class="result-count" role="status">
             {trainers.length} {trainers.length === 1 ? 'recluta' : 'reclutas'}
@@ -357,14 +372,7 @@ function TrainerList({ sources, grunts, now }: { sources: Sources; grunts: boole
       ) : (
         <>
           <Mismatches comparison={comparison} sources={sources} now={now} />
-          <Agreement comparison={comparison} sources={sources} now={now} />
           {!tr && <p class="note">Las traducciones aún no están disponibles. Se muestran los nombres originales.</p>}
-          {grunts && hasPhrases && (
-            <p class="note">
-              Frases del juego en español, a través de{' '}
-              <External href="https://github.com/WatWowMap/pogo-translations">WatWowMap</External>.
-            </p>
-          )}
           {tr && !hasPhrases && <p class="note">Las frases en español no están disponibles ahora mismo.</p>}
           {trainers.length === 0 ? (
             <p class="empty">
@@ -514,13 +522,12 @@ function Suggestions({ rival, sources, filters }: { rival: Species; sources: Sou
       <h2>
         Opciones con ventaja de tipo <span class="chip chip-own">Sugerencia de GO MetaHub</span>
       </h2>
-      <div class="card explain">
+      <Caveat summary="Sugerencias por tipo, no counters exactos">
         <p>
-          <strong>No son counters exactos ni una simulación.</strong> GO MetaHub elige Pokémon con ventaja de tipo contra{' '}
-          {name} que no sean débiles a sus tipos. <strong>No se consideran</strong> los escudos, la resistencia, los ataques del
-          rival ni el equipo completo.
+          GO MetaHub elige Pokémon con ventaja de tipo contra {name} que no sean débiles a sus tipos. <strong>No se
+          consideran</strong> los escudos, la resistencia, los ataques del rival ni el equipo completo.
         </p>
-      </div>
+      </Caveat>
       {rocketAttackers.health.level !== 'ok' && <SourceStatus source={rocketAttackers} />}
       <Attribution data={data} />
       {groups.length === 0 && <p class="empty">Ninguna opción coincide con los filtros.</p>}
@@ -674,7 +681,7 @@ function TrainerDetail({ trainer, sources, now }: { trainer: RocketTrainer; sour
         <Phrases phrases={phrases} />
         {phrases.length > 0 && (
           <p class="fine">
-            Frases del juego, a través de <External href="https://github.com/WatWowMap/pogo-translations">WatWowMap</External>.
+            Frases: <External href="https://github.com/WatWowMap/pogo-translations">WatWowMap</External>
           </p>
         )}
         {sharing.length > 0 && (
@@ -837,12 +844,9 @@ function GeneralAttackers({ sources }: { sources: Sources }) {
             <h2>
               Mejores atacantes generales <span class="chip chip-source">Datos de doctorpokegogo</span>
             </h2>
-            <div class="card explain">
-              <p>
-                <strong>Es una evaluación general, no contra un rival concreto.</strong> Contra cada Pokémon importan sus
-                debilidades: elige un entrenador para verlas.
-              </p>
-            </div>
+            <Caveat summary="Evaluación general, no contra un rival concreto">
+              <p>Contra cada Pokémon importan sus debilidades: elige un entrenador para verlas.</p>
+            </Caveat>
             <Attribution data={data} />
           </section>
           <div class="filters">

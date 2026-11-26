@@ -1,5 +1,4 @@
 import type { GameEvent, PokebattlerBosses, RaidBoss } from '../data/models';
-import { eventStatus, isRaidRotation, schedule } from './events';
 import { parseBossName } from './names';
 import { normalize } from './text';
 
@@ -42,40 +41,29 @@ export function groupRaids(bosses: RaidBoss[]): RaidGroup[] {
   return [...groups.values()].sort((a, b) => rank(a.order) - rank(b.order));
 }
 
-export type Validity =
-  | { kind: 'announced'; event: GameEvent; end: number }
-  | { kind: 'upcoming'; event: GameEvent; start: number }
-  | { kind: 'expired'; event: GameEvent; end: number }
-  | { kind: 'unknown' };
+export const isShadowRotation = (event: GameEvent): boolean =>
+  /\bshadow\b/i.test(`${event.name} ${event.id.replace(/-/g, ' ')}`);
 
-const isShadowRotation = (event: GameEvent): boolean => /\bshadow\b/i.test(`${event.name} ${event.id.replace(/-/g, ' ')}`);
-
-function rotationIncludes(event: GameEvent, boss: RaidBoss): boolean {
+export function rotationIncludes(event: GameEvent, boss: Pick<RaidBoss, 'name' | 'shadow'>): boolean {
   if (isShadowRotation(event) !== boss.shadow) return false;
   const name = normalize(boss.name.replace(/^shadow\s+/i, ''));
   return event.raidBosses.some((other) => normalize(other.replace(/^shadow\s+/i, '')) === name);
-}
-
-/**
- * Las incursiones no traen fechas. Solo se informa de vigencia cuando un evento de rotación
- * de la propia fuente nombra exactamente a ese jefe; en otro caso queda sin confirmar.
- */
-export function raidValidity(boss: RaidBoss, events: GameEvent[] | undefined, now: number): Validity {
-  const matches = (events ?? []).filter((e) => isRaidRotation(e) && rotationIncludes(e, boss));
-  const find = (status: string) => matches.filter((e) => eventStatus(e, now) === status);
-  const [active] = find('active');
-  if (active) return { kind: 'announced', event: active, end: schedule(active).end!.toMillis() };
-  const [upcoming] = find('upcoming');
-  if (upcoming) return { kind: 'upcoming', event: upcoming, start: schedule(upcoming).start!.toMillis() };
-  const ended = find('ended').at(-1);
-  if (ended) return { kind: 'expired', event: ended, end: schedule(ended).end!.toMillis() };
-  return { kind: 'unknown' };
 }
 
 const POKEBATTLER = 'https://www.pokebattler.com/raids';
 const REGION_IDS: Record<string, string> = { Alolan: 'ALOLA', Galarian: 'GALARIAN', Hisuian: 'HISUIAN', Paldean: 'PALDEA' };
 /** Pokébattler omite a veces estas formas porque son las habituales de su especie. */
 const DEFAULT_FORMS = new Set(['Incarnate', 'Altered', 'Ordinary', 'Normal', 'Land']);
+const DEFAULT_FORM_ID = new RegExp(`^([A-Z0-9_]+?)_(?:${[...DEFAULT_FORMS].map((f) => f.toUpperCase()).join('|')})_FORM$`);
+
+/**
+ * Pokébattler responde a «DEOXYS_NORMAL_FORM» con «DEOXYS» (comprobado el 26-11-2026 también con
+ * LANDORUS_INCARNATE_FORM y GIRATINA_ALTERED_FORM). Las formas alternativas conservan su identificador,
+ * así que solo se admite este alias para las formas habituales de su especie.
+ */
+export function defaultFormAlias(id: string): string | null {
+  return DEFAULT_FORM_ID.exec(id)?.[1] ?? null;
+}
 
 const toId = (text: string): string =>
   text

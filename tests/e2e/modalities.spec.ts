@@ -141,6 +141,8 @@ test.describe('incursiones por tipo', () => {
     await expect(page.locator('.type-links a')).toHaveCount(18);
     await expect(page.getByText('No es un ranking completo')).toBeVisible();
     await page.locator('.type-links a', { hasText: 'Hielo' }).click();
+    // La limitación, a la vista; el porqué, al desplegarla.
+    await page.locator('.caveat summary', { hasText: 'No es un ranking completo' }).click();
     await expect(page.getByText('Faltan los que lo usan como segunda opción')).toBeVisible();
     const first = page.locator('.rank-card').first();
     for (const text of ['Kyurem Negro', '99,6', 'S+', 'Percentil', 'DPS*', 'TDO*']) await expect(first).toContainText(text);
@@ -170,7 +172,7 @@ test.describe('incursiones por tipo', () => {
     await page.clock.runFor(30_000);
     await expect(page.locator('.status-warning').first()).toContainText('últimos datos válidos');
     await page.goto('/#incursiones');
-    await expect(page.locator('.boss')).toHaveCount(18);
+    await expect(page.locator('.rb-boss')).toHaveCount(17);
   });
 
   test('un tipo inexistente no rompe la sección', async ({ page, context }) => {
@@ -252,7 +254,7 @@ test.describe('combates Max', () => {
     await expect(cards.first()).toContainText('Gigamax propio');
     await page.getByRole('button', { name: 'Quitar filtros' }).click();
     await pick(page, ['Tipo del ataque Max', 'Dragón']);
-    await expect(page.getByText('Los Gigamax tienen su propio ataque')).toBeVisible();
+    await expect(page.getByText('(los Gigamax no entran)')).toBeVisible();
   });
 
   test('si Pokébattler falla, los jefes con fecha se ven y las incursiones también', async ({ page, context }) => {
@@ -263,7 +265,7 @@ test.describe('combates Max', () => {
     await expect(page.getByRole('region', { name: 'Confirmados ahora' })).toContainText('Dynamax Espurr');
     await expect(page.locator('.status-error')).toContainText('Todavía no hay datos');
     await page.getByRole('button', { name: 'Jefes' }).click();
-    await expect(page.locator('.boss')).toHaveCount(18);
+    await expect(page.locator('.rb-boss')).toHaveCount(17);
   });
 });
 
@@ -294,7 +296,7 @@ test.describe('diseño adaptable', () => {
     ['pvp/mega', '.rank-card'],
     ['pvp/copas', '.season-week'],
     ['pvp/copa-laic2027gbl-1500', '.rank-card'],
-    ['incursiones', '.boss'],
+    ['incursiones', '.rb-boss'],
     ['incursiones/tipos', '.type-links a'],
     ['incursiones/tipo-water', '.rank-card'],
     ['incursiones/max', '.rival'],

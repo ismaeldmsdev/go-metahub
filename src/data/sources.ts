@@ -1,11 +1,22 @@
 import { replaceEqualDeep } from '@tanstack/preact-query';
-import { ENDPOINTS, HOUR, RETRY_AFTER_ERROR, type CountersTarget, type Endpoint, type FormatTarget } from './config';
+import { eventsNeedingPage, periodSpan } from '../domain/availability';
+import {
+  ENDPOINTS,
+  HOUR,
+  MAX_EVENT_PAGES,
+  MAX_PERIOD_PAGES,
+  RETRY_AFTER_ERROR,
+  type CountersTarget,
+  type Endpoint,
+  type FormatTarget,
+} from './config';
 import { SourceError } from './errors';
-import { fetchEndpoint, fetchJson, type Download } from './http';
+import { fetchEndpoint, fetchJson, fetchText, type Download } from './http';
 import type { SpriteIndex } from '../domain/sprites';
 import type {
   ContrastTrainer,
   CountersData,
+  EventPage,
   FormatData,
   GameEvent,
   GymData,
@@ -13,6 +24,7 @@ import type {
   PvpData,
   RaidAttackersData,
   RaidBoss,
+  RaidSchedule,
   RocketAttackersData,
   RocketTrainer,
   SeasonWeek,
@@ -22,13 +34,16 @@ import type {
 import { commits, parseWith } from './schemas';
 import {
   MIN_FORMAT,
+  parseEventPage,
   parseGamemaster,
+  parsePeriodBosses,
   toCounters,
   toEvents,
   toFormats,
   toGyms,
   toPokebattlerData,
   toRaidAttackers,
+  toRaidManifest,
   toRaids,
   toRanking,
   toRocket,
@@ -54,6 +69,7 @@ export interface SourceData {
   rocketAttackers: RocketAttackersData;
   season: SeasonWeek[];
   raidTypes: RaidAttackersData;
+  raidSchedule: RaidSchedule;
 }
 
 export interface FetchContext<T> {
@@ -199,6 +215,51 @@ export const SOURCES: { [K in keyof SourceData]: Loader<SourceData[K]> } = {
     const { json } = await loaderFor(ctx)(ENDPOINTS.raidTypes);
     const data = toRaidAttackers(json);
     return snapshot(ctx.previous, { data, sourceUpdatedAt: Date.parse(data.source.generatedAt) });
+  },
+
+  /**
+   * Calendario de LeekDuck, los jefes de los periodos en curso y las páginas de las rotaciones cercanas
+   * y de los eventos sin fecha. Si una página falla, se conserva la última leída; si no la hay, queda sin
+   * dato y la aplicación no confirma lo que dependa de ella.
+   */
+  async raidSchedule(ctx) {
+    const [manifest, events] = await Promise.all([
+      loaderFor(ctx)(ENDPOINTS.raidSchedule),
+      loadEvents(ctx).then(
+        ({ json }) => toEvents(json).data,
+        () => [],
+      ),
+    ]);
+    const { generatedAt, periods, discarded } = toRaidManifest(manifest.json);
+    const now = Date.now();
+    const previous = ctx.previous?.data;
+    const read = async <T>(url: string, parse: (html: string) => T, fallback: T | undefined): Promise<T | undefined> => {
+      try {
+        return parse(await fetchText(url, ctx.signal));
+      } catch (error) {
+        if (ctx.signal?.aborted) throw error;
+        return fallback;
+      }
+    };
+    const current = periods
+      .filter((p) => {
+        const s = periodSpan(p);
+        return s !== null && s.start <= now && now < s.end;
+      })
+      .slice(0, MAX_PERIOD_PAGES);
+    const wanted = eventsNeedingPage(events, now).slice(0, MAX_EVENT_PAGES);
+    const pages: Record<string, EventPage> = {};
+    await Promise.all([
+      ...current.map(async (period) => {
+        const known = previous?.periods.find((p) => p.slug === period.slug)?.bosses ?? undefined;
+        period.bosses = (await read(ENDPOINTS.raidPeriod(period.slug), parsePeriodBosses, known)) ?? null;
+      }),
+      ...wanted.map(async (event) => {
+        const page = await read(event.link!, parseEventPage, previous?.pages[event.id]);
+        if (page) pages[event.id] = page;
+      }),
+    ]);
+    return snapshot(ctx.previous, { data: { generatedAt, periods, pages }, discarded, sourceUpdatedAt: generatedAt });
   },
 
   async rocketAttackers(ctx) {

@@ -52,7 +52,7 @@ test.describe('navegación', () => {
       await sources.click();
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Fuentes');
       await expect(sources).toHaveAttribute('aria-current', 'page');
-      await expect(page.locator('.source')).toHaveCount(12);
+      await expect(page.locator('.source')).toHaveCount(13);
     });
   }
 
@@ -77,6 +77,10 @@ test.describe('entrenadores', () => {
       await expect(cards.first()).toContainText(text);
     }
     await expect(cards.nth(1)).toContainText('Weezing de Galar');
+    // El contraste entre fuentes, resumido en el rótulo ⓘ; la fecha y el detalle, al desplegarlo.
+    const info = page.locator('.hm-info', { hasText: 'Datos de WatWowMap' });
+    await expect(info.locator('> summary')).toContainText('coinciden con LeekDuck');
+    await info.locator('> summary').click();
     await expect(page.getByText('sin cambios desde el 4 oct 2026, 06:51')).toBeVisible();
     await expect(page.getByText(/Coinciden con las de LeekDuck en los 26 entrenadores/)).toBeVisible();
     expect(errors).toEqual([]);
@@ -114,7 +118,7 @@ test.describe('entrenadores', () => {
     await expect(page.locator('.phrase')).toHaveCount(0);
     await page.goto('/#rocket/water-f');
     await expect(page.locator('.phrase')).toHaveText('«Prueba: río profundo.»');
-    await expect(page.getByText('Frases del juego, a través de WatWowMap')).toBeVisible();
+    await expect(page.locator('.trainer .fine', { hasText: 'Frases: WatWowMap' })).toBeVisible();
   });
 
   test('un entrenador que ya no está lo dice', async ({ page, context }) => {
@@ -138,7 +142,7 @@ test.describe('rival elegido', () => {
     const options = page.getByRole('region', { name: 'Opciones con ventaja de tipo' });
     for (const text of [
       'Sugerencia de GO MetaHub',
-      'No son counters exactos ni una simulación',
+      'Sugerencias por tipo, no counters exactos',
       'los escudos, la resistencia, los ataques del rival ni el equipo completo',
     ]) {
       await expect(options).toContainText(text);
@@ -220,7 +224,7 @@ test.describe('atacantes generales', () => {
     await network(context);
     await open(page);
     await page.getByRole('link', { name: 'Ver atacantes generales' }).click();
-    await expect(page.getByText('Es una evaluación general, no contra un rival concreto')).toBeVisible();
+    await expect(page.getByText('Evaluación general, no contra un rival concreto')).toBeVisible();
     await expect(page.getByText('Datos de doctorpokegogo', { exact: true })).toBeVisible();
     const note = page.locator('.attribution');
     await expect(note.getByRole('link', { name: 'CC BY 4.0' })).toHaveAttribute('href', 'https://creativecommons.org/licenses/by/4.0/');
@@ -285,7 +289,8 @@ test.describe('fallos y conexión', () => {
     net.table[CONTRAST] = 'fail';
     await open(page);
     await expect(page.locator('.trainer')).toHaveCount(4);
-    await expect(page.getByText('Todavía no se han podido contrastar con LeekDuck')).toBeVisible();
+    // Es un aviso de fiabilidad: ocupa el rótulo ⓘ y se ve sin desplegar nada.
+    await expect(page.locator('.hm-info-text', { hasText: 'Todavía no se han podido contrastar con LeekDuck' })).toBeVisible();
   });
 
   test('una alineación nueva aparece al volver a consultar', async ({ page, context }) => {

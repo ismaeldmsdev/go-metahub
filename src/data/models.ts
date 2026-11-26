@@ -125,6 +125,44 @@ export interface GameEvent {
   hasResearch: boolean;
 }
 
+/** Jefe de un periodo del calendario de LeekDuck, con el nombre exacto que usa su lista. */
+export interface PeriodBoss {
+  name: string;
+  /** «1-Star Raids», «Mega Raids»… tal como lo escribe la fuente. */
+  tier: string;
+  image: string | null;
+}
+
+/**
+ * Periodo del calendario de incursiones de LeekDuck (leekduck.com/raids/manifest.json). Las horas son
+ * locales de cada jugador: se guardan sin zona y se leen en hora peninsular, como las de los eventos.
+ */
+export interface RaidPeriod {
+  slug: string;
+  title: string;
+  kind: 'regular' | 'shadow';
+  start: string;
+  end: string;
+  tags: string[];
+  /** Solo se piden los de los periodos en curso; null si no se han podido leer. */
+  bosses: PeriodBoss[] | null;
+}
+
+/** Lo que dice la página de un evento de LeekDuck: su resumen y sus fechas, si las publica. */
+export interface EventPage {
+  description: string | null;
+  start: string | null;
+  end: string | null;
+}
+
+export interface RaidSchedule {
+  /** Fecha de generación del calendario según LeekDuck (ms). */
+  generatedAt: number;
+  periods: RaidPeriod[];
+  /** Por identificador de evento. Si falta uno, no se ha podido leer su página. */
+  pages: Record<string, EventPage>;
+}
+
 export interface Translations {
   /** Por número de Pokédex. */
   pokemon: Record<string, { en: string; es: string }>;

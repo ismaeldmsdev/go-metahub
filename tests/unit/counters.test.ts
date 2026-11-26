@@ -58,6 +58,37 @@ describe('counters de Pokébattler', () => {
     expect(change((r) => (r.sortType = 'OVERALL'))).toThrow(/estructura/);
   });
 
+  it('acepta la especie base solo como respuesta a su forma habitual (Deoxys Normal, Landorus Avatar…)', () => {
+    // Respuestas reales del 26-11-2026: filterValue repite lo pedido y pokemonId omite la forma habitual.
+    const ask = (requested: string, answered: string, tier = 'RAID_LEVEL_5') => {
+      const raw = fixtures.counters();
+      raw.filterValue = requested;
+      raw.attackers[0].pokemonId = answered;
+      raw.attackers[0].boss = tier;
+      return () => toCounters(raw, { id: requested, tier });
+    };
+    expect(ask('DEOXYS_NORMAL_FORM', 'DEOXYS')).not.toThrow();
+    expect(ask('LANDORUS_INCARNATE_FORM', 'LANDORUS')).not.toThrow();
+    expect(ask('GIRATINA_ALTERED_FORM', 'GIRATINA')).not.toThrow();
+    expect(ask('KELDEO_ORDINARY_FORM', 'KELDEO')).not.toThrow();
+    expect(ask('SHAYMIN_LAND_FORM', 'SHAYMIN')).not.toThrow();
+    expect(ask('DEOXYS_ATTACK_FORM', 'DEOXYS_ATTACK_FORM')).not.toThrow();
+    // Nunca datos de otra forma ni de otra especie.
+    expect(ask('DEOXYS_ATTACK_FORM', 'DEOXYS')).toThrow(/otro jefe/);
+    expect(ask('DEOXYS_NORMAL_FORM', 'DEOXYS_ATTACK_FORM')).toThrow(/otro jefe/);
+    expect(ask('DEOXYS_NORMAL_FORM', 'DEOXYS_SPEED_FORM')).toThrow(/otro jefe/);
+    expect(ask('GIRATINA_ORIGIN_FORM', 'GIRATINA')).toThrow(/otro jefe/);
+    expect(ask('LANDORUS_THERIAN_FORM', 'LANDORUS')).toThrow(/otro jefe/);
+    expect(ask('TORNADUS_SHADOW_FORM', 'TORNADUS')).toThrow(/otro jefe/);
+    expect(ask('DEOXYS_NORMAL_FORM', 'MEWTWO')).toThrow(/otro jefe/);
+    // El alias no exime de las demás comprobaciones.
+    const other = fixtures.counters();
+    Object.assign(other, { filterValue: 'DEOXYS' });
+    other.attackers[0].pokemonId = 'DEOXYS';
+    other.attackers[0].boss = 'RAID_LEVEL_5';
+    expect(() => toCounters(other, { id: 'DEOXYS_NORMAL_FORM', tier: 'RAID_LEVEL_5' })).toThrow(/otro jefe/);
+  });
+
   it('rechaza listas vacías, incompletas, repetidas o de otro nivel de atacante', () => {
     expect(change((r) => defenders(r).splice(0))).toThrow(/no tiene counters/);
     expect(change((r) => defenders(r).splice(5))).toThrow(/faltan/);

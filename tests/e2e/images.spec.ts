@@ -27,13 +27,14 @@ test.describe('imágenes de Pokémon', () => {
     });
     for (const hash of ['pvp', 'gimnasios', 'gimnasios/defensores', 'incursiones/cresselia']) {
       await page.goto(`/#${hash}`);
-      const figure = page.locator('.rank-card').first().locator('.pk');
+      // En la ficha de un jefe, los seis primeros van en fichas compactas.
+      const figure = page.locator(hash.startsWith('incursiones/') ? '.tc' : '.rank-card').first().locator('.pk');
       await expect(figure.locator('.pk-art')).toBeAttached();
       await expect(page.locator('.pk-sprite, .pk-fallback')).toHaveCount(0);
       await expect(figure.locator('.pk-art')).toHaveCSS('opacity', '0');
-      await expect(figure).toHaveCSS('width', '100px');
+      await expect(figure).toHaveCSS('width', hash.startsWith('incursiones/') ? '76px' : '100px');
     }
-    const figure = page.locator('.rank-card').first().locator('.pk');
+    const figure = page.locator('.tc').first().locator('.pk');
     const before = await figure.boundingBox();
     release();
     await expect(figure.locator('.pk-ready')).toHaveCSS('opacity', '1');

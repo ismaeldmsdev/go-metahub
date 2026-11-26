@@ -19,7 +19,7 @@ import {
   type SeasonEntry,
 } from '../domain/formats';
 import { parseEventDate } from '../domain/events';
-import { External, MoveLegend, Placeholder, SourceStatus } from './common';
+import { External, InfoLine, MoveLegend, Placeholder, sourceAlerts, SourceStatus } from './common';
 import { Back, Head, Pin } from './frame';
 import { Search } from './GymsView';
 import { useFormat, useNow, type Sources } from './hooks';
@@ -85,7 +85,13 @@ function Ranking({ target, sources, back, children }: RankingProps) {
       </Pin>
       {children}
       <div class="meta">
-        <SourceStatus source={source} />
+        <InfoLine label="Rankings de PvPoke" alerts={sourceAlerts([source])}>
+          <p>
+            Puesto, puntuación y movimientos de <External href="https://pvpoke.com">PvPoke</External> para este formato, sin
+            recalcular. Sin tiers: no se comparan con los de otras ligas.
+          </p>
+          <SourceStatus source={source} />
+        </InfoLine>
         {data && (
           <p class="result-count" role="status">
             {list.length} Pokémon
@@ -96,10 +102,6 @@ function Ranking({ target, sources, back, children }: RankingProps) {
         <Placeholder source={source} />
       ) : (
         <>
-          <p class="note">
-            Puesto, puntuación y movimientos de <External href="https://pvpoke.com">PvPoke</External> para este formato, sin
-            recalcular. Sin tiers: no se comparan con los de otras ligas.
-          </p>
           {back && <div class="filter-row">{find}</div>}
           {list.length === 0 ? (
             <p class="empty">Ningún Pokémon de este formato coincide.</p>
@@ -290,16 +292,21 @@ export function CupsView({ sources }: { sources: Sources }) {
     );
   return (
     <>
-      <SourceStatus source={season} />
-      <p class="note">
-        Calendario de la Liga Combates GO según LeekDuck, en hora peninsular.{' '}
-        {name && (
-          <>
-            Reglas completas en la <External href={officialSeasonUrl(name)}>página oficial de la temporada</External> <span lang="en">({name})</span>.
-          </>
-        )}
-      </p>
-      {pvp.data === undefined && <p class="note">Los rankings de PvPoke aún no se han podido comprobar.</p>}
+      <InfoLine
+        label="Calendario de LeekDuck · hora peninsular"
+        alerts={[...sourceAlerts([season]), ...(pvp.data === undefined ? ['Los rankings de PvPoke aún no se han podido comprobar'] : [])]}
+      >
+        <p>
+          Calendario de la Liga Combates GO según LeekDuck, en hora peninsular. Cada copa usa su propio ranking de PvPoke,
+          que suele publicarse días antes de que empiece; mientras no exista, no se muestra el de otra.
+        </p>
+        <SourceStatus source={season} />
+      </InfoLine>
+      {name && (
+        <p class="note">
+          Reglas completas: <External href={officialSeasonUrl(name)}>página oficial de la temporada</External>
+        </p>
+      )}
       {current.length > 0 ? (
         section('Ahora', current)
       ) : (
@@ -310,10 +317,6 @@ export function CupsView({ sources }: { sources: Sources }) {
       )}
       {section('Próximas', upcoming)}
       {section('Sin fecha confirmada', undated)}
-      <p class="note">
-        Cada copa usa su propio ranking de PvPoke, que suele publicarse días antes de que empiece. Mientras no exista, no se
-        muestra el de otra.
-      </p>
     </>
   );
 }
