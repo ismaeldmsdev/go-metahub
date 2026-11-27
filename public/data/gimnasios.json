@@ -6,8 +6,8 @@
   "license": "CC BY 4.0",
   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
   "methodologyUrl": "https://doctorpokegogo.com/en/rating-methodology/",
-  "version": "2026.11.25.1",
-  "generatedAt": "2026-11-25T00:23:02Z"
+  "version": "2026.11.27.1",
+  "generatedAt": "2026-11-27T00:23:02Z"
  },
  "changes": "Datos transformados y resumidos por GO MetaHub: se han seleccionado la evaluación de gimnasio y la resistencia, emparejado los nombres y omitido las fichas que no se usan en gimnasios o no se han podido comprobar. A los oscuros no se les asigna resistencia propia. Las cifras y los tiers no se han modificado.",
  "pokemon": [
@@ -199,7 +199,7 @@
   {"name":"Slowpoke","dex":79,"types":["water","psychic"],"groups":[],"attack":{"tier":"C","percentile":21.9,"score":126.58,"fast":"Confusion","fastType":"psychic","charged":"Psychic","chargedType":"psychic"},"bulk":20286},
   {"name":"Slowpoke (Shadow)","dex":79,"types":["water","psychic"],"groups":["shadow"],"attack":{"tier":"C","percentile":28.3,"score":137.93,"fast":"Confusion","fastType":"psychic","charged":"Psychic","chargedType":"psychic"},"bulk":null},
   {"name":"Slowbro (Galarian)","dex":80,"types":["poison","psychic"],"groups":[],"attack":{"tier":"A","percentile":69.6,"score":183.15,"fast":"Confusion","fastType":"psychic","charged":"Psychic","chargedType":"psychic"},"bulk":33696},
-  {"name":"Slowbro (Mega)","dex":80,"types":["water","psychic"],"groups":["mega"],"attack":{"tier":"A","percentile":68.1,"score":224.72,"fast":"Confusion","fastType":"psychic","charged":"Psychic","chargedType":"psychic"},"bulk":null},
+  {"name":"Slowbro (Mega)","dex":80,"types":["water","psychic"],"groups":["mega"],"attack":{"tier":"A","percentile":71,"score":229.89,"fast":"Confusion","fastType":"psychic","charged":"Psychic","chargedType":"psychic"},"bulk":null},
   {"name":"Slowbro","dex":80,"types":["water","psychic"],"groups":[],"attack":{"tier":"B","percentile":52.3,"score":188.68,"fast":"Confusion","fastType":"psychic","charged":"Psychic","chargedType":"psychic"},"bulk":38880},
   {"name":"Slowbro (Shadow)","dex":80,"types":["water","psychic"],"groups":["shadow"],"attack":{"tier":"A","percentile":67.2,"score":217.39,"fast":"Confusion","fastType":"psychic","charged":"Psychic","chargedType":"psychic"},"bulk":null},
   {"name":"Magnemite","dex":81,"types":["electric","steel"],"groups":[],"attack":{"tier":"B","percentile":48,"score":129.2,"fast":"Metal Sound","fastType":"steel","charged":"Magnet Bomb","chargedType":"steel"},"bulk":11253},
